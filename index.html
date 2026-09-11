@@ -906,10 +906,19 @@
       prev.focus();
     } else if (e.key === 'Home') {
       e.preventDefault();
-      items[0]?.focus();
+      items.forEach(i => i.setAttribute('tabindex', '-1'));
+      if (items[0]) {
+        items[0].setAttribute('tabindex', '0');
+        items[0].focus();
+      }
     } else if (e.key === 'End') {
       e.preventDefault();
-      items[items.length - 1]?.focus();
+      items.forEach(i => i.setAttribute('tabindex', '-1'));
+      const last = items[items.length - 1];
+      if (last) {
+        last.setAttribute('tabindex', '0');
+        last.focus();
+      }
     }
   });
 
@@ -1008,6 +1017,12 @@
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       items[(currIdx - 1 + items.length) % items.length]?.focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      items[0]?.focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      items[items.length - 1]?.focus();
     }
   });
 
