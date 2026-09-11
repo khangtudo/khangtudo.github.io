@@ -737,11 +737,8 @@
         <span>📱</span> <span id="txtViewQr">Xem QR Offline</span>
       </button>
     </footer>
-
-  </div>
-
-  <!-- More Menu Dropup -->
-  
+    </div> <!-- /main-canvas-row -->
+  </div> <!-- /app-shell (mainAppShell) -->
 
   <!-- EditSheet (Overlay Slide-over / Bottom Sheet) -->
   <div class="overlay-backdrop" id="overlayBackdrop"></div>
@@ -1061,11 +1058,20 @@ const BRAND_ICONS = {
 
   function updateI18n() {
     const createNewTxt = getTranslation(currentLang, 'createNew') || '+ Tạo mới';
-    document.getElementById('txtCreateNew').textContent = createNewTxt;
-    document.getElementById('txtSaveVcf').textContent = getTranslation(currentLang, 'saveVcf') || 'Lưu Danh Bạ';
-    document.getElementById('txtViewAr').textContent = getTranslation(currentLang, 'viewAr') || 'Xem AR';
-    document.getElementById('txtMore').textContent = getTranslation(currentLang, 'more') || 'Thêm';
-    document.getElementById('txtFlipTag').textContent = (getTranslation(currentLang, 'flipCard') || 'Chạm để lật thẻ') + ' 🔄';
+    const elCreateNew = document.getElementById('txtCreateNew');
+    if (elCreateNew) elCreateNew.textContent = createNewTxt;
+    
+    const elSaveVcf = document.getElementById('txtSaveVcf');
+    if (elSaveVcf) elSaveVcf.textContent = (getTranslation(currentLang, 'saveVcf') || 'Lưu Danh Bạ') + ' .vcf';
+    
+    const elViewAr = document.getElementById('txtViewAr');
+    if (elViewAr) elViewAr.textContent = (getTranslation(currentLang, 'viewAr') || 'Xem AR') + ' Card';
+
+    const elViewQr = document.getElementById('txtViewQr');
+    if (elViewQr) elViewQr.textContent = 'Xem QR Offline';
+
+    const elFlipBelow = document.getElementById('txtFlipBelow');
+    if (elFlipBelow) elFlipBelow.textContent = getTranslation(currentLang, 'flipCard') || 'Chạm để lật thẻ 3D';
   }
 
   // Render Card to Stage
@@ -1306,20 +1312,38 @@ const BRAND_ICONS = {
   const qrModal = document.getElementById('qrModal');
   const qrcodeDiv = document.getElementById('qrcode');
   function openQr() {
-    lastFocusedTrigger = document.getElementById('btnMenuQr');
+    lastFocusedTrigger = document.getElementById('btnOpenQrDirect') || document.activeElement;
     qrcodeDiv.innerHTML = '';
-    new QRCode(qrcodeDiv, { text: buildVCardString(), width: 190, height: 190, correctLevel: QRCode.CorrectLevel.M });
+    const vcardText = buildVCardString();
+
+    try {
+      if (typeof QRCode !== 'undefined') {
+        if (typeof QRCode.toCanvas === 'function') {
+          const canvas = document.createElement('canvas');
+          QRCode.toCanvas(canvas, vcardText, { width: 190, margin: 1 });
+          qrcodeDiv.appendChild(canvas);
+        } else if (typeof QRCode === 'function') {
+          new QRCode(qrcodeDiv, { text: vcardText, width: 190, height: 190 });
+        }
+      }
+    } catch (e) {
+      console.error('QR Render Error:', e);
+    }
+
     qrModal.classList.add('active');
     mainAppShell.setAttribute('inert', 'true');
-    document.getElementById('btnCloseQr').focus();
+    const closeBtn = document.getElementById('btnCloseQr');
+    if (closeBtn) closeBtn.focus();
   }
   function closeQr() {
     qrModal.classList.remove('active');
     mainAppShell.removeAttribute('inert');
-    if (lastFocusedTrigger) { lastFocusedTrigger.focus(); }
+    if (lastFocusedTrigger && typeof lastFocusedTrigger.focus === 'function') {
+      lastFocusedTrigger.focus();
+    }
   }
-  document.getElementById('btnMenuQr').onclick = openQr;
-  document.getElementById('btnCloseQr').onclick = closeQr;
+  const btnCloseQr = document.getElementById('btnCloseQr');
+  if (btnCloseQr) btnCloseQr.onclick = closeQr;
 
   // Downloads
   document.getElementById('btnSaveVcf').onclick = () => {
@@ -1340,18 +1364,31 @@ const BRAND_ICONS = {
   };
 
   // Launch AR Native Quick Look / Scene Viewer
-  document.getElementById('btnLaunchAr').onclick = () => {
-    const viewer = document.getElementById('arViewer');
-    if (viewer.canActivateAR) {
-      viewer.activateAR();
-    } else {
-      const a = document.createElement('a');
-      a.setAttribute('rel', 'ar');
-      a.appendChild(document.createElement('img'));
-      a.setAttribute('href', 'assets/3d/card.usdz');
-      a.click();
-    }
-  };
+  const btnLaunchAr = document.getElementById('btnLaunchAr');
+  if (btnLaunchAr) {
+    btnLaunchAr.onclick = () => {
+      const viewer = document.getElementById('arViewer');
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      
+      if (isIOS) {
+        // Native Quick Look for Safari iOS
+        const a = document.createElement('a');
+        a.setAttribute('rel', 'ar');
+        const img = document.createElement('img');
+        a.appendChild(img);
+        a.setAttribute('href', 'assets/3d/card.usdz');
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => a.remove(), 200);
+      } else if (viewer && viewer.canActivateAR) {
+        viewer.activateAR();
+      } else {
+        // Android Scene Viewer Fallback
+        const intentUrl = 'intent://arvr.google.com/scene-viewer/1.0?file=' + encodeURIComponent(window.location.origin + '/assets/3d/card.glb') + '&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=' + encodeURIComponent(window.location.href) + ';end;';
+        window.location.href = intentUrl;
+      }
+    };
+  }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
