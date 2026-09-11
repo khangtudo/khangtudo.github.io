@@ -155,8 +155,13 @@
       font-size: 0.82rem;
       cursor: pointer;
       min-height: 40px;
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      text-align: left;
     }
-    .flag-item:hover { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
+    .flag-item:hover, .flag-item:focus-visible { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
 
     /* 2. Desktop Identity Rail (Hidden on Mobile) */
     .identity-rail {
@@ -847,21 +852,24 @@
     window.visualViewport.addEventListener('scroll', handleViewport);
   }
 
-  // Setup Flag Dropdown with A11y
+  // Setup Flag Dropdown with A11y & Keyboard Navigation
   const flagBtn = document.getElementById('flagBtn');
   const flagMenu = document.getElementById('flagMenu');
   const currentFlag = document.getElementById('currentFlag');
 
-  Object.keys(I18N).forEach(code => {
-    const item = document.createElement('div');
+  Object.keys(I18N).forEach((code, idx) => {
+    const item = document.createElement('button');
+    item.type = 'button';
     item.className = 'flag-item';
     item.setAttribute('role', 'menuitem');
+    item.setAttribute('tabindex', '-1');
     item.innerHTML = `<span>${I18N[code].flag}</span> <span>${I18N[code].name}</span>`;
     item.onclick = () => {
       currentLang = code;
       currentFlag.textContent = I18N[code].flag;
       closeFlagMenu();
       updateI18n();
+      flagBtn.focus();
     };
     flagMenu.appendChild(item);
   });
@@ -869,11 +877,41 @@
   function openFlagMenu() {
     flagMenu.style.display = 'block';
     flagBtn.setAttribute('aria-expanded', 'true');
+    const firstItem = flagMenu.querySelector('.flag-item');
+    if (firstItem) {
+      firstItem.setAttribute('tabindex', '0');
+      setTimeout(() => firstItem.focus(), 30);
+    }
   }
   function closeFlagMenu() {
     flagMenu.style.display = 'none';
     flagBtn.setAttribute('aria-expanded', 'false');
+    flagMenu.querySelectorAll('.flag-item').forEach(i => i.setAttribute('tabindex', '-1'));
   }
+
+  flagMenu.addEventListener('keydown', (e) => {
+    const items = Array.from(flagMenu.querySelectorAll('.flag-item'));
+    const currIdx = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = items[(currIdx + 1) % items.length];
+      items.forEach(i => i.setAttribute('tabindex', '-1'));
+      next.setAttribute('tabindex', '0');
+      next.focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = items[(currIdx - 1 + items.length) % items.length];
+      items.forEach(i => i.setAttribute('tabindex', '-1'));
+      prev.setAttribute('tabindex', '0');
+      prev.focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      items[0]?.focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      items[items.length - 1]?.focus();
+    }
+  });
 
   flagBtn.onclick = (e) => {
     e.stopPropagation();
@@ -947,6 +985,8 @@
   function openMoreMenu() {
     moreMenu.style.display = 'flex';
     moreBtn.setAttribute('aria-expanded', 'true');
+    const firstItem = moreMenu.querySelector('.more-item');
+    if (firstItem) setTimeout(() => firstItem.focus(), 30);
   }
   function closeMoreMenu() {
     moreMenu.style.display = 'none';
@@ -958,6 +998,18 @@
     else openMoreMenu();
   };
   document.addEventListener('click', closeMoreMenu);
+
+  moreMenu.addEventListener('keydown', (e) => {
+    const items = Array.from(moreMenu.querySelectorAll('.more-item'));
+    const currIdx = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      items[(currIdx + 1) % items.length]?.focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      items[(currIdx - 1 + items.length) % items.length]?.focus();
+    }
+  });
 
   // Toggle Orientation
   document.getElementById('btnMenuToggleOrient').onclick = () => {
@@ -1041,8 +1093,46 @@
   btnCloseEdit.onclick = closeSheet;
   overlayBackdrop.onclick = () => { closeSheet(); closeQr(); };
 
+  // Helper: Active Modal Focus Trapping
+  function trapTabKey(modalEl, e) {
+    if (e.key !== 'Tab') return;
+    const focusables = Array.from(modalEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+      .filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null);
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  // Active Sheet Scoped Focus Handling & Visual Viewport Field Autoscroll
+  const sheetBody = document.querySelector('.sheet-body');
+  sheetBody.addEventListener('focusin', (e) => {
+    if (e.target && e.target.matches('input, select, textarea')) {
+      setTimeout(() => {
+        e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+  });
+
   // Focus Trap & Escape Key
   window.addEventListener('keydown', (e) => {
+    if (editSheet.classList.contains('active')) {
+      trapTabKey(editSheet, e);
+    } else if (qrModal.classList.contains('active')) {
+      trapTabKey(qrModal, e);
+    }
+
     if (e.key === 'Escape') {
       if (editSheet.classList.contains('active')) closeSheet();
       if (qrModal.classList.contains('active')) closeQr();
