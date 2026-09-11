@@ -629,6 +629,51 @@
       .card-3d.flipped { transform: rotateY(180deg) !important; }
       .sheet-panel, .overlay-backdrop, .dock-btn, .btn-create-sheet { transition: none !important; }
     }
+
+    /* Flag SVG Twemoji cross-platform styling */
+    .flag-img {
+      width: 22px;
+      height: 16px;
+      object-fit: contain;
+      border-radius: 2px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      vertical-align: middle;
+      display: inline-block;
+    }
+    .flag-btn .flag-img {
+      width: 24px;
+      height: 18px;
+    }
+    .brand-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .brand-main-title {
+      font-size: clamp(1.2rem, 3.5vw, 1.55rem);
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      line-height: 1.1;
+    }
+    .brand-main-title span { color: var(--primary); }
+    .brand-tagline-prominent {
+      font-size: clamp(0.72rem, 1.8vw, 0.85rem);
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--primary);
+      text-transform: uppercase;
+      white-space: nowrap;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 8px;
+      border-radius: 6px;
+      width: fit-content;
+      margin-top: 2px;
+    }
+
 </style>
 </head>
 <body>
@@ -641,7 +686,10 @@
     <!-- Utility Header -->
     <header class="utility-header">
       <a href="#" class="brand-group" aria-label="inid.me Home">
-        <img src="assets/logo.svg" alt="inid.me">
+        <div class="brand-title-wrap">
+          <div class="brand-main-title">inid<span>.me</span></div>
+          <div class="brand-tagline-prominent">Smart AR Card • Offline QR</div>
+        </div>
       </a>
       <div class="header-actions">
         <button class="btn-create-sheet" id="btnOpenEdit" aria-haspopup="dialog" aria-expanded="false" aria-controls="editSheet">
@@ -663,10 +711,9 @@
         <div class="big-logo">
           <img src="assets/logo.svg" alt="inid.me logo" style="height:90px; width:auto;">
         </div>
-        <div class="badge-chip">⚡ SPATIAL AR VCARD</div>
-        <p id="txtHeroSlogan" style="font-size:1.05rem; font-weight:500; color:#cbd5e1; line-height:1.6;">
-          Smart AR VCard & Offline QR.<br>
-          <span style="font-size:0.88rem; color:var(--muted);">Một chạm lưu danh bạ không mạng, mở rộng không gian 3D AR đa chiều.</span>
+        <div class="badge-chip">⚡ DANH THIẾP 3D THÔNG MINH</div>
+        <p id="txtHeroSlogan" style="font-size:1.05rem; font-weight:600; color:#cbd5e1; line-height:1.6;">
+          Mã QR danh bạ không cần mạng, trải nghiệm mở rộng không gian 3D AR đa chiều.
         </p>
       </aside>
 
@@ -706,7 +753,9 @@
               <img id="cardLogo" class="company-logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%222%22/><text x=%2250%22 y=%2260%22 font-size=%2232%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%2338bdf8%22>MT</text></svg>" alt="Logo">
               <h3 id="cardBackOrg">Minh Tam Prolab</h3>
               <p class="slogan" id="cardSlogan">Professional Digital Laboratory</p>
-              <p class="address" id="cardAdr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</p>
+              <a class="address" id="cardAdrLink" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:inherit; display:flex; align-items:center; justify-content:center; gap:4px; margin-top:4px;" title="Bấm để mở chỉ đường Google Maps">
+                <span>📍</span> <span id="cardAdr">40A-40B Lý Tự Trọng, Phường Bến Nghé, Quận 1, TPHCM</span>
+              </a>
             </div>
             <div class="card-bottom" style="justify-content: flex-end;">
               <button type="button" class="btn-toggle-orient-card" id="btnOrientInsideBack" aria-label="Đổi hướng thẻ Dọc hoặc Ngang">
@@ -799,10 +848,15 @@
         <input type="text" id="inSlogan" placeholder="vd: Professional Digital Laboratory">
       </div>
       <div class="field-group">
-        <label>Mạng xã hội (Facebook, Zalo, Instagram...)</label>
-        <input type="text" id="inSocialFb" placeholder="Facebook username / link" aria-label="Facebook">
-        <input type="text" id="inSocialZalo" placeholder="Zalo phone / link" style="margin-top:6px;" aria-label="Zalo">
-        <input type="text" id="inSocialInsta" placeholder="Instagram username" style="margin-top:6px;" aria-label="Instagram">
+        <label>Mạng xã hội & Kênh liên hệ (Tùy chọn - Tự động tạo icon trên thẻ)</label>
+        <input type="text" id="inSocialFb" placeholder="🔵 Facebook (link / username)" aria-label="Facebook">
+        <input type="text" id="inSocialZalo" placeholder="💬 Zalo (số điện thoại / link)" style="margin-top:6px;" aria-label="Zalo">
+        <input type="text" id="inSocialInsta" placeholder="📸 Instagram (username / link)" style="margin-top:6px;" aria-label="Instagram">
+        <input type="text" id="inSocialLi" placeholder="💼 LinkedIn (link / profile)" style="margin-top:6px;" aria-label="LinkedIn">
+        <input type="text" id="inSocialYt" placeholder="▶️ YouTube (kênh / link)" style="margin-top:6px;" aria-label="YouTube">
+        <input type="text" id="inSocialTiktok" placeholder="🎵 TikTok (@username)" style="margin-top:6px;" aria-label="TikTok">
+        <input type="text" id="inSocialWa" placeholder="🟢 WhatsApp (số điện thoại / link)" style="margin-top:6px;" aria-label="WhatsApp">
+        <input type="text" id="inSocialLine" placeholder="🟢 LINE ID / link" style="margin-top:6px;" aria-label="LINE">
       </div>
     </div>
 
@@ -819,8 +873,8 @@
       <p style="font-size:0.75rem; color:#64748b;">Quét lưu danh bạ ngay không cần mạng</p>
       <div id="qrcode"></div>
       <div class="qr-btn-row">
-        <button class="btn-qr-action" id="btnDownloadQr">📥 Tải Ảnh</button>
-        <button class="btn-qr-action" id="btnDownloadVcf">💾 Tải .vcf</button>
+        <button class="btn-qr-action" id="btnDownloadQr">📥 Tải Ảnh QR</button>
+        <button class="btn-qr-action" id="btnDownloadNfc" title="Tải file dữ liệu vCard để ghi vào thẻ thông minh NFC">📡 Tải NFC .txt</button>
       </div>
     </div>
   </div>
@@ -937,6 +991,18 @@ const BRAND_ICONS = {
     bg: '#0284c7',
     color: '#fff',
     svg: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>'
+  },
+  wa: {
+    name: 'WhatsApp',
+    bg: '#25d366',
+    color: '#fff',
+    svg: '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>'
+  },
+  line: {
+    name: 'LINE',
+    bg: '#00c300',
+    color: '#fff',
+    svg: '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.365 9.864c0-4.043-4.19-7.332-9.365-7.332-5.176 0-9.365 3.289-9.365 7.332 0 3.618 3.279 6.666 7.704 7.214.3.065.707.199.81.455.093.23.061.59.03.822-.047.332-.234 1.332-.26 1.547-.04.332-.187 1.302.569.712.756-.59 4.084-2.404 5.571-4.118 1.488-1.714 4.306-3.834 4.306-6.632zm-12.709 2.22h-1.674a.465.465 0 0 1-.465-.465v-3.535c0-.257.208-.465.465-.465h1.674c.257 0 .465.208.465.465 0 .257-.208.465-.465.465h-1.209v1.07h1.209c.257 0 .465.208.465.465 0 .257-.208.465-.465.465h-1.209v1.07h1.209c.257 0 .465.208.465.465 0 .257-.208.465-.465.465zm2.884 0a.465.465 0 0 1-.465-.465v-3.535c0-.257.208-.465.465-.465s.465.208.465.465v3.535a.465.465 0 0 1-.465.465zm3.768 0a.465.465 0 0 1-.397-.225l-2.046-2.884v2.644a.465.465 0 0 1-.93 0v-3.535a.465.465 0 0 1 .397-.225.465.465 0 0 1 .397.225l2.046 2.884v-2.644a.465.465 0 0 1 .93 0v3.535a.465.465 0 0 1-.397.225zm3.488 0h-1.674a.465.465 0 0 1-.465-.465v-3.535c0-.257.208-.465.465-.465h1.674c.257 0 .465.208.465.465 0 .257-.208.465-.465.465h-1.209v1.07h1.209c.257 0 .465.208.465.465 0 .257-.208.465-.465.465h-1.209v1.07h1.209c.257 0 .465.208.465.465 0 .257-.208.465-.465.465z"/></svg>'
   }
 };
 
@@ -947,17 +1013,18 @@ const BRAND_ICONS = {
   let profile = {
     fn: "Phan Mạnh Khang",
     org: "Minh Tam Prolab",
-    title: "Kỹ Thuật Viên Trưởng",
-    tel: "+84901112233",
-    email: "khang@minhtamprolab.com.vn",
+    title: "CGO - Giám Đốc Tăng Trưởng",
+    tel: "+84937550989",
+    email: "manhkhang@minhtamprolab.com.vn",
     url: "https://minhtamprolab.com.vn",
-    adr: "40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM",
+    adr: "40A-40B Lý Tự Trọng, Phường Bến Nghé, Quận 1, TPHCM",
     slogan: "Professional Digital Laboratory",
     orientation: "vertical",
     socials: [
       { type: "fb", url: "https://facebook.com/phanmanhkhang" },
-      { type: "zalo", url: "https://zalo.me/0901112233" },
-      { type: "insta", url: "https://instagram.com/minhtamprolab" }
+      { type: "zalo", url: "https://zalo.me/0937550989" },
+      { type: "insta", url: "https://instagram.com/minhtamprolab" },
+      { type: "li", url: "https://linkedin.com/in/phanmanhkhang" }
     ]
   };
 
@@ -984,16 +1051,32 @@ const BRAND_ICONS = {
   const flagMenu = document.getElementById('flagMenu');
   const currentFlag = document.getElementById('currentFlag');
 
+  function getTwemojiFlagHtml(langCode) {
+    const ccMap = {"vi":"vn","en":"us","ja":"jp","ko":"kr","zh-CN":"cn","zh-TW":"tw","fr":"fr","de":"de","es":"es","it":"it","pt":"pt","pt-BR":"br","id":"id","nl":"nl","ru":"ru","ar":"sa","hi":"in","th":"th","tr":"tr","pl":"pl","sv":"se","da":"dk","no":"no","ro":"ro","hu":"hu","el":"gr","he":"il"};
+    const cc = (ccMap[langCode] || 'vn').toLowerCase();
+    const hex = [...cc].map(c => (0x1F1E6 + c.charCodeAt(0) - 97).toString(16)).join('-');
+    const url = `https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/${hex}.svg`;
+    const fallbackEmoji = (I18N[langCode] && I18N[langCode].flag) || '🌐';
+    return `<img class="flag-img" src="${url}" alt="${fallbackEmoji}" onerror="this.outerHTML='${fallbackEmoji}'">`;
+  }
+
+  function renderCurrentFlag(code) {
+    currentFlag.innerHTML = getTwemojiFlagHtml(code);
+  }
+
+  // Initialize flag button icon
+  renderCurrentFlag(currentLang);
+
   Object.keys(I18N).forEach((code, idx) => {
     const item = document.createElement('button');
     item.type = 'button';
     item.className = 'flag-item';
     item.setAttribute('role', 'menuitem');
     item.setAttribute('tabindex', '-1');
-    item.innerHTML = `<span>${I18N[code].flag}</span> <span>${I18N[code].name}</span>`;
+    item.innerHTML = `<span>${getTwemojiFlagHtml(code)}</span> <span>${I18N[code].name}</span>`;
     item.onclick = () => {
       currentLang = code;
-      currentFlag.textContent = I18N[code].flag;
+      renderCurrentFlag(code);
       closeFlagMenu();
       updateI18n();
       flagBtn.focus();
@@ -1087,7 +1170,19 @@ const BRAND_ICONS = {
     document.getElementById('cardUrl').textContent = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
     document.getElementById('cardUrlLink').href = profile.url || 'https://inid.me';
     document.getElementById('cardSlogan').textContent = profile.slogan || '';
-    document.getElementById('cardAdr').textContent = profile.adr || '';
+    const elAdr = document.getElementById('cardAdr');
+    if (elAdr) elAdr.textContent = profile.adr || '';
+    const elAdrLink = document.getElementById('cardAdrLink');
+    if (elAdrLink) {
+      if (profile.adr && profile.adr.trim()) {
+        elAdrLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(profile.adr.trim());
+        elAdrLink.style.pointerEvents = 'auto';
+        elAdrLink.setAttribute('aria-label', 'Mở chỉ đường Google Maps tới: ' + profile.adr);
+      } else {
+        elAdrLink.removeAttribute('href');
+        elAdrLink.style.pointerEvents = 'none';
+      }
+    }
 
     // Render Social Icons
     const socBox = document.getElementById('cardSocials');
@@ -1193,15 +1288,52 @@ const BRAND_ICONS = {
 
   function openSheet() {
     lastFocusedTrigger = btnOpenEdit;
-    // Populate form inputs
-    document.getElementById('inFn').value = profile.fn || '';
-    document.getElementById('inTitle').value = profile.title || '';
-    document.getElementById('inTel').value = profile.tel || '';
-    document.getElementById('inEmail').value = profile.email || '';
-    document.getElementById('inOrg').value = profile.org || '';
-    document.getElementById('inUrl').value = (profile.url || '').replace(/^https?:\/\//i, '');
-    document.getElementById('inAdr').value = profile.adr || '';
-    document.getElementById('inSlogan').value = profile.slogan || '';
+    // Check if user clicked "+ Tạo mới" to clear all fields
+    const isCreateNew = (lastFocusedTrigger === btnOpenEdit);
+
+    if (isCreateNew) {
+      // Clear all fields for new card creation
+      document.getElementById('inFn').value = '';
+      document.getElementById('inTitle').value = '';
+      document.getElementById('inTel').value = '';
+      document.getElementById('inEmail').value = '';
+      document.getElementById('inOrg').value = '';
+      document.getElementById('inUrl').value = '';
+      document.getElementById('inAdr').value = '';
+      document.getElementById('inSlogan').value = '';
+
+      document.getElementById('inSocialFb').value = '';
+      document.getElementById('inSocialZalo').value = '';
+      document.getElementById('inSocialInsta').value = '';
+      document.getElementById('inSocialLi').value = '';
+      document.getElementById('inSocialYt').value = '';
+      document.getElementById('inSocialTiktok').value = '';
+      document.getElementById('inSocialWa').value = '';
+      document.getElementById('inSocialLine').value = '';
+    } else {
+      // Populate with existing profile
+      document.getElementById('inFn').value = profile.fn || '';
+      document.getElementById('inTitle').value = profile.title || '';
+      document.getElementById('inTel').value = profile.tel || '';
+      document.getElementById('inEmail').value = profile.email || '';
+      document.getElementById('inOrg').value = profile.org || '';
+      document.getElementById('inUrl').value = (profile.url || '').replace(/^https?:\/\//i, '');
+      document.getElementById('inAdr').value = profile.adr || '';
+      document.getElementById('inSlogan').value = profile.slogan || '';
+
+      const socMap = {};
+      if (Array.isArray(profile.socials)) {
+        profile.socials.forEach(s => { if (s && s.type) socMap[s.type] = s.url || ''; });
+      }
+      document.getElementById('inSocialFb').value = socMap['fb'] || '';
+      document.getElementById('inSocialZalo').value = socMap['zalo'] || '';
+      document.getElementById('inSocialInsta').value = socMap['insta'] || '';
+      document.getElementById('inSocialLi').value = socMap['li'] || '';
+      document.getElementById('inSocialYt').value = socMap['yt'] || '';
+      document.getElementById('inSocialTiktok').value = socMap['tiktok'] || '';
+      document.getElementById('inSocialWa').value = socMap['wa'] || '';
+      document.getElementById('inSocialLine').value = socMap['line'] || '';
+    }
 
     overlayBackdrop.classList.add('active');
     editSheet.classList.add('active');
@@ -1285,6 +1417,29 @@ const BRAND_ICONS = {
     profile.adr = document.getElementById('inAdr').value.trim();
     profile.slogan = document.getElementById('inSlogan').value.trim();
 
+    // Read and clean all 8 Social inputs
+    const newSocials = [];
+    const readSocial = (type, elemId, prefix) => {
+      const val = (document.getElementById(elemId) ? document.getElementById(elemId).value : '').trim();
+      if (!val) return;
+      let finalUrl = val;
+      if (prefix && !val.startsWith('http://') && !val.startsWith('https://')) {
+        finalUrl = prefix + val.replace(/^@/, '');
+      }
+      newSocials.push({ type, url: finalUrl });
+    };
+
+    readSocial('fb', 'inSocialFb', 'https://facebook.com/');
+    readSocial('zalo', 'inSocialZalo', 'https://zalo.me/');
+    readSocial('insta', 'inSocialInsta', 'https://instagram.com/');
+    readSocial('li', 'inSocialLi', 'https://linkedin.com/in/');
+    readSocial('yt', 'inSocialYt', 'https://youtube.com/');
+    readSocial('tiktok', 'inSocialTiktok', 'https://tiktok.com/@');
+    readSocial('wa', 'inSocialWa', 'https://wa.me/');
+    readSocial('line', 'inSocialLine', 'https://line.me/R/ti/p/');
+
+    profile.socials = newSocials;
+
     closeSheet();
     renderCard();
 
@@ -1354,7 +1509,18 @@ const BRAND_ICONS = {
     a.download = `${profile.fn || 'contact'}.vcf`;
     a.click();
   };
-  document.getElementById('btnDownloadVcf').onclick = document.getElementById('btnSaveVcf').onclick;
+  const btnDownloadNfc = document.getElementById('btnDownloadNfc');
+  if (btnDownloadNfc) {
+    btnDownloadNfc.onclick = () => {
+      const vcf = buildVCardString();
+      const blob = new Blob([vcf], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `nfc-${profile.fn || 'contact'}.txt`;
+      a.click();
+      showToast('Đã tải file NFC .txt chuẩn NDEF!');
+    };
+  }
   document.getElementById('btnDownloadQr').onclick = () => {
     const img = qrcodeDiv.querySelector('img') || qrcodeDiv.querySelector('canvas');
     const a = document.createElement('a');
