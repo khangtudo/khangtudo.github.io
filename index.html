@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>inid.me — Smart AR Business Card</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📇</text></svg>">
   <script type="module" src="assets/vendor/model-viewer.min.js"></script>
   <style>
     :root {
-      --bg: #090d16;
+      --bg: #070a12;
       --card-front: linear-gradient(145deg, #131b2e, #090d16);
       --card-back: linear-gradient(145deg, #0f172a, #020617);
-      --border: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.1);
       --primary: #38bdf8;
       --primary-hover: #0284c7;
       --text: #f8fafc;
@@ -23,19 +23,28 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--font);
-      min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px 16px;
+      justify-content: center;
+      padding: clamp(16px, 3vw, 32px) clamp(12px, 3vw, 24px);
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+    .wrapper {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: auto 0;
     }
     .top-nav {
       width: 100%;
-      max-width: 480px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: clamp(16px, 3vh, 28px);
     }
     .logo-brand {
       display: flex;
@@ -43,7 +52,7 @@
       text-decoration: none;
     }
     .logo-brand img {
-      height: 38px;
+      height: clamp(34px, 5vw, 42px);
     }
     .top-controls {
       display: flex;
@@ -54,11 +63,14 @@
       background: #131b2e;
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.84rem;
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 600;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
       transition: background 0.15s;
     }
     .btn-edit:hover { background: #1e293b; }
@@ -66,32 +78,33 @@
       background: #131b2e;
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.84rem;
       outline: none;
+      min-height: 40px;
     }
 
     /* 3D Flip Card Container */
     .card-perspective {
-      perspective: 1200px;
+      perspective: 1400px;
       width: 100%;
-      max-width: 360px;
-      margin-bottom: 24px;
+      max-width: clamp(300px, 90vw, 380px);
+      margin-bottom: clamp(18px, 3vh, 28px);
     }
     .card-perspective.horizontal {
-      max-width: 460px;
+      max-width: clamp(340px, 95vw, 480px);
     }
     .card-3d {
       width: 100%;
-      min-height: 480px;
+      min-height: clamp(450px, 60vh, 500px);
       position: relative;
       transform-style: preserve-3d;
       transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
     }
     .card-perspective.horizontal .card-3d {
-      min-height: 310px;
+      min-height: clamp(290px, 42vh, 320px);
     }
     .card-3d.flipped {
       transform: rotateY(180deg);
@@ -101,8 +114,8 @@
       width: 100%;
       height: 100%;
       backface-visibility: hidden;
-      border-radius: 22px;
-      padding: 26px 22px;
+      border-radius: clamp(18px, 4vw, 24px);
+      padding: clamp(20px, 4vw, 28px);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -119,38 +132,34 @@
       text-align: center;
     }
 
-    /* Front Elements */
+    /* Front Face Elements */
     .front-top {
       display: flex;
       align-items: center;
       gap: 16px;
     }
     .avatar-img {
-      width: 72px;
-      height: 72px;
+      width: clamp(64px, 15vw, 76px);
+      height: clamp(64px, 15vw, 76px);
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--primary);
       background: #1e293b;
       flex-shrink: 0;
     }
-    .card-perspective.horizontal .avatar-img {
-      width: 64px;
-      height: 64px;
-    }
     .person-info h2 {
-      font-size: 1.25rem;
+      font-size: clamp(1.15rem, 3.5vw, 1.35rem);
       font-weight: 700;
       color: #fff;
       line-height: 1.25;
     }
     .person-info p {
-      font-size: 0.85rem;
+      font-size: clamp(0.82rem, 2.5vw, 0.9rem);
       color: var(--primary);
       margin-top: 3px;
     }
     .front-contacts {
-      margin: 18px 0;
+      margin: 16px 0;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -159,14 +168,15 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 0.85rem;
+      font-size: clamp(0.82rem, 2.5vw, 0.88rem);
       color: var(--text);
       text-decoration: none;
-      padding: 9px 12px;
+      padding: 10px 14px;
       background: rgba(255,255,255,0.03);
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.05);
-      transition: background 0.15s;
+      min-height: 44px;
+      transition: all 0.15s;
     }
     .contact-item:hover {
       background: rgba(56, 189, 248, 0.12);
@@ -182,7 +192,7 @@
     .social-icons-wrap {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
     .soc-pill {
       height: 32px;
@@ -200,15 +210,15 @@
     }
     .soc-pill:hover {
       background: var(--primary);
-      color: #090d16;
+      color: #070a12;
     }
     .flip-hint {
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       color: var(--muted);
       opacity: 0.85;
     }
 
-    /* Back Elements */
+    /* Back Face Elements */
     .back-content {
       height: 100%;
       display: flex;
@@ -218,46 +228,46 @@
       gap: 12px;
     }
     .company-logo {
-      max-width: 84px;
-      max-height: 84px;
+      max-width: clamp(72px, 18vw, 88px);
+      max-height: clamp(72px, 18vw, 88px);
       object-fit: contain;
       border-radius: 12px;
     }
     .company-name {
-      font-size: 1.15rem;
+      font-size: clamp(1.1rem, 3.5vw, 1.25rem);
       font-weight: 700;
       color: #fff;
     }
     .company-slogan {
-      font-size: 0.84rem;
+      font-size: 0.85rem;
       color: var(--primary);
       font-style: italic;
     }
     .company-address {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       color: var(--muted);
-      max-width: 290px;
+      max-width: 300px;
       line-height: 1.4;
     }
 
     /* Action Buttons */
     .actions-bar {
       width: 100%;
-      max-width: 360px;
+      max-width: clamp(300px, 90vw, 380px);
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
     .card-perspective.horizontal + .actions-bar {
-      max-width: 460px;
+      max-width: clamp(340px, 95vw, 480px);
     }
     .btn-main {
       width: 100%;
       background: var(--primary);
-      color: #090d16;
+      color: #070a12;
       border: none;
-      padding: 13px 20px;
-      font-size: 0.92rem;
+      padding: 14px 20px;
+      font-size: 0.95rem;
       font-weight: 700;
       border-radius: 12px;
       cursor: pointer;
@@ -265,19 +275,20 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      min-height: 48px;
       text-decoration: none;
       transition: background 0.15s, transform 0.1s;
     }
     .btn-main:active { transform: scale(0.98); }
     .btn-main:hover { background: #7dd3fc; }
     .btn-outline {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.04);
       border: 1px solid var(--border);
       color: var(--text);
       font-weight: 600;
     }
     .btn-outline:hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.09);
     }
 
     model-viewer {
@@ -289,74 +300,76 @@
 </head>
 <body>
 
-  <nav class="top-nav">
-    <a href="#" class="logo-brand">
-      <img src="assets/logo-concept-1.svg" alt="inid.me">
-    </a>
-    <div class="top-controls">
-      <select id="langSelect" class="lang-select"></select>
-      <a href="edit/" class="btn-edit" id="btnEditCard">✏️ Studio</a>
-    </div>
-  </nav>
+  <div class="wrapper">
+    <nav class="top-nav">
+      <a href="#" class="logo-brand">
+        <img src="assets/logo-concept-1.svg" alt="inid.me">
+      </a>
+      <div class="top-controls">
+        <select id="langSelect" class="lang-select"></select>
+        <a href="edit/" class="btn-edit" id="btnEditCard">✏️ Studio</a>
+      </div>
+    </nav>
 
-  <!-- Interactive 3D Flip Card -->
-  <div class="card-perspective" id="cardContainer">
-    <div class="card-3d" id="card3d" title="Chạm để lật thẻ">
-      <!-- FRONT SIDE -->
-      <div class="card-face card-front">
-        <div class="front-top">
-          <img id="viewAvatar" class="avatar-img" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%223%22/><text x=%2250%22 y=%2258%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%2338bdf8%22>ID</text></svg>" alt="Avatar">
-          <div class="person-info">
-            <h2 id="viewFn">Phan Mạnh Khang</h2>
-            <p id="viewTitle">Kỹ Thuật Viên Trưởng</p>
-            <p id="viewOrg" style="font-size:0.78rem; color:var(--muted)">Minh Tam Prolab</p>
+    <!-- Interactive 3D Flip Card -->
+    <div class="card-perspective" id="cardContainer">
+      <div class="card-3d" id="card3d" title="Chạm để lật thẻ 🔄">
+        <!-- FRONT SIDE -->
+        <div class="card-face card-front">
+          <div class="front-top">
+            <img id="viewAvatar" class="avatar-img" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%223%22/><text x=%2250%22 y=%2258%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%2338bdf8%22>ID</text></svg>" alt="Avatar">
+            <div class="person-info">
+              <h2 id="viewFn">Phan Mạnh Khang</h2>
+              <p id="viewTitle">Kỹ Thuật Viên Trưởng</p>
+              <p id="viewOrg" style="font-size:0.8rem; color:var(--muted)">Minh Tam Prolab</p>
+            </div>
+          </div>
+
+          <div class="front-contacts">
+            <a id="viewTelLink" href="tel:+84901112233" class="contact-item">
+              <span>📞</span> <span id="viewTel">+84 90 111 2233</span>
+            </a>
+            <a id="viewEmailLink" href="mailto:khang@minhtamprolab.com.vn" class="contact-item">
+              <span>✉️</span> <span id="viewEmail">khang@minhtamprolab.com.vn</span>
+            </a>
+            <a id="viewUrlLink" href="https://minhtamprolab.com.vn" target="_blank" class="contact-item">
+              <span>🌐</span> <span id="viewUrl">minhtamprolab.com.vn</span>
+            </a>
+          </div>
+
+          <div class="front-bottom">
+            <div class="social-icons-wrap" id="socialBox"></div>
+            <span class="flip-hint" id="txtFlipHint">Chạm để lật 🔄</span>
           </div>
         </div>
 
-        <div class="front-contacts">
-          <a id="viewTelLink" href="tel:+84901112233" class="contact-item">
-            <span>📞</span> <span id="viewTel">+84 90 111 2233</span>
-          </a>
-          <a id="viewEmailLink" href="mailto:khang@minhtamprolab.com.vn" class="contact-item">
-            <span>✉️</span> <span id="viewEmail">khang@minhtamprolab.com.vn</span>
-          </a>
-          <a id="viewUrlLink" href="https://minhtamprolab.com.vn" target="_blank" class="contact-item">
-            <span>🌐</span> <span id="viewUrl">minhtamprolab.com.vn</span>
-          </a>
-        </div>
-
-        <div class="front-bottom">
-          <div class="social-icons-wrap" id="socialBox"></div>
-          <span class="flip-hint" id="txtFlipHint">Chạm để lật 🔄</span>
-        </div>
-      </div>
-
-      <!-- BACK SIDE -->
-      <div class="card-face card-back">
-        <div class="back-content">
-          <img id="viewLogo" class="company-logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%222%22/><text x=%2250%22 y=%2260%22 font-size=%2232%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%2338bdf8%22>MT</text></svg>" alt="Logo">
-          <h3 class="company-name" id="viewBackOrg">Minh Tam Prolab</h3>
-          <p class="company-slogan" id="viewSlogan">Professional Digital Laboratory</p>
-          <p class="company-address" id="viewAdr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</p>
-        </div>
-        <div class="front-bottom" style="justify-content: center;">
-          <span class="flip-hint" id="txtFlipHintBack">Chạm để lật 🔄</span>
+        <!-- BACK SIDE -->
+        <div class="card-face card-back">
+          <div class="back-content">
+            <img id="viewLogo" class="company-logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%222%22/><text x=%2250%22 y=%2260%22 font-size=%2232%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%2338bdf8%22>MT</text></svg>" alt="Logo">
+            <h3 class="company-name" id="viewBackOrg">Minh Tam Prolab</h3>
+            <p class="company-slogan" id="viewSlogan">Professional Digital Laboratory</p>
+            <p class="company-address" id="viewAdr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</p>
+          </div>
+          <div class="front-bottom" style="justify-content: center;">
+            <span class="flip-hint" id="txtFlipHintBack">Chạm để lật 🔄</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Actions -->
-  <div class="actions-bar">
-    <button class="btn-main" id="btnSaveVcf">
-      <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ (.vcf)</span>
-    </button>
-    <button class="btn-main btn-outline" id="btnLaunchAr">
-      <span>🕶️</span> <span id="txtViewAr">Xem Thẻ 3D Trong Không Gian AR</span>
-    </button>
-    <button class="btn-main btn-outline" id="btnToggleOrient" style="font-size:0.85rem;">
-      <span>📐</span> <span id="txtToggleOrient">Đổi Bố Cục Thẻ (Dọc / Ngang)</span>
-    </button>
+    <!-- Actions Bar -->
+    <div class="actions-bar">
+      <button class="btn-main" id="btnSaveVcf">
+        <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ (.vcf)</span>
+      </button>
+      <button class="btn-main btn-outline" id="btnLaunchAr">
+        <span>🕶️</span> <span id="txtViewAr">Xem Thẻ 3D Trong Không Gian AR</span>
+      </button>
+      <button class="btn-main btn-outline" id="btnToggleOrient" style="font-size:0.86rem;">
+        <span>📐</span> <span id="txtToggleOrient">Đổi Bố Cục Thẻ (Dọc / Ngang)</span>
+      </button>
+    </div>
   </div>
 
   <!-- Native AR Model Viewer Engine -->

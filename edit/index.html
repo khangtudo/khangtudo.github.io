@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>inid.me — Minimalist Smart Card Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>inid.me — Smart Card Studio (Responsive)</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📇</text></svg>">
   <script src="../assets/vendor/qrcode.min.js"></script>
   <style>
     :root {
-      --bg: #090d16;
-      --card-bg: #131b2e;
-      --border: #243049;
+      --bg: #070a12;
+      --card-bg: #101726;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: #38bdf8;
       --text: #f8fafc;
       --muted: #94a3b8;
       --primary: #38bdf8;
       --primary-hover: #0284c7;
-      --primary-rgb: 56, 189, 248;
       --danger: #ef4444;
       --success: #10b981;
       --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -25,67 +25,174 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--font);
-      padding: 24px 16px;
+      min-height: 100dvh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 32px) clamp(12px, 3vw, 32px);
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
     }
-    .container {
-      width: 100%;
-      max-width: 680px;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .brand-logo-wrap {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-    .brand-logo-wrap img {
-      height: 48px;
-    }
-    .header h1 { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
-    .header p { font-size: 0.88rem; color: var(--muted); }
     
-    .top-actions {
+    /* Responsive Split-View Container */
+    .app-layout {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(20px, 3vw, 40px);
+      align-items: start;
+    }
+    @media (min-width: 1024px) {
+      .app-layout {
+        grid-template-columns: 1.15fr 0.85fr;
+      }
+    }
+
+    /* Header & Navigation */
+    .top-bar {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto 20px auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .brand-logo img {
+      height: clamp(34px, 5vw, 44px);
+    }
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
     }
     .btn-sample {
-      background: rgba(56, 189, 248, 0.1);
+      background: rgba(56, 189, 248, 0.08);
       color: #38bdf8;
-      border: 1px dashed #0284c7;
-      padding: 6px 14px;
+      border: 1px dashed rgba(56, 189, 248, 0.4);
+      padding: 8px 14px;
       border-radius: 8px;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       cursor: pointer;
       font-weight: 600;
-      transition: background 0.15s;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.15s;
     }
-    .btn-sample:hover { background: rgba(56, 189, 248, 0.2); }
-    select.lang-select {
+    .btn-sample:hover { background: rgba(56, 189, 248, 0.18); }
+    .lang-select {
       background: var(--card-bg);
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 6px 12px;
+      padding: 8px 12px;
       border-radius: 8px;
       font-size: 0.82rem;
       outline: none;
+      min-height: 40px;
     }
+
+    /* Left Column: Form Controls */
+    .form-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+    }
+    .section-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: clamp(16px, 2.5vw, 24px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 600px) {
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .input-box {
+      display: flex;
+      align-items: center;
+      background: #06090e;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .input-box:focus-within {
+      border-color: var(--border-focus);
+    }
+    .input-prefix {
+      padding: 0 12px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      background: rgba(255,255,255,0.02);
+      border-right: 1px solid var(--border);
+      user-select: none;
+      height: 100%;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+    .input-box input {
+      border: none !important;
+      background: transparent !important;
+    }
+    input[type="text"], input[type="email"], input[type="tel"] {
+      width: 100%;
+      background: #06090e;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      outline: none;
+      min-height: 44px;
+      transition: border 0.15s;
+    }
+    input:focus { border-color: var(--border-focus); }
+
+    /* NTAG215 Real-time Byte Gauge */
     .gauge-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 20px;
+      border-radius: 16px;
+      padding: clamp(14px, 2vw, 18px);
     }
     .gauge-header {
       display: flex;
       justify-content: space-between;
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       font-weight: 600;
       margin-bottom: 8px;
     }
@@ -103,86 +210,15 @@
       transition: width 0.2s ease, background 0.2s ease;
     }
     .gauge-note {
-      font-size: 0.75rem;
+      font-size: 0.76rem;
       color: var(--muted);
-      margin-top: 6px;
+      margin-top: 8px;
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
     }
-    .section-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .section-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #38bdf8;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    @media (max-width: 540px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
-    .form-group {
-      margin-bottom: 14px;
-    }
-    label {
-      display: block;
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    .input-prefix-box {
-      display: flex;
-      align-items: center;
-      background: #06090e;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      transition: border-color 0.15s;
-    }
-    .input-prefix-box:focus-within {
-      border-color: var(--primary);
-    }
-    .input-prefix {
-      padding: 0 10px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      background: rgba(255,255,255,0.03);
-      border-right: 1px solid var(--border);
-      user-select: none;
-      height: 100%;
-      display: flex;
-      align-items: center;
-    }
-    .input-prefix-box input {
-      border: none !important;
-      background: transparent !important;
-    }
-    input[type="text"], input[type="email"], input[type="tel"] {
-      width: 100%;
-      background: #06090e;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      outline: none;
-      transition: border 0.15s;
-    }
-    input:focus { border-color: var(--primary); }
-    
+
     /* Dynamic Social Rows */
     .social-list {
       display: flex;
@@ -199,55 +235,60 @@
       background: #06090e;
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 9px 10px;
-      border-radius: 8px;
-      font-size: 0.82rem;
+      padding: 10px 10px;
+      border-radius: 10px;
+      font-size: 0.84rem;
       outline: none;
-      width: 130px;
+      min-height: 44px;
+      width: clamp(110px, 25%, 140px);
     }
     .btn-del-social {
       background: rgba(239, 68, 68, 0.1);
       color: var(--danger);
       border: 1px solid rgba(239, 68, 68, 0.3);
-      width: 36px;
-      height: 38px;
-      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1rem;
+      flex-shrink: 0;
     }
     .btn-add-social {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.03);
       color: #fff;
       border: 1px dashed var(--border);
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 0.82rem;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       font-weight: 500;
+      min-height: 42px;
       transition: background 0.15s;
     }
-    .btn-add-social:hover { background: rgba(255,255,255,0.09); }
+    .btn-add-social:hover { background: rgba(255,255,255,0.08); }
 
+    /* Action Buttons */
     .btn-row {
       display: flex;
-      gap: 10px;
-      margin-top: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
     }
     .btn {
       flex: 1;
+      min-width: 160px;
       background: var(--primary);
-      color: #090d16;
+      color: #070a12;
       border: none;
-      padding: 13px 16px;
+      padding: 14px 20px;
       font-weight: 700;
-      font-size: 0.92rem;
-      border-radius: 8px;
+      font-size: 0.95rem;
+      border-radius: 12px;
       cursor: pointer;
       text-align: center;
       text-decoration: none;
@@ -255,7 +296,8 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: background 0.15s;
+      min-height: 48px;
+      transition: all 0.15s;
     }
     .btn:hover { background: #7dd3fc; }
     .btn-secondary {
@@ -264,24 +306,180 @@
       border: 1px solid var(--border);
     }
     .btn-secondary:hover { background: #334155; }
-    
-    .qr-preview-box {
+
+    /* Right Column: Sticky Live 3D Preview (Desktop) */
+    .preview-column {
+      width: 100%;
+      position: relative;
+    }
+    @media (min-width: 1024px) {
+      .preview-column {
+        position: sticky;
+        top: 24px;
+      }
+    }
+    .preview-sticky-wrap {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: clamp(20px, 3vw, 28px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .preview-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 12px;
+      border-radius: 20px;
+      align-self: flex-start;
+    }
+
+    /* Live 3D Flip Card Component */
+    .live-card-container {
+      perspective: 1200px;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+    .live-card-container.horizontal {
+      max-width: 440px;
+    }
+    .live-card {
+      width: 100%;
+      min-height: 460px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .live-card-container.horizontal .live-card {
+      min-height: 290px;
+    }
+    .live-card.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      padding: clamp(20px, 3vw, 26px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      user-select: none;
+    }
+    .card-front {
+      background: linear-gradient(145deg, #131b2e, #090d16);
+    }
+    .card-back {
+      background: linear-gradient(145deg, #0f172a, #020617);
+      transform: rotateY(180deg);
       text-align: center;
-      padding: 20px;
-      background: #fff;
+    }
+    .front-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .live-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary);
+      background: #1e293b;
+      flex-shrink: 0;
+    }
+    .live-info h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.25;
+    }
+    .live-info p {
+      font-size: 0.84rem;
+      color: var(--primary);
+      margin-top: 3px;
+    }
+    .front-contacts {
+      margin: 14px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .contact-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text);
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .social-pills-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .social-pill {
+      font-size: 0.74rem;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      padding: 4px 8px;
       border-radius: 12px;
-      margin-top: 20px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+    .back-content {
+      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 10px;
+    }
+    .live-logo {
+      max-width: 76px;
+      max-height: 76px;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+
+    /* QR Popup Section */
+    .qr-preview-box {
+      width: 100%;
+      text-align: center;
+      padding: 16px;
+      background: #fff;
+      border-radius: 16px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-preview-box #qrcode {
+      margin: 10px auto;
     }
     .preview-actions {
       display: flex;
       gap: 8px;
-      margin-top: 14px;
+      margin-top: 12px;
       width: 100%;
+      flex-wrap: wrap;
     }
+
     .toast {
       position: fixed;
       bottom: 24px;
@@ -289,11 +487,11 @@
       transform: translateX(-50%);
       background: rgba(16, 185, 129, 0.95);
       color: white;
-      padding: 10px 20px;
+      padding: 10px 22px;
       border-radius: 30px;
       font-size: 0.9rem;
       font-weight: 500;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
       display: none;
       z-index: 1000;
     }
@@ -301,136 +499,189 @@
 </head>
 <body>
 
-<div class="container">
-  <div class="top-actions">
-    <button class="btn-sample" id="btnLoadSample">✨ Nạp dữ liệu mẫu (Minh Tâm Prolab)</button>
-    <select id="langSelect" class="lang-select"></select>
-  </div>
-
-  <div class="header">
-    <div class="brand-logo-wrap">
-      <img src="../assets/logo-concept-1.svg" alt="inid.me logo">
-    </div>
-    <h1 id="txtEditTitle">Smart Card Creator</h1>
-    <p id="txtSubTitle">Tối giản • Offline vCard 3.0 (<480B) • 3D AR Business Card</p>
-  </div>
-
-  <!-- Real-time NTAG215 Budget Gauge -->
-  <div class="gauge-card">
-    <div class="gauge-header">
-      <span id="txtNtagBudget">Dung lượng vCard Offline (Chuẩn NFC NTAG215)</span>
-      <span id="byteCounter">0 / 480 bytes</span>
-    </div>
-    <div class="progress-bar-bg">
-      <div id="byteProgress" class="progress-bar-fill"></div>
-    </div>
-    <div class="gauge-note">
-      <span id="byteStatus">Trong mức an toàn &lt; 480 bytes</span>
-      <span>Tách biệt hoàn toàn khỏi Social Online</span>
+  <!-- Top Navigation -->
+  <div class="top-bar">
+    <a href="../" class="brand-logo">
+      <img src="../assets/logo-concept-1.svg" alt="inid.me">
+    </a>
+    <div class="top-actions">
+      <button class="btn-sample" id="btnLoadSample">✨ Nạp dữ liệu mẫu (Minh Tâm Prolab)</button>
+      <select id="langSelect" class="lang-select"></select>
     </div>
   </div>
 
-  <!-- Front: Personal Information -->
-  <div class="section-box">
-    <div class="section-title">
-      <span>👤</span> <span id="txtFrontSide">Thông tin cá nhân (Mặt trước)</span>
-    </div>
-    <div class="grid-2">
-      <div class="form-group">
-        <label id="lblFullName">Họ và Tên *</label>
-        <input type="text" id="fn" placeholder="vd: Phan Mạnh Khang" required>
-      </div>
-      <div class="form-group">
-        <label id="lblTitleRole">Chức danh / Vị trí</label>
-        <input type="text" id="title" placeholder="vd: Giám đốc Kỹ thuật">
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="form-group">
-        <label id="lblPhone">Số điện thoại (tel:) *</label>
-        <input type="tel" id="tel" placeholder="vd: 0901112233 hoặc +84901112233" required>
-      </div>
-      <div class="form-group">
-        <label id="lblEmail">Email (mailto:)</label>
-        <input type="email" id="email" placeholder="vd: khang@prolab.vn">
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="form-group">
-        <label id="lblAvatar">Ảnh đại diện (<2MB)</label>
-        <input type="file" id="avatarFile" accept="image/*" style="font-size:0.8rem; color:var(--muted)">
-      </div>
-      <div class="form-group">
-        <label id="lblOrientation">Bố cục thẻ</label>
-        <select id="orientation" class="lang-select" style="width:100%; padding:9px;">
-          <option value="vertical" selected>Thẻ Dọc (Vertical)</option>
-          <option value="horizontal">Thẻ Ngang (Horizontal)</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- Back: Company Information -->
-  <div class="section-box">
-    <div class="section-title">
-      <span>🏢</span> <span id="txtBackSide">Thông tin doanh nghiệp (Mặt sau)</span>
-    </div>
-    <div class="grid-2">
-      <div class="form-group">
-        <label id="lblCompany">Tên công ty / Tổ chức</label>
-        <input type="text" id="org" placeholder="vd: Minh Tam Prolab">
-      </div>
-      <div class="form-group">
-        <label id="lblWebsite">Website doanh nghiệp</label>
-        <div class="input-prefix-box">
-          <span class="input-prefix">https://</span>
-          <input type="text" id="url" placeholder="minhtamprolab.com.vn">
+  <!-- App Layout: Left Form & Right Live 3D Preview -->
+  <div class="app-layout">
+    
+    <!-- LEFT: Form Input Controls -->
+    <div class="form-column">
+      
+      <!-- NTAG215 Real-time Byte Gauge -->
+      <div class="gauge-card">
+        <div class="gauge-header">
+          <span id="txtNtagBudget">Dung lượng vCard Offline (Chuẩn NFC NTAG215)</span>
+          <span id="byteCounter" style="color:var(--primary);">0 / 480 bytes</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="byteProgress" class="progress-bar-fill"></div>
+        </div>
+        <div class="gauge-note">
+          <span id="byteStatus">Trong mức an toàn &lt; 480 bytes</span>
+          <span>Không chứa link social (đã tối ưu NFC)</span>
         </div>
       </div>
+
+      <!-- Personal Info (Front) -->
+      <div class="section-box">
+        <div class="section-title">
+          <span>👤</span> <span id="txtFrontSide">Thông tin cá nhân (Mặt trước)</span>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label id="lblFullName">Họ và Tên *</label>
+            <input type="text" id="fn" placeholder="vd: Phan Mạnh Khang" required>
+          </div>
+          <div class="form-group">
+            <label id="lblTitleRole">Chức danh / Vị trí</label>
+            <input type="text" id="title" placeholder="vd: Kỹ Thuật Viên Trưởng">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label id="lblPhone">Số điện thoại (tel:) *</label>
+            <input type="tel" id="tel" placeholder="vd: +84901112233" required>
+          </div>
+          <div class="form-group">
+            <label id="lblEmail">Email (mailto:)</label>
+            <input type="email" id="email" placeholder="vd: khang@minhtamprolab.com.vn">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label id="lblAvatar">Ảnh đại diện (<2MB)</label>
+            <input type="file" id="avatarFile" accept="image/*" style="font-size:0.8rem; color:var(--muted)">
+          </div>
+          <div class="form-group">
+            <label id="lblOrientation">Bố cục thẻ</label>
+            <select id="orientation" class="lang-select" style="width:100%;">
+              <option value="vertical" selected>Thẻ Dọc (Vertical)</option>
+              <option value="horizontal">Thẻ Ngang (Horizontal)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Company Info (Back) -->
+      <div class="section-box">
+        <div class="section-title">
+          <span>🏢</span> <span id="txtBackSide">Thông tin doanh nghiệp (Mặt sau)</span>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label id="lblCompany">Tên công ty / Tổ chức</label>
+            <input type="text" id="org" placeholder="vd: Minh Tam Prolab">
+          </div>
+          <div class="form-group">
+            <label id="lblWebsite">Website doanh nghiệp</label>
+            <div class="input-box">
+              <span class="input-prefix">https://</span>
+              <input type="text" id="url" placeholder="minhtamprolab.com.vn">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label id="lblAddress">Địa chỉ làm việc</label>
+          <input type="text" id="adr" placeholder="vd: 40A-40B Lý Tự Trọng, Quận 1, TPHCM">
+        </div>
+        <div class="form-group">
+          <label id="lblSlogan">Slogan / Khẩu hiệu</label>
+          <input type="text" id="slogan" placeholder="vd: Professional Digital Laboratory">
+        </div>
+        <div class="form-group">
+          <label id="lblLogo">Logo công ty (<2MB)</label>
+          <input type="file" id="logoFile" accept="image/*" style="font-size:0.8rem; color:var(--muted)">
+        </div>
+      </div>
+
+      <!-- Dynamic Social Links -->
+      <div class="section-box">
+        <div class="section-title">
+          <span>🌐</span> <span id="txtSocials">Mạng xã hội & Kênh trực tuyến (Online Profiles)</span>
+        </div>
+        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:12px;">
+          * Tự động regex link đầy đủ thành username ngắn gọn. Chỉ hiển thị trên web AR online.
+        </p>
+        <div class="social-list" id="socialList"></div>
+        <button type="button" class="btn-add-social" id="btnAddSocial">+ Thêm mạng xã hội</button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="btnGenerate">📇 Xuất Mã QR & Lưu Thẻ</button>
+        <a href="../" class="btn btn-secondary" id="btnViewCard" target="_blank">👁️ Mở Thẻ Độc Lập</a>
+      </div>
+
     </div>
-    <div class="form-group">
-      <label id="lblAddress">Địa chỉ làm việc</label>
-      <input type="text" id="adr" placeholder="vd: 40A-40B Lý Tự Trọng, Quận 1, TPHCM">
+
+    <!-- RIGHT: Sticky Real-time 3D Preview -->
+    <div class="preview-column">
+      <div class="preview-sticky-wrap">
+        <div class="preview-badge">LIVE 3D CARD PREVIEW</div>
+        
+        <!-- Live Card Container -->
+        <div class="live-card-container" id="liveCardContainer">
+          <div class="live-card" id="liveCard3d" title="Chạm để lật thẻ 🔄">
+            <!-- Front Face -->
+            <div class="card-face card-front">
+              <div class="front-top">
+                <img id="liveAvatarImg" class="live-avatar" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23101726%22 stroke=%22%2338bdf8%22 stroke-width=%223%22/><text x=%2250%22 y=%2258%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%2338bdf8%22>ID</text></svg>" alt="Avatar">
+                <div class="live-info">
+                  <h2 id="liveFnTxt">Tên Của Bạn</h2>
+                  <p id="liveTitleTxt">Chức danh / Vị trí</p>
+                  <p id="liveOrgTxt" style="font-size:0.78rem; color:var(--muted)">Tên công ty</p>
+                </div>
+              </div>
+
+              <div class="front-contacts">
+                <div class="contact-badge">📞 <span id="liveTelTxt">Chưa nhập SĐT</span></div>
+                <div class="contact-badge">✉️ <span id="liveEmailTxt">Chưa nhập Email</span></div>
+                <div class="contact-badge">🌐 <span id="liveUrlTxt">inid.me</span></div>
+              </div>
+
+              <div>
+                <div class="social-pills-box" id="liveSocialPills"></div>
+                <div style="font-size:0.72rem; color:var(--muted); margin-top:8px; text-align:right;">Chạm để lật thẻ 🔄</div>
+              </div>
+            </div>
+
+            <!-- Back Face -->
+            <div class="card-face card-back">
+              <div class="back-content">
+                <img id="liveLogoImg" class="live-logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23101726%22 stroke=%22%2338bdf8%22 stroke-width=%222%22/><text x=%2250%22 y=%2260%22 font-size=%2232%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%2338bdf8%22>LOGO</text></svg>" alt="Logo">
+                <h3 id="liveBackOrgTxt" style="font-size:1.15rem; color:#fff; font-weight:700;">Tên Doanh Nghiệp</h3>
+                <p id="liveSloganTxt" style="font-size:0.84rem; color:var(--primary); font-style:italic;">Khẩu hiệu / Slogan</p>
+                <p id="liveAdrTxt" style="font-size:0.8rem; color:var(--muted);">Địa chỉ công ty</p>
+              </div>
+              <div style="font-size:0.72rem; color:var(--muted); text-align:center;">Chạm để lật thẻ 🔄</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generated QR Display -->
+        <div class="qr-preview-box" id="qrContainer">
+          <div id="qrcode"></div>
+          <div class="preview-actions">
+            <button class="btn btn-secondary" id="btnDownloadQr" style="font-size:0.8rem; flex:1;">📥 Tải QR (.png)</button>
+            <button class="btn btn-secondary" id="btnDownloadVcf" style="font-size:0.8rem; flex:1;">💾 Tải .vcf</button>
+            <button class="btn" id="btnShareLink" style="font-size:0.8rem; flex:1;">🔗 Sao Chép Link</button>
+          </div>
+        </div>
+
+      </div>
     </div>
-    <div class="form-group">
-      <label id="lblSlogan">Slogan / Khẩu hiệu</label>
-      <input type="text" id="slogan" placeholder="vd: Professional Digital Laboratory">
-    </div>
-    <div class="form-group">
-      <label id="lblLogo">Logo công ty (<2MB)</label>
-      <input type="file" id="logoFile" accept="image/*" style="font-size:0.8rem; color:var(--muted)">
-    </div>
+
   </div>
 
-  <!-- Dynamic Social Links -->
-  <div class="section-box">
-    <div class="section-title">
-      <span>🌐</span> <span id="txtSocials">Mạng xã hội & Kênh trực tuyến (Online Profiles)</span>
-    </div>
-    <p style="font-size:0.8rem; color:var(--muted); margin-bottom:12px;">
-      * Chỉ hiển thị khi có mạng trên trang web AR 3D. Nhập nickname/username hoặc dán link đầy đủ (hệ thống sẽ tự động rút gọn).
-    </p>
-    <div class="social-list" id="socialList"></div>
-    <button type="button" class="btn-add-social" id="btnAddSocial">+ Thêm mạng xã hội</button>
-  </div>
-
-  <div class="btn-row">
-    <button class="btn" id="btnGenerate">📇 Xuất Mã QR & Xem Thẻ AR</button>
-    <a href="../" class="btn btn-secondary" id="btnViewCard" target="_blank">👁️ Xem Thẻ Công Khai</a>
-  </div>
-
-  <!-- QR Display & Download Section -->
-  <div class="qr-preview-box" id="qrContainer" style="display:none;">
-    <div id="qrcode"></div>
-    <div class="preview-actions">
-      <button class="btn btn-secondary" id="btnDownloadQr" style="font-size:0.85rem;">📥 Tải QR (.png)</button>
-      <button class="btn btn-secondary" id="btnDownloadVcf" style="font-size:0.85rem;">💾 Tải .vcf</button>
-      <button class="btn" id="btnShareLink" style="font-size:0.85rem;">🔗 Sao Chép Link</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast">Đã sao chép!</div>
+  <div class="toast" id="toast">Đã sao chép!</div>
 
 <script type="module">
   import { I18N, getTranslation } from '../assets/i18n.js';
@@ -452,7 +703,7 @@
     { id: 'web', name: 'Link Khác', prefix: 'https://', regex: /^(?:https?:\/\/)?(.+)$/ }
   ];
 
-  // Language Setup
+  // Language Dropdown Setup
   const langSelect = document.getElementById('langSelect');
   Object.keys(I18N).forEach(code => {
     const opt = document.createElement('option');
@@ -468,7 +719,6 @@
   });
 
   function updateLabels() {
-    document.getElementById('txtEditTitle').textContent = getTranslation(currentLang, 'editTitle');
     document.getElementById('txtFrontSide').textContent = getTranslation(currentLang, 'frontSide');
     document.getElementById('txtBackSide').textContent = getTranslation(currentLang, 'backSide');
     document.getElementById('lblFullName').textContent = getTranslation(currentLang, 'fullName') + ' *';
@@ -485,16 +735,64 @@
     document.getElementById('txtNtagBudget').textContent = getTranslation(currentLang, 'ntagBudget');
   }
 
-  // Smart URL parsing (Clean https:// and format handle)
+  // Real-time Card Flip
+  const liveCard3d = document.getElementById('liveCard3d');
+  liveCard3d.addEventListener('click', () => {
+    liveCard3d.classList.toggle('flipped');
+  });
+
+  // Clean URL helper
   function cleanWebsiteInput(raw) {
     return raw.trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '');
   }
 
-  document.getElementById('url').addEventListener('blur', (e) => {
-    e.target.value = cleanWebsiteInput(e.target.value);
-  });
+  // Sync Form to Live 3D Card
+  function syncLiveCard() {
+    const fnVal = document.getElementById('fn').value.trim();
+    const titleVal = document.getElementById('title').value.trim();
+    const orgVal = document.getElementById('org').value.trim();
+    const telVal = document.getElementById('tel').value.trim();
+    const emailVal = document.getElementById('email').value.trim();
+    const rawUrl = document.getElementById('url').value.trim();
+    const adrVal = document.getElementById('adr').value.trim();
+    const sloganVal = document.getElementById('slogan').value.trim();
+    const orient = document.getElementById('orientation').value;
 
-  // Dynamic Socials Engine
+    document.getElementById('liveFnTxt').textContent = fnVal || 'Tên Của Bạn';
+    document.getElementById('liveTitleTxt').textContent = titleVal || 'Chức danh / Vị trí';
+    document.getElementById('liveOrgTxt').textContent = orgVal || 'Tên công ty';
+    document.getElementById('liveBackOrgTxt').textContent = orgVal || 'Tên Doanh Nghiệp';
+    document.getElementById('liveTelTxt').textContent = telVal || 'Chưa nhập SĐT';
+    document.getElementById('liveEmailTxt').textContent = emailVal || 'Chưa nhập Email';
+    document.getElementById('liveUrlTxt').textContent = rawUrl ? cleanWebsiteInput(rawUrl) : 'inid.me';
+    document.getElementById('liveAdrTxt').textContent = adrVal || 'Địa chỉ công ty';
+    document.getElementById('liveSloganTxt').textContent = sloganVal || 'Khẩu hiệu / Slogan';
+
+    // Layout Orientation
+    const container = document.getElementById('liveCardContainer');
+    if (orient === 'horizontal') container.classList.add('horizontal');
+    else container.classList.remove('horizontal');
+
+    // Dynamic Social Pills in Live Preview
+    const pillsBox = document.getElementById('liveSocialPills');
+    pillsBox.innerHTML = '';
+    const rows = socialList.querySelectorAll('.social-item');
+    rows.forEach(r => {
+      const pId = r.querySelector('select').value;
+      const hVal = r.querySelector('input').value.trim();
+      if (hVal) {
+        const preset = SOCIAL_PRESETS.find(x => x.id === pId);
+        const pill = document.createElement('span');
+        pill.className = 'social-pill';
+        pill.textContent = `${preset.name}: ${hVal}`;
+        pillsBox.appendChild(pill);
+      }
+    });
+
+    updateByteCount();
+  }
+
+  // Dynamic Social Engine
   const socialList = document.getElementById('socialList');
 
   function addSocialRow(platformId = 'fb', handleVal = '') {
@@ -512,7 +810,7 @@
     });
 
     const prefixBox = document.createElement('div');
-    prefixBox.className = 'input-prefix-box';
+    prefixBox.className = 'input-box';
     prefixBox.style.flex = '1';
 
     const prefixSpan = document.createElement('span');
@@ -539,7 +837,10 @@
         }
       }
       input.value = val;
+      syncLiveCard();
     });
+
+    input.addEventListener('input', syncLiveCard);
 
     select.addEventListener('change', () => {
       const p = SOCIAL_PRESETS.find(x => x.id === select.value);
@@ -555,73 +856,21 @@
     delBtn.className = 'btn-del-social';
     delBtn.innerHTML = '🗑️';
     delBtn.title = 'Xóa';
-    delBtn.onclick = () => row.remove();
+    delBtn.onclick = () => { row.remove(); syncLiveCard(); };
 
     row.appendChild(select);
     row.appendChild(prefixBox);
     row.appendChild(delBtn);
 
     socialList.appendChild(row);
+    syncLiveCard();
   }
 
   document.getElementById('btnAddSocial').addEventListener('click', () => {
     addSocialRow('fb', '');
   });
 
-  // Load Sample Data (Minh Tam Prolab)
-  document.getElementById('btnLoadSample').addEventListener('click', () => {
-    document.getElementById('fn').value = 'Phan Mạnh Khang';
-    document.getElementById('title').value = 'Kỹ Thuật Viên Trưởng';
-    document.getElementById('tel').value = '+84901112233';
-    document.getElementById('email').value = 'khang@minhtamprolab.com.vn';
-    document.getElementById('org').value = 'Minh Tam Prolab';
-    document.getElementById('url').value = 'minhtamprolab.com.vn';
-    document.getElementById('adr').value = '40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM';
-    document.getElementById('slogan').value = 'Professional Digital Laboratory';
-    
-    socialList.innerHTML = '';
-    addSocialRow('fb', 'phanmanhkhang');
-    addSocialRow('zalo', '0901112233');
-    addSocialRow('insta', 'minhtam.prolab');
-
-    updateByteCount();
-    showToast('Đã nạp thông tin mẫu Minh Tâm Prolab!');
-  });
-
-  // Handle Image uploads
-  function handleImage(inputEl, callback) {
-    const file = inputEl.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const max = 300;
-        let w = img.width;
-        let h = img.height;
-        if (w > h && w > max) { h = Math.round(h * (max / w)); w = max; }
-        else if (h > max) { w = Math.round(w * (max / h)); h = max; }
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        callback(canvas.toDataURL('image/webp', 0.8));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  document.getElementById('avatarFile').addEventListener('change', (e) => {
-    handleImage(e.target, (data) => { avatarDataUrl = data; });
-  });
-
-  document.getElementById('logoFile').addEventListener('change', (e) => {
-    handleImage(e.target, (data) => { logoDataUrl = data; });
-  });
-
-  // Strict NTAG215 UTF-8 CRLF Byte Counter
-  // NOTE: Social links are EXCLUDED from offline vCard to keep it <480B
+  // Real-time Byte Gauge (<480B)
   function buildVCardString() {
     const fn = document.getElementById('fn').value.trim() || 'Your Name';
     const org = document.getElementById('org').value.trim();
@@ -666,18 +915,77 @@
       statusEl.style.color = 'var(--muted)';
     } else {
       progressEl.style.background = 'var(--danger)';
-      statusEl.textContent = getTranslation(currentLang, 'ntagWarning') + ` (+${bytes - 480} bytes)`;
+      statusEl.textContent = getTranslation(currentLang, 'ntagWarning') + ` (+${bytes - 480}B)`;
       statusEl.style.color = 'var(--danger)';
     }
   }
 
-  const inputs = document.querySelectorAll('input');
-  inputs.forEach(i => i.addEventListener('input', updateByteCount));
-  updateByteCount();
+  // Load Sample Data (Minh Tam Prolab)
+  document.getElementById('btnLoadSample').addEventListener('click', () => {
+    document.getElementById('fn').value = 'Phan Mạnh Khang';
+    document.getElementById('title').value = 'Kỹ Thuật Viên Trưởng';
+    document.getElementById('tel').value = '+84901112233';
+    document.getElementById('email').value = 'khang@minhtamprolab.com.vn';
+    document.getElementById('org').value = 'Minh Tam Prolab';
+    document.getElementById('url').value = 'minhtamprolab.com.vn';
+    document.getElementById('adr').value = '40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM';
+    document.getElementById('slogan').value = 'Professional Digital Laboratory';
+    
+    socialList.innerHTML = '';
+    addSocialRow('fb', 'phanmanhkhang');
+    addSocialRow('zalo', '0901112233');
+    addSocialRow('insta', 'minhtam.prolab');
+
+    syncLiveCard();
+    showToast('Đã nạp mẫu Minh Tâm Prolab!');
+  });
+
+  // Attach Input Listeners for Live Sync
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', syncLiveCard);
+    el.addEventListener('change', syncLiveCard);
+  });
+
+  // Image Upload Handling
+  function handleImage(inputEl, callback) {
+    const file = inputEl.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max = 280;
+        let w = img.width;
+        let h = img.height;
+        if (w > h && w > max) { h = Math.round(h * (max / w)); w = max; }
+        else if (h > max) { w = Math.round(w * (max / h)); h = max; }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL('image/webp', 0.8));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('avatarFile').addEventListener('change', (e) => {
+    handleImage(e.target, (data) => {
+      avatarDataUrl = data;
+      document.getElementById('liveAvatarImg').src = data;
+    });
+  });
+
+  document.getElementById('logoFile').addEventListener('change', (e) => {
+    handleImage(e.target, (data) => {
+      logoDataUrl = data;
+      document.getElementById('liveLogoImg').src = data;
+    });
+  });
 
   // Generate Profile & QR
   document.getElementById('btnGenerate').addEventListener('click', () => {
-    // Collect dynamic socials
     const socials = [];
     const rows = socialList.querySelectorAll('.social-item');
     rows.forEach(r => {
@@ -755,6 +1063,11 @@
       a.download = `qrcode-${profile.fn || 'contact'}.png`;
       a.click();
     };
+
+    // Scroll to QR on mobile
+    if (window.innerWidth < 1024) {
+      qrContainer.scrollIntoView({ behavior: 'smooth' });
+    }
   });
 
   function showToast(msg) {
@@ -763,6 +1076,8 @@
     toast.style.display = 'block';
     setTimeout(() => { toast.style.display = 'none'; }, 2000);
   }
+
+  syncLiveCard();
 </script>
 
 </body>
