@@ -16,7 +16,7 @@
       --primary-hover: #0284c7;
       --text: #f8fafc;
       --muted: #94a3b8;
-      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -27,84 +27,130 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       padding: clamp(16px, 3vw, 32px) clamp(12px, 3vw, 24px);
-      padding-bottom: max(24px, env(safe-area-inset-bottom));
+      padding-bottom: max(32px, env(safe-area-inset-bottom));
     }
     .wrapper {
       width: 100%;
-      max-width: 500px;
+      max-width: 580px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: auto 0;
+      margin: 0 auto;
     }
-    .top-nav {
+
+    /* Top Bar */
+    .top-bar {
       width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: clamp(16px, 3vh, 28px);
+      margin-bottom: 20px;
     }
-    .logo-brand {
+    .top-actions {
       display: flex;
-      align-items: center;
-      text-decoration: none;
-    }
-    .logo-brand img {
-      height: clamp(34px, 5vw, 42px);
-    }
-    .top-controls {
-      display: flex;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
     }
-    .btn-edit {
-      background: #131b2e;
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-size: 0.84rem;
+    .btn-create-new {
+      background: var(--primary);
+      color: #070a12;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 20px;
+      font-size: 0.88rem;
       text-decoration: none;
-      font-weight: 600;
-      min-height: 40px;
+      font-weight: 700;
       display: inline-flex;
       align-items: center;
-      transition: background 0.15s;
+      gap: 6px;
+      transition: all 0.15s;
     }
-    .btn-edit:hover { background: #1e293b; }
-    .lang-select {
+    .btn-create-new:hover { background: #7dd3fc; transform: translateY(-1px); }
+
+    /* Flag Dropdown */
+    .flag-dropdown-wrap {
+      position: relative;
+    }
+    .flag-btn {
       background: #131b2e;
-      color: var(--text);
       border: 1px solid var(--border);
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 0.84rem;
-      outline: none;
-      min-height: 40px;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+    }
+    .flag-dropdown {
+      position: absolute;
+      right: 0;
+      top: 44px;
+      background: #131b2e;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      max-height: 280px;
+      overflow-y: auto;
+      width: 170px;
+      display: none;
+      z-index: 1000;
+      padding: 6px 0;
+    }
+    .flag-item {
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .flag-item:hover { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
+
+    /* Big Brand Header */
+    .brand-hero {
+      text-align: center;
+      margin-bottom: clamp(24px, 4vh, 40px);
+      width: 100%;
+    }
+    .brand-hero img {
+      height: clamp(54px, 10vw, 110px); /* 3x bigger on desktop */
+      width: auto;
+      margin: 0 auto 10px auto;
+      display: block;
+    }
+    .brand-hero p {
+      font-size: clamp(0.95rem, 2.5vw, 1.25rem);
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.5px;
     }
 
     /* 3D Flip Card Container */
     .card-perspective {
       perspective: 1400px;
       width: 100%;
-      max-width: clamp(300px, 90vw, 380px);
-      margin-bottom: clamp(18px, 3vh, 28px);
+      max-width: clamp(320px, 92vw, 400px);
+      margin-bottom: 24px;
     }
     .card-perspective.horizontal {
-      max-width: clamp(340px, 95vw, 480px);
+      max-width: clamp(360px, 95vw, 520px);
     }
     .card-3d {
       width: 100%;
-      min-height: clamp(450px, 60vh, 500px);
+      min-height: clamp(480px, 62vh, 520px);
       position: relative;
       transform-style: preserve-3d;
       transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
     }
     .card-perspective.horizontal .card-3d {
-      min-height: clamp(290px, 42vh, 320px);
+      min-height: clamp(310px, 45vh, 340px);
     }
     .card-3d.flipped {
       transform: rotateY(180deg);
@@ -114,13 +160,13 @@
       width: 100%;
       height: 100%;
       backface-visibility: hidden;
-      border-radius: clamp(18px, 4vw, 24px);
-      padding: clamp(20px, 4vw, 28px);
+      border-radius: 24px;
+      padding: clamp(22px, 4vw, 30px);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       border: 1px solid var(--border);
-      box-shadow: 0 20px 45px -15px rgba(0,0,0,0.7);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
       user-select: none;
     }
     .card-front {
@@ -132,15 +178,15 @@
       text-align: center;
     }
 
-    /* Front Face Elements */
+    /* Front Elements */
     .front-top {
       display: flex;
       align-items: center;
       gap: 16px;
     }
     .avatar-img {
-      width: clamp(64px, 15vw, 76px);
-      height: clamp(64px, 15vw, 76px);
+      width: clamp(68px, 16vw, 84px);
+      height: clamp(68px, 16vw, 84px);
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--primary);
@@ -148,18 +194,18 @@
       flex-shrink: 0;
     }
     .person-info h2 {
-      font-size: clamp(1.15rem, 3.5vw, 1.35rem);
+      font-size: clamp(1.2rem, 3.8vw, 1.45rem);
       font-weight: 700;
       color: #fff;
       line-height: 1.25;
     }
     .person-info p {
-      font-size: clamp(0.82rem, 2.5vw, 0.9rem);
+      font-size: clamp(0.85rem, 2.6vw, 0.95rem);
       color: var(--primary);
       margin-top: 3px;
     }
     .front-contacts {
-      margin: 16px 0;
+      margin: 18px 0;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -167,99 +213,98 @@
     .contact-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: clamp(0.82rem, 2.5vw, 0.88rem);
+      gap: 12px;
+      font-size: clamp(0.84rem, 2.5vw, 0.92rem);
       color: var(--text);
       text-decoration: none;
       padding: 10px 14px;
       background: rgba(255,255,255,0.03);
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.05);
-      min-height: 44px;
+      min-height: 46px;
       transition: all 0.15s;
     }
     .contact-item:hover {
       background: rgba(56, 189, 248, 0.12);
       border-color: var(--primary);
     }
+
+    /* Social Icon Buttons (Circular Brand Icons) */
     .front-bottom {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
-    .social-icons-wrap {
+    .social-icon-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 10px;
     }
-    .soc-pill {
-      height: 32px;
-      padding: 0 10px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.06);
+    .soc-circle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      color: #fff;
+      justify-content: center;
       text-decoration: none;
-      font-size: 0.78rem;
-      font-weight: 500;
-      transition: background 0.15s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.15s, filter 0.15s;
+      flex-shrink: 0;
     }
-    .soc-pill:hover {
-      background: var(--primary);
-      color: #070a12;
+    .soc-circle-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      filter: brightness(1.15);
     }
     .flip-hint {
-      font-size: 0.75rem;
+      font-size: 0.76rem;
       color: var(--muted);
       opacity: 0.85;
     }
 
-    /* Back Face Elements */
+    /* Back Elements */
     .back-content {
       height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 14px;
     }
     .company-logo {
-      max-width: clamp(72px, 18vw, 88px);
-      max-height: clamp(72px, 18vw, 88px);
+      max-width: clamp(76px, 18vw, 96px);
+      max-height: clamp(76px, 18vw, 96px);
       object-fit: contain;
-      border-radius: 12px;
+      border-radius: 16px;
     }
     .company-name {
-      font-size: clamp(1.1rem, 3.5vw, 1.25rem);
+      font-size: clamp(1.15rem, 3.8vw, 1.35rem);
       font-weight: 700;
       color: #fff;
     }
     .company-slogan {
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       color: var(--primary);
       font-style: italic;
     }
     .company-address {
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: var(--muted);
-      max-width: 300px;
+      max-width: 320px;
       line-height: 1.4;
     }
 
     /* Action Buttons */
     .actions-bar {
       width: 100%;
-      max-width: clamp(300px, 90vw, 380px);
+      max-width: clamp(320px, 92vw, 400px);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     .card-perspective.horizontal + .actions-bar {
-      max-width: clamp(340px, 95vw, 480px);
+      max-width: clamp(360px, 95vw, 520px);
     }
     .btn-main {
       width: 100%;
@@ -267,15 +312,15 @@
       color: #070a12;
       border: none;
       padding: 14px 20px;
-      font-size: 0.95rem;
+      font-size: 0.96rem;
       font-weight: 700;
-      border-radius: 12px;
+      border-radius: 14px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 48px;
+      min-height: 50px;
       text-decoration: none;
       transition: background 0.15s, transform 0.1s;
     }
@@ -291,6 +336,20 @@
       background: rgba(255,255,255,0.09);
     }
 
+    /* Hand Gesture AR Instruction Tip */
+    .hand-ar-tip {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px dashed rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 14px;
+      line-height: 1.5;
+      text-align: center;
+    }
+    .hand-ar-tip strong { color: var(--primary); }
+
     model-viewer {
       display: none;
       width: 100%;
@@ -301,15 +360,26 @@
 <body>
 
   <div class="wrapper">
-    <nav class="top-nav">
-      <a href="#" class="logo-brand">
-        <img src="assets/logo-concept-1.svg" alt="inid.me">
-      </a>
-      <div class="top-controls">
-        <select id="langSelect" class="lang-select"></select>
-        <a href="edit/" class="btn-edit" id="btnEditCard">✏️ Studio</a>
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="flag-dropdown-wrap">
+        <button class="flag-btn" id="flagBtn">
+          <span id="currentFlag">🇻🇳</span> <span style="font-size:0.75rem; opacity:0.7;">▼</span>
+        </button>
+        <div class="flag-dropdown" id="flagDropdown"></div>
       </div>
-    </nav>
+      <div class="top-actions">
+        <a href="edit/" class="btn-create-new" id="btnCreateNew">
+          <span>✨</span> <span id="txtCreateNew">+ Tạo mới</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 3X Bigger Brand Header (Centered on Mobile & PC) -->
+    <div class="brand-hero">
+      <img src="assets/logo.svg" alt="inid.me logo">
+      <p id="txtHeroSlogan">Smart AR VCard & Offline QR</p>
+    </div>
 
     <!-- Interactive 3D Flip Card -->
     <div class="card-perspective" id="cardContainer">
@@ -317,7 +387,7 @@
         <!-- FRONT SIDE -->
         <div class="card-face card-front">
           <div class="front-top">
-            <img id="viewAvatar" class="avatar-img" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%223%22/><text x=%2250%22 y=%2258%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%2338bdf8%22>ID</text></svg>" alt="Avatar">
+            <img id="viewAvatar" class="avatar-img" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%223%22/><text x=%2250%22 y=%2258%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%2338bdf8%22>PMK</text></svg>" alt="Avatar">
             <div class="person-info">
               <h2 id="viewFn">Phan Mạnh Khang</h2>
               <p id="viewTitle">Kỹ Thuật Viên Trưởng</p>
@@ -338,7 +408,7 @@
           </div>
 
           <div class="front-bottom">
-            <div class="social-icons-wrap" id="socialBox"></div>
+            <div class="social-icon-row" id="socialBox"></div>
             <span class="flip-hint" id="txtFlipHint">Chạm để lật 🔄</span>
           </div>
         </div>
@@ -366,9 +436,14 @@
       <button class="btn-main btn-outline" id="btnLaunchAr">
         <span>🕶️</span> <span id="txtViewAr">Xem Thẻ 3D Trong Không Gian AR</span>
       </button>
-      <button class="btn-main btn-outline" id="btnToggleOrient" style="font-size:0.86rem;">
+      <button class="btn-main btn-outline" id="btnToggleOrient" style="font-size:0.88rem;">
         <span>📐</span> <span id="txtToggleOrient">Đổi Bố Cục Thẻ (Dọc / Ngang)</span>
       </button>
+
+      <!-- Hand Gesture Interaction Tip -->
+      <div class="hand-ar-tip">
+        👋 <strong>Trải nghiệm AR trên tay:</strong> Khi vào chế độ AR, xòe lòng bàn tay hoặc chụm ngón tay giữ phía sau, thẻ kích thước thật (91×55mm) sẽ nằm ngay ngắn và lật xoay 2 mặt trước mắt bạn!
+      </div>
     </div>
   </div>
 
@@ -385,6 +460,7 @@
 
 <script type="module">
   import { I18N, getTranslation } from './assets/i18n.js';
+  import { BRAND_ICONS } from './assets/social-icons.js';
 
   let currentLang = 'vi';
   let profile = {
@@ -398,8 +474,11 @@
     slogan: "Professional Digital Laboratory",
     orientation: "vertical",
     socials: [
-      { type: "fb", name: "Facebook", handle: "phanmanhkhang", url: "https://facebook.com/phanmanhkhang" },
-      { type: "zalo", name: "Zalo", handle: "0901112233", url: "https://zalo.me/0901112233" }
+      { type: "fb", url: "https://facebook.com/phanmanhkhang" },
+      { type: "insta", url: "https://instagram.com/minhtam.prolab" },
+      { type: "threads", url: "https://threads.net/@minhtam.prolab" },
+      { type: "tiktok", url: "https://tiktok.com/@minhtam.prolab" },
+      { type: "zalo", url: "https://zalo.me/0901112233" }
     ],
     avatar: "",
     logo: ""
@@ -416,23 +495,35 @@
     }
   }
 
-  // Populate Languages
-  const langSelect = document.getElementById('langSelect');
+  // Setup Flag Dropdown
+  const flagBtn = document.getElementById('flagBtn');
+  const flagDropdown = document.getElementById('flagDropdown');
+  const currentFlag = document.getElementById('currentFlag');
+
   Object.keys(I18N).forEach(code => {
-    const opt = document.createElement('option');
-    opt.value = code;
-    opt.textContent = I18N[code].name;
-    if (code === (profile.lang || 'vi')) opt.selected = true;
-    langSelect.appendChild(opt);
+    const item = document.createElement('div');
+    item.className = 'flag-item';
+    item.innerHTML = `<span>${I18N[code].flag}</span> <span>${I18N[code].name}</span>`;
+    item.onclick = () => {
+      currentLang = code;
+      currentFlag.textContent = I18N[code].flag;
+      flagDropdown.style.display = 'none';
+      updateI18n();
+    };
+    flagDropdown.appendChild(item);
   });
 
-  currentLang = langSelect.value;
-  langSelect.addEventListener('change', (e) => {
-    currentLang = e.target.value;
-    updateI18n();
+  flagBtn.onclick = (e) => {
+    e.stopPropagation();
+    flagDropdown.style.display = flagDropdown.style.display === 'block' ? 'none' : 'block';
+  };
+
+  document.addEventListener('click', () => {
+    flagDropdown.style.display = 'none';
   });
 
   function updateI18n() {
+    document.getElementById('txtCreateNew').textContent = getTranslation(currentLang, 'createNew');
     document.getElementById('txtSaveVcf').textContent = getTranslation(currentLang, 'saveVcf');
     document.getElementById('txtViewAr').textContent = getTranslation(currentLang, 'viewAr');
     document.getElementById('txtFlipHint').textContent = getTranslation(currentLang, 'flipCard') + ' 🔄';
@@ -460,16 +551,20 @@
     if (profile.avatar) document.getElementById('viewAvatar').src = profile.avatar;
     if (profile.logo) document.getElementById('viewLogo').src = profile.logo;
 
-    // Render Dynamic Socials
+    // Render Circular Social Icons
     const socBox = document.getElementById('socialBox');
     socBox.innerHTML = '';
     if (Array.isArray(profile.socials)) {
       profile.socials.forEach(s => {
+        const brand = BRAND_ICONS[s.type] || BRAND_ICONS['web'];
         const a = document.createElement('a');
-        a.className = 'soc-pill';
+        a.className = 'soc-circle-btn';
+        a.style.background = brand.bg;
+        a.style.color = brand.color;
         a.href = s.url;
         a.target = '_blank';
-        a.innerHTML = `<span>🔗</span> <span>${s.name}: ${s.handle}</span>`;
+        a.title = brand.name;
+        a.innerHTML = brand.svg;
         socBox.appendChild(a);
       });
     }
