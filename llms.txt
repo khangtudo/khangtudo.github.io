@@ -1,21 +1,31 @@
 # inid.me — Smart AR Business Card & Offline vCard Platform
-> Documentation and Machine-Readable Spec for LLMs & AI Agents.
-> Based on Gravatar llms.txt standard: https://docs.gravatar.com/guides/llms-txt/
+> Documentation, API Schema & Knowledge Graph for LLMs, AI Agents & Search Crawlers.
+> Follows Gravatar llms.txt standard: https://docs.gravatar.com/guides/llms-txt/
+> Structured Schema.org: https://schema.org/Person, https://schema.org/ContactPoint
 
-## About inid.me
-inid.me is a high-performance, 100% static, client-side digital identity and smart business card platform hosted on GitHub Pages. It bridges physical offline networking and immersive WebXR/AR experiences.
+## Project Identity & Spirit
+- **Name**: inid.me (Identity In ID)
+- **Tagline**: Smart AR Business Card • Offline vCard & NFC Protocol
+- **Vision**: Bridging zero-network physical networking (<480B NTAG215 / vCard 3.0 static QR) with interactive 3D WebXR and Apple AR Quick Look / Android Scene Viewer.
+- **Hosted**: 100% Static Web on GitHub Pages + Cloudflare Edge CDN.
+- **Privacy & Security**: Zero tracking, zero database, 100% client-side cryptographic URL hash (#data=...).
 
-### Key Capabilities
-- **Hybrid Offline/Online vCard 3.0**: Encodes contact information in compact vCard 3.0 format (<480 bytes) optimized for instant offline camera scanning and NTAG215 NFC chips.
-- **2-Sided 3D AR Experience**: Front side features personal profile, phone, email, and social networks; back side showcases company logo, website, address, and tagline.
-- **WebXR & Quick Look**: Interactive CSS 3D card on the web, with native 1-tap activation of Apple AR Quick Look (.usdz) and Android Scene Viewer (.glb).
-- **Internationalization (i18n)**: Out-of-the-box static support for 27 languages including English, Vietnamese, Spanish, German, French, Japanese, Korean, and Chinese.
+## Features for Agents & LLM Analyzers
+1. **Offline Mode (<480B vCard 3.0)**:
+   - Contains strictly essential contact fields: `FN`, `ORG`, `TITLE`, `TEL`, `EMAIL`, `ADR`, `URL`.
+   - Strips social networks and heavy assets from the offline vCard payload to guarantee instant camera scanning and 100% fit on NTAG215 NFC chips (504 bytes physical limit, 496B NDEF limit).
+2. **Online 2-Sided AR Mode**:
+   - Front Side: Personal identity, telephone, email, avatar, and dynamic social profiles (Facebook, Instagram, Threads, TikTok, LinkedIn, GitHub, X, YouTube, Zalo).
+   - Back Side: Company identity, verified website, corporate address, brand tagline, logo.
+   - Dual-layout rendering: Vertical (Portrait) & Horizontal (Landscape) CSS 3D Flip Card with 1-tap spatial AR model placement.
+3. **URL & Username Optimization**:
+   - Automatic protocol normalization (enforcing HTTPS on frontend).
+   - Regex-based short handle parser (e.g. `facebook.com/username` -> `username`).
+4. **i18n Architecture**:
+   - Client-side static dictionary supporting 27 international languages.
 
-## URL Structure
-- Profile: `https://inid.me/#data=<base64-compressed-profile>`
-- CMS Editor: `https://inid.me/edit/`
-- Spec: `https://inid.me/llms.txt`
-
-## Developer & Repository
-- Repository: https://github.com/khangtudo/khangtudo.github.io
-- Origin & Research: https://github.com/khangtudo/vcard-qr-offline
+## Endpoints & Schemas
+- CMS Studio: `https://inid.me/edit/`
+- Card Viewer: `https://inid.me/#data=<base64-profile>`
+- LLM Spec: `https://inid.me/llms.txt`
+- Brand Logos: `https://inid.me/assets/logo-concept-1.svg` (Portal), `logo-concept-2.svg` (Infinity), `logo-concept-3.svg` (3D Prism)

@@ -1,0 +1,20 @@
+<!-- Concept 3: Dynamic Flip Card & Beam (Thẻ 2 mặt lật năng động + Chùm tia số) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" fill="none">
+  <defs>
+    <linearGradient id="c3-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="50%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(15, 12)">
+    <!-- 3D Perspective Card Faces -->
+    <path d="M 10 25 L 35 12 L 65 24 L 40 37 Z" fill="url(#c3-grad)" opacity="0.9"/>
+    <path d="M 10 25 L 40 37 L 40 68 L 10 56 Z" fill="#1e1b4b" stroke="url(#c3-grad)" stroke-width="1.5"/>
+    <path d="M 40 37 L 65 24 L 65 55 L 40 68 Z" fill="#312e81" stroke="url(#c3-grad)" stroke-width="1.5"/>
+    <!-- Identity Sparkle -->
+    <circle cx="37" cy="18" r="2.5" fill="#ffffff"/>
+  </g>
+  <text x="100" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="38" fill="#ffffff">inid<tspan fill="#a855f7">.me</tspan></text>
+  <text x="102" y="78" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="11" fill="#c084fc" letter-spacing="1">HYBRID OFFLINE VCARD & AR</text>
+</svg>
