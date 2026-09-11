@@ -19,8 +19,6 @@
       --danger: #ef4444;
       --success: #10b981;
       --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --header-h: 52px;
-      --dock-h: 60px;
       --safe-t: env(safe-area-inset-top, 0px);
       --safe-b: env(safe-area-inset-bottom, 0px);
       --keyboard-offset: 0px;
@@ -28,19 +26,18 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       height: 100%;
-      overflow: hidden; /* Strict Zero Document Scroll */
+      overflow: hidden;
       background: var(--bg);
       color: var(--text);
       font-family: var(--font);
       user-select: none;
     }
 
-    /* Ambient Spatial Glow */
     .ambient-glow {
       position: fixed;
-      width: 450px;
-      height: 450px;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(7, 10, 18, 0) 70%);
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.14) 0%, rgba(7, 10, 18, 0) 70%);
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
@@ -54,89 +51,72 @@
       z-index: 1;
       height: 100svh;
       height: 100dvh;
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto;
-      gap: clamp(8px, 1.8vh, 16px);
-      padding: max(8px, var(--safe-t)) clamp(12px, 3vw, 24px) max(12px, var(--safe-b));
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: max(8px, var(--safe-t)) clamp(14px, 3vw, 32px) max(12px, var(--safe-b));
       max-width: 1360px;
       margin: 0 auto;
       box-sizing: border-box;
-    }
-    @media (min-width: 1024px) {
-      .app-shell {
-        grid-template-columns: 280px minmax(380px, 1fr) 240px;
-        grid-template-rows: var(--header-h) minmax(0, 1fr);
-        gap: 24px;
-        padding: 20px 32px;
-      }
-      .utility-header { grid-column: 1 / -1; }
+      width: 100%;
     }
 
-    /* Focus Rings for Accessibility */
-    *:focus-visible {
-      outline: 2px solid var(--primary);
-      outline-offset: 2px;
-    }
-
-    /* 1. Utility Header */
+    /* 1. Header */
     .utility-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       width: 100%;
-      min-height: var(--header-h);
-      gap: 10px;
+      height: clamp(44px, 6vh, 56px);
+      flex-shrink: 0;
     }
     .brand-group {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       text-decoration: none;
-      flex-shrink: 0;
     }
     .brand-group img {
-      height: clamp(40px, 8vw, 54px);
+      height: clamp(32px, 5vh, 44px);
       width: auto;
     }
     .header-actions {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-shrink: 0;
     }
     .btn-create-sheet {
       background: var(--primary);
       color: #070a12;
       border: none;
-      padding: 8px 14px;
+      padding: 6px 14px;
       border-radius: 20px;
-      font-size: 0.82rem;
+      font-size: clamp(0.78rem, 2vw, 0.86rem);
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 4px;
-      min-height: 40px;
+      height: 38px;
       white-space: nowrap;
       transition: all 0.15s;
     }
     .btn-create-sheet:hover { background: var(--primary-hover); transform: translateY(-1px); }
-    
-    /* Flag Dropdown */
+
     .flag-wrap { position: relative; }
     .flag-btn {
       background: var(--surface);
       border: 1px solid var(--surface-border);
       color: #fff;
-      padding: 6px 10px;
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 1.1rem;
+      font-size: 1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 4px;
-      min-height: 40px;
-      min-width: 40px;
+      height: 38px;
+      min-width: 38px;
     }
     .flag-menu {
       position: absolute;
@@ -145,7 +125,7 @@
       background: #101726;
       border: 1px solid var(--surface-border);
       border-radius: 14px;
-      max-height: 240px;
+      max-height: 250px;
       overflow-y: auto;
       width: 170px;
       display: none;
@@ -169,7 +149,29 @@
     }
     .flag-item:hover, .flag-item:focus-visible { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
 
-    /* 2. Desktop Identity Rail (Hidden on Mobile) */
+    /* 2. Main Row: Mobile Stack vs Desktop 3-Column */
+    .main-canvas-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      gap: 16px;
+    }
+    @media (min-width: 1024px) {
+      .main-canvas-row {
+        display: grid;
+        grid-template-columns: 340px minmax(500px, 1fr) 280px;
+        gap: clamp(32px, 4vw, 64px);
+        align-items: center;
+        max-width: 1320px;
+        margin: 0 auto;
+      }
+    }
+
+    /* Identity Rail Desktop */
     .identity-rail {
       display: none;
       flex-direction: column;
@@ -180,14 +182,9 @@
       .identity-rail { display: flex; }
     }
     .big-logo img {
-      height: 76px;
+      height: 84px;
       width: auto;
-      margin-bottom: 8px;
-    }
-    .identity-rail p {
-      font-size: 0.95rem;
-      color: var(--muted);
-      line-height: 1.5;
+      margin-bottom: 6px;
     }
     .badge-chip {
       display: inline-flex;
@@ -202,26 +199,37 @@
       width: fit-content;
     }
 
-    /* 3. Card Stage (Center) */
+    /* Card Stage (Center) */
     .card-stage {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      width: 100%;
+      flex: 1;
       min-height: 0;
     }
     .card-perspective {
-      perspective: 1200px;
+      perspective: 1400px;
       width: 100%;
-      max-width: 360px;
-      height: 100%;
-      max-height: min(56dvh, 460px);
-      display: flex;
-      align-items: center;
+      max-width: clamp(310px, 86vw, 360px);
+      height: min(52dvh, 460px);
+      margin: 0 auto;
+      position: relative;
     }
     .card-perspective.horizontal {
-      max-width: 440px;
-      max-height: min(44dvh, 310px);
+      max-width: clamp(340px, 94vw, 480px);
+      height: min(38dvh, 310px);
+    }
+    @media (min-width: 1024px) {
+      .card-perspective {
+        max-width: 420px;
+        height: min(64dvh, 540px);
+      }
+      .card-perspective.horizontal {
+        max-width: 560px;
+        height: min(44dvh, 360px);
+      }
     }
     .card-3d {
       width: 100%;
@@ -232,13 +240,13 @@
       cursor: pointer;
     }
     .card-3d.flipped { transform: rotateY(180deg); }
+
     .card-face {
       position: absolute;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       backface-visibility: hidden;
-      border-radius: 20px;
-      padding: clamp(16px, 2.5vh, 24px) clamp(16px, 3vw, 22px);
+      border-radius: 22px;
+      padding: clamp(14px, 2vh, 22px) clamp(14px, 2.5vw, 20px);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -252,15 +260,14 @@
       text-align: center;
     }
 
-    /* Front Face Elements */
     .person-row {
       display: flex;
       align-items: center;
       gap: 12px;
     }
     .card-avatar {
-      width: clamp(48px, 10vw, 64px);
-      height: clamp(48px, 10vw, 64px);
+      width: clamp(48px, 12vw, 64px);
+      height: clamp(48px, 12vw, 64px);
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--primary);
@@ -268,16 +275,17 @@
       flex-shrink: 0;
     }
     .person-text h2 {
-      font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+      font-size: clamp(1.2rem, 2.8vw, 1.6rem);
       color: #fff;
       font-weight: 700;
       line-height: 1.2;
     }
     .person-text p {
-      font-size: clamp(0.78rem, 1.8vw, 0.85rem);
+      font-size: clamp(0.85rem, 2vw, 1.05rem);
       color: var(--primary);
-      margin-top: 2px;
+      margin-top: 3px;
     }
+
     .contacts-stack {
       display: flex;
       flex-direction: column;
@@ -287,20 +295,21 @@
     .contact-badge {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: clamp(0.78rem, 1.8vw, 0.84rem);
+      gap: 12px;
+      font-size: clamp(0.84rem, 1.8vw, 1rem);
       color: var(--text);
       text-decoration: none;
-      padding: 8px 12px;
+      padding: 12px 16px;
       background: rgba(255,255,255,0.03);
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.05);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      min-height: 40px;
+      min-height: 46px;
     }
     .contact-badge:hover { background: rgba(56, 189, 248, 0.15); border-color: var(--primary); }
+
     .card-bottom {
       display: flex;
       justify-content: space-between;
@@ -313,8 +322,8 @@
       flex-wrap: wrap;
     }
     .soc-circle-btn {
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
@@ -323,13 +332,24 @@
       transition: transform 0.15s;
     }
     .soc-circle-btn:hover { transform: scale(1.1); }
-    .flip-tag {
-      font-size: 0.72rem;
-      color: var(--muted);
-      opacity: 0.8;
-    }
 
-    /* Back Face Elements */
+    .btn-toggle-orient-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #38bdf8;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.74rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+      font-weight: 600;
+    }
+    .btn-toggle-orient-card:hover { background: rgba(56, 189, 248, 0.2); color: #fff; }
+
+    /* Back Face */
     .company-stack {
       height: 100%;
       display: flex;
@@ -339,8 +359,8 @@
       gap: 10px;
     }
     .company-logo {
-      max-width: 64px;
-      max-height: 64px;
+      max-width: 60px;
+      max-height: 60px;
       border-radius: 12px;
       object-fit: contain;
     }
@@ -348,23 +368,53 @@
     .company-stack .slogan { font-size: 0.8rem; color: var(--primary); font-style: italic; }
     .company-stack .address { font-size: 0.76rem; color: var(--muted); max-width: 260px; line-height: 1.4; }
 
-    /* 4. Action Dock (Bottom on Mobile, Right Rail on PC) */
-    .action-dock {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+    .flip-hint-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+    .btn-flip-below {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--surface-border);
+      color: var(--muted);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.74rem;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-flip-below:hover {
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--primary);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    /* 3. Action Dock: 3 Buttons */
+    .action-dock {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      align-items: center;
+      gap: 8px;
       width: 100%;
       max-width: 440px;
       margin: 0 auto;
+      flex-shrink: 0;
+      padding-top: 6px;
     }
     @media (min-width: 1024px) {
       .action-dock {
         display: flex;
         flex-direction: column;
-        height: auto;
-        justify-content: center;
-        max-width: none;
+        width: 100%;
+        max-width: 250px;
+        gap: 14px;
+        align-self: center;
+        margin: 0;
+        padding-top: 0;
       }
     }
     .dock-btn {
@@ -374,7 +424,7 @@
       border: 1px solid var(--surface-border);
       background: var(--surface);
       color: #fff;
-      font-size: clamp(0.7rem, 2.8vw, 0.82rem);
+      font-size: clamp(0.72rem, 2.6vw, 0.84rem);
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
@@ -390,7 +440,7 @@
       box-sizing: border-box;
     }
     @media (min-width: 1024px) {
-      .dock-btn { width: 100%; height: 50px; }
+      .dock-btn { height: 54px; font-size: 0.95rem; border-radius: 14px; }
     }
     .dock-btn-primary {
       background: var(--primary);
@@ -401,42 +451,11 @@
     .dock-btn-primary:hover { background: var(--primary-hover); }
     .dock-btn:hover:not(.dock-btn-primary) { background: rgba(255,255,255,0.08); }
 
-    /* More Menu Modal */
-    .more-menu-modal {
-      position: fixed;
-      bottom: calc(var(--dock-h) + 24px);
-      background: #101726;
-      border: 1px solid var(--surface-border);
-      border-radius: 14px;
-      padding: 8px;
-      display: none;
-      flex-direction: column;
-      gap: 6px;
-      z-index: 100;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
-      width: 220px;
-    }
-    .more-item {
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-size: 0.82rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-align: left;
-      min-height: 40px;
-    }
-    .more-item:hover { background: rgba(56,189,248,0.12); color: var(--primary); }
-
-    /* 5. EditSheet (Modal Overlay: Bottom Sheet Mobile / Side Drawer Desktop) */
+    /* Modals & Overlays */
     .overlay-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(4px);
       z-index: 200;
       display: none;
@@ -456,7 +475,6 @@
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       overflow: hidden;
     }
-    /* Mobile: Bottom Sheet with VisualViewport Support */
     @media (max-width: 1023px) {
       .sheet-panel {
         bottom: 0; left: 0; right: 0;
@@ -467,7 +485,6 @@
       }
       .sheet-panel.active { transform: translateY(0); }
     }
-    /* Desktop: Right Slide Drawer */
     @media (min-width: 1024px) {
       .sheet-panel {
         top: 0; bottom: 0; right: 0;
@@ -491,7 +508,6 @@
     }
     .sheet-close:hover { color: #fff; }
 
-    /* Accessible NTAG215 Gauge with Progressbar role & Live region */
     .sheet-gauge {
       padding: 12px 20px;
       background: rgba(0,0,0,0.25);
@@ -511,7 +527,6 @@
       transition: width 0.2s, background 0.2s;
     }
 
-    /* Scrollable Sheet Body */
     .sheet-body {
       flex: 1;
       overflow-y: auto;
@@ -535,9 +550,7 @@
     .input-prefix {
       padding: 0 10px; font-size: 0.8rem; color: var(--muted); background: rgba(255,255,255,0.02); min-height: 42px; display: flex; align-items: center;
     }
-    .input-row input {
-      border: none !important; background: transparent !important;
-    }
+    .input-row input { border: none !important; background: transparent !important; }
     input[type="text"], input[type="email"], input[type="tel"] {
       width: 100%;
       background: #06090e;
@@ -569,7 +582,6 @@
     }
     .btn-save-sheet:hover { background: var(--primary-hover); }
 
-    /* 6. QR Sheet Modal */
     .qr-modal {
       position: fixed;
       inset: 0;
@@ -601,7 +613,6 @@
     }
     .btn-qr-action:hover { background: #e2e8f0; }
 
-    /* Model Viewer */
     model-viewer { display: none; width: 100%; height: 300px; }
 
     .toast {
@@ -613,19 +624,12 @@
       display: none; z-index: 1000;
     }
 
-    /* Accessibility: Prefers-Reduced-Motion */
     @media (prefers-reduced-motion: reduce) {
-      .card-3d {
-        transition: none !important;
-      }
-      .card-3d.flipped {
-        transform: rotateY(180deg) !important;
-      }
-      .sheet-panel, .overlay-backdrop, .dock-btn, .btn-create-sheet {
-        transition: none !important;
-      }
+      .card-3d { transition: none !important; }
+      .card-3d.flipped { transform: rotateY(180deg) !important; }
+      .sheet-panel, .overlay-backdrop, .dock-btn, .btn-create-sheet { transition: none !important; }
     }
-  </style>
+</style>
 </head>
 <body>
 
@@ -652,20 +656,22 @@
       </div>
     </header>
 
-    <!-- Desktop Identity Rail (Hidden on Mobile) -->
-    <aside class="identity-rail">
-      <div class="big-logo">
-        <img src="assets/logo.svg" alt="inid.me logo" style="height:110px; width:auto;">
-      </div>
-      <div class="badge-chip">⚡ SPATIAL AR VCARD</div>
-      <p id="txtHeroSlogan" style="font-size:1.05rem; font-weight:500; color:#cbd5e1; line-height:1.6;">
-        Smart AR VCard & Offline QR.<br>
-        <span style="font-size:0.88rem; color:var(--muted);">Một chạm lưu danh bạ không mạng, mở rộng không gian 3D AR đa chiều.</span>
-      </p>
-    </aside>
+    <!-- Main Canvas Row: Desktop Left Rail + Center Card Stage -->
+    <div class="main-canvas-row">
+      <!-- Desktop Identity Rail (Hidden on Mobile) -->
+      <aside class="identity-rail">
+        <div class="big-logo">
+          <img src="assets/logo.svg" alt="inid.me logo" style="height:90px; width:auto;">
+        </div>
+        <div class="badge-chip">⚡ SPATIAL AR VCARD</div>
+        <p id="txtHeroSlogan" style="font-size:1.05rem; font-weight:500; color:#cbd5e1; line-height:1.6;">
+          Smart AR VCard & Offline QR.<br>
+          <span style="font-size:0.88rem; color:var(--muted);">Một chạm lưu danh bạ không mạng, mở rộng không gian 3D AR đa chiều.</span>
+        </p>
+      </aside>
 
-    <!-- Center Card Stage -->
-    <main class="card-stage">
+      <!-- Center Card Stage -->
+      <main class="card-stage">
       <div class="card-perspective" id="cardPerspective">
         <div class="card-3d" id="card3d" role="button" tabindex="0" aria-pressed="false" aria-label="Danh thiếp 3D hai mặt. Nhấn Enter hoặc Space để lật sang mặt sau." title="Chạm để lật thẻ 🔄">
           
@@ -688,7 +694,9 @@
 
             <div class="card-bottom">
               <div class="social-icons-box" id="cardSocials" aria-label="Liên kết mạng xã hội"></div>
-              <span class="flip-tag" id="txtFlipTag">Chạm lật 🔄</span>
+              <button type="button" class="btn-toggle-orient-card" id="btnOrientInside" aria-label="Đổi hướng thẻ Dọc hoặc Ngang">
+                <span>📐</span> <span id="txtOrientInside">Đổi Dọc/Ngang</span>
+              </button>
             </div>
           </div>
 
@@ -700,34 +708,40 @@
               <p class="slogan" id="cardSlogan">Professional Digital Laboratory</p>
               <p class="address" id="cardAdr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</p>
             </div>
-            <div style="font-size:0.72rem; color:var(--muted); text-align:center;">Chạm để lật thẻ 🔄</div>
+            <div class="card-bottom" style="justify-content: flex-end;">
+              <button type="button" class="btn-toggle-orient-card" id="btnOrientInsideBack" aria-label="Đổi hướng thẻ Dọc hoặc Ngang">
+                <span>📐</span> <span>Đổi Dọc/Ngang</span>
+              </button>
+            </div>
           </div>
 
         </div>
+      </div>
+      <!-- Nút Chạm để lật thẻ nằm ngay bên dưới thẻ -->
+      <div class="flip-hint-wrap">
+        <button type="button" class="btn-flip-below" id="btnFlipBelow" aria-label="Chạm để lật thẻ 3D">
+          <span>🔄</span> <span id="txtFlipBelow">Chạm để lật thẻ 3D</span>
+        </button>
       </div>
     </main>
 
     <!-- Action Dock -->
     <footer class="action-dock">
       <button class="dock-btn dock-btn-primary" id="btnSaveVcf" aria-label="Lưu danh bạ vCard vào máy">
-        <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ</span>
+        <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ .vcf</span>
       </button>
       <button class="dock-btn" id="btnLaunchAr" aria-label="Xem thẻ trong không gian 3D AR">
-        <span>🕶️</span> <span id="txtViewAr">Xem AR</span>
+        <span>🕶️</span> <span id="txtViewAr">Xem AR Card</span>
       </button>
-      <button class="dock-btn" id="btnMoreActions" aria-haspopup="menu" aria-expanded="false" aria-controls="moreMenu" aria-label="Các tùy chọn khác">
-        <span>⚙️</span> <span id="txtMore">Thêm</span>
+      <button class="dock-btn" id="btnOpenQrDirect" aria-label="Xem mã QR Offline">
+        <span>📱</span> <span id="txtViewQr">Xem QR Offline</span>
       </button>
     </footer>
 
   </div>
 
   <!-- More Menu Dropup -->
-  <div class="more-menu-modal" id="moreMenu" role="menu">
-    <button class="more-item" id="btnMenuQr" role="menuitem"><span>📱</span> <span>Xem Mã QR Offline</span></button>
-    <button class="more-item" id="btnMenuToggleOrient" role="menuitem"><span>📐</span> <span>Đổi Dọc / Ngang</span></button>
-    <button class="more-item" id="btnMenuSample" role="menuitem"><span>✨</span> <span>Nạp Mẫu Minh Tâm</span></button>
-  </div>
+  
 
   <!-- EditSheet (Overlay Slide-over / Bottom Sheet) -->
   <div class="overlay-backdrop" id="overlayBackdrop"></div>
@@ -1106,49 +1120,28 @@ const BRAND_ICONS = {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipCard(); }
   });
 
-  // More Menu Modal
-  const moreBtn = document.getElementById('btnMoreActions');
-  const moreMenu = document.getElementById('moreMenu');
-  function openMoreMenu() {
-    moreMenu.style.display = 'flex';
-    moreBtn.setAttribute('aria-expanded', 'true');
-    const firstItem = moreMenu.querySelector('.more-item');
-    if (firstItem) setTimeout(() => firstItem.focus(), 30);
+  // Flip button below card
+  const btnFlipBelow = document.getElementById('btnFlipBelow');
+  if (btnFlipBelow) {
+    btnFlipBelow.onclick = flipCard;
   }
-  function closeMoreMenu() {
-    moreMenu.style.display = 'none';
-    moreBtn.setAttribute('aria-expanded', 'false');
-  }
-  moreBtn.onclick = (e) => {
-    e.stopPropagation();
-    if (moreMenu.style.display === 'flex') closeMoreMenu();
-    else openMoreMenu();
-  };
-  document.addEventListener('click', closeMoreMenu);
 
-  moreMenu.addEventListener('keydown', (e) => {
-    const items = Array.from(moreMenu.querySelectorAll('.more-item'));
-    const currIdx = items.indexOf(document.activeElement);
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      items[(currIdx + 1) % items.length]?.focus();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      items[(currIdx - 1 + items.length) % items.length]?.focus();
-    } else if (e.key === 'Home') {
-      e.preventDefault();
-      items[0]?.focus();
-    } else if (e.key === 'End') {
-      e.preventDefault();
-      items[items.length - 1]?.focus();
-    }
-  });
-
-  // Toggle Orientation
-  document.getElementById('btnMenuToggleOrient').onclick = () => {
+  // Toggle Orientation (Inside Card corner buttons)
+  function toggleCardOrientation(e) {
+    if (e) e.stopPropagation();
     profile.orientation = profile.orientation === 'horizontal' ? 'vertical' : 'horizontal';
     renderCard();
-  };
+  }
+  const btnOrientInside = document.getElementById('btnOrientInside');
+  if (btnOrientInside) btnOrientInside.onclick = toggleCardOrientation;
+  const btnOrientInsideBack = document.getElementById('btnOrientInsideBack');
+  if (btnOrientInsideBack) btnOrientInsideBack.onclick = toggleCardOrientation;
+
+  // Direct Open QR Offline Button
+  const btnOpenQrDirect = document.getElementById('btnOpenQrDirect');
+  if (btnOpenQrDirect) {
+    btnOpenQrDirect.onclick = openQr;
+  }
 
   // VCF Builder & Byte Counter with A11y Progressbar
   function buildVCardString() {
@@ -1269,7 +1262,7 @@ const BRAND_ICONS = {
     if (e.key === 'Escape') {
       if (editSheet.classList.contains('active')) closeSheet();
       if (qrModal.classList.contains('active')) closeQr();
-      closeMoreMenu();
+      
       closeFlagMenu();
     }
   });
@@ -1296,7 +1289,7 @@ const BRAND_ICONS = {
   };
 
   // Load Minh Tam Prolab Sample
-  document.getElementById('btnMenuSample').onclick = () => {
+  const dummySampleHandler = () => {
     profile.fn = "Phan Mạnh Khang";
     profile.title = "Kỹ Thuật Viên Trưởng";
     profile.org = "Minh Tam Prolab";
