@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body style="background:#000;">
+  <canvas id="c" width="1024" height="1024"></canvas>
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    // 1. TOP HALF: FRONT FACE (1024 x 512)
+    // Dark Titanium Cyberpunk Gradient
+    const frontGrad = ctx.createLinearGradient(0, 0, 1024, 512);
+    frontGrad.addColorStop(0, '#101726');
+    frontGrad.addColorStop(1, '#070a12');
+    ctx.fillStyle = frontGrad;
+    ctx.fillRect(0, 0, 1024, 512);
+
+    // Border
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(20, 20, 984, 472);
+
+    // Accent line
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillRect(50, 60, 6, 95);
+
+    const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+    // Front details
+    ctx.font = 'bold 56px ' + FONT;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('Phan Mạnh Khang', 76, 115);
+
+    ctx.font = '600 28px ' + FONT;
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('Kỹ Thuật Viên Trưởng', 76, 158);
+
+    ctx.font = '500 26px ' + FONT;
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('Minh Tam Prolab', 76, 202);
+
+    // Divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(50, 235);
+    ctx.lineTo(974, 235);
+    ctx.stroke();
+
+    // Contacts
+    ctx.font = '26px ' + FONT;
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillText('📞  +84 90 111 2233', 60, 290);
+    ctx.fillText('✉️  khang@minhtamprolab.com.vn', 60, 345);
+    ctx.fillText('🌐  minhtamprolab.com.vn', 60, 400);
+
+    ctx.font = 'bold 18px ' + FONT;
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('INID.ME • SMART AR BUSINESS CARD', 60, 465);
+
+    // 2. BOTTOM HALF: BACK FACE (1024 x 512 -> Y from 512 to 1024)
+    const backGrad = ctx.createLinearGradient(0, 512, 1024, 1024);
+    backGrad.addColorStop(0, '#0f172a');
+    backGrad.addColorStop(1, '#020617');
+    ctx.fillStyle = backGrad;
+    ctx.fillRect(0, 512, 1024, 512);
+
+    // Border
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(20, 532, 984, 472);
+
+    ctx.textAlign = 'center';
+
+    // Logo Icon Box
+    ctx.fillStyle = '#101726';
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(462, 570, 100, 100, 20);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = 'bold 44px ' + FONT;
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('MT', 512, 638);
+
+    ctx.font = 'bold 50px ' + FONT;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('Minh Tam Prolab', 512, 730);
+
+    ctx.font = 'italic 26px ' + FONT;
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('Professional Digital Laboratory', 512, 785);
+
+    ctx.font = '24px ' + FONT;
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM', 512, 850);
+
+    ctx.font = 'bold 20px ' + FONT;
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillText('TAP OR SCAN TO CONNECT INSTANTLY', 512, 940);
+
+    window.getCardPngBase64 = () => {
+      return canvas.toDataURL('image/png').split(',')[1];
+    };
+  </script>
+</body>
+</html>
