@@ -901,8 +901,8 @@
               <img id="cardLogo" class="company-logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%222%22/><text x=%2250%22 y=%2260%22 font-size=%2232%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%2338bdf8%22>MT</text></svg>" alt="Logo">
               <h3 id="cardBackOrg">Minh Tam Prolab</h3>
               <p class="slogan" id="cardSlogan">Professional Digital Laboratory</p>
-              <a class="address" id="cardAdrLink" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:inherit; display:flex; align-items:center; justify-content:center; gap:4px; margin-top:4px;" title="Bấm để mở chỉ đường Google Maps">
-                <span>📍</span> <span id="cardAdr">40A-40B Lý Tự Trọng, Phường Bến Nghé, Quận 1, TPHCM</span>
+              <a class="address" id="cardAdrLink" href="https://maps.app.goo.gl/o9mcM5eqe9qPH7f1A" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:inherit; display:block; text-align:center; margin-top:4px;" title="Bấm để mở chỉ đường Google Maps">
+                <span id="cardAdr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</span>
               </a>
             </div>
             <div class="card-bottom" style="justify-content: flex-end;">
@@ -925,7 +925,7 @@
     <!-- Action Dock -->
     <footer class="action-dock">
       <button class="dock-btn dock-btn-primary" id="btnSaveVcf" aria-label="Lưu danh bạ vCard vào máy">
-        <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ .vcf</span>
+        <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ</span>
       </button>
       <button class="dock-btn" id="btnLaunchAr" aria-label="Xem thẻ trong không gian 3D AR">
         <span>🕶️</span> <span id="txtViewAr">Xem AR Card</span>
@@ -1186,12 +1186,13 @@ const BRAND_ICONS = {
     tel: "+84937550989",
     email: "manhkhang@minhtamprolab.com.vn",
     url: "https://minhtamprolab.com.vn",
-    adr: "40A-40B Lý Tự Trọng, Phường Bến Nghé, Quận 1, TPHCM",
+    adr: "40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM",
+    mapUrl: "https://maps.app.goo.gl/o9mcM5eqe9qPH7f1A",
     slogan: "Professional Digital Laboratory",
     orientation: "vertical",
     socials: [
-      { type: "fb", url: "https://facebook.com/phanmanhkhang" },
-      { type: "zalo", url: "https://zalo.me/0937550989" },
+      { type: "fb", url: "https://facebook.com/minhtamprolabsg" },
+      { type: "zalo", url: "https://zalo.me/minhtamprolab" },
       { type: "insta", url: "https://instagram.com/minhtamprolab" },
       { type: "li", url: "https://linkedin.com/in/phanmanhkhang" }
     ]
@@ -1314,7 +1315,7 @@ const BRAND_ICONS = {
     if (elCreateNew) elCreateNew.textContent = createNewTxt;
     
     const elSaveVcf = document.getElementById('txtSaveVcf');
-    if (elSaveVcf) elSaveVcf.textContent = (getTranslation(currentLang, 'saveVcf') || 'Lưu Danh Bạ') + ' .vcf';
+    if (elSaveVcf) elSaveVcf.textContent = getTranslation(currentLang, 'saveVcf') || 'Lưu Danh Bạ';
     
     const elViewAr = document.getElementById('txtViewAr');
     if (elViewAr) elViewAr.textContent = (getTranslation(currentLang, 'viewAr') || 'Xem AR') + ' Card';
@@ -1343,7 +1344,15 @@ const BRAND_ICONS = {
     if (elAdr) elAdr.textContent = profile.adr || '';
     const elAdrLink = document.getElementById('cardAdrLink');
     if (elAdrLink) {
-      if (profile.adr && profile.adr.trim()) {
+      if (profile.mapUrl) {
+        elAdrLink.href = profile.mapUrl;
+        elAdrLink.style.pointerEvents = 'auto';
+        elAdrLink.setAttribute('aria-label', 'Mở chỉ đường Google Maps tới: ' + (profile.adr || ''));
+      } else if (profile.adr && profile.adr.includes('40A-40B Lý Tự Trọng')) {
+        elAdrLink.href = 'https://maps.app.goo.gl/o9mcM5eqe9qPH7f1A';
+        elAdrLink.style.pointerEvents = 'auto';
+        elAdrLink.setAttribute('aria-label', 'Mở chỉ đường Google Maps tới: ' + profile.adr);
+      } else if (profile.adr && profile.adr.trim()) {
         elAdrLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(profile.adr.trim());
         elAdrLink.style.pointerEvents = 'auto';
         elAdrLink.setAttribute('aria-label', 'Mở chỉ đường Google Maps tới: ' + profile.adr);
