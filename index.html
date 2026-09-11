@@ -1430,23 +1430,41 @@ const BRAND_ICONS = {
     let firstName = '';
     let middleName = '';
 
+    const isAsianOrder = ['vi', 'ja', 'ko', 'zh-CN', 'zh-TW', 'hu'].includes(currentLang);
+
     if (parts.length === 1) {
       firstName = parts[0];
     } else if (parts.length === 2) {
-      lastName = parts[0];
-      firstName = parts[1];
+      if (isAsianOrder) {
+        lastName = parts[0];
+        firstName = parts[1];
+      } else {
+        firstName = parts[0];
+        lastName = parts[1];
+      }
     } else {
-      lastName = parts[0];
-      firstName = parts[parts.length - 1];
-      middleName = parts.slice(1, parts.length - 1).join(' ');
+      if (isAsianOrder) {
+        // Vietnamese / Asian: [0] = Họ (Family), [last] = Tên (Given), [middle] = Đệm (Additional)
+        lastName = parts[0];
+        firstName = parts[parts.length - 1];
+        middleName = parts.slice(1, parts.length - 1).join(' ');
+      } else {
+        // Western: [0] = Given, [last] = Family, [middle] = Middle
+        firstName = parts[0];
+        lastName = parts[parts.length - 1];
+        middleName = parts.slice(1, parts.length - 1).join(' ');
+      }
     }
+
+    // Escape special characters in vCard text (; , \)
+    const escapeVCard = (str) => (str || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,');
 
     const lines = [
       'BEGIN:VCARD',
       'VERSION:3.0',
       'PRODID:-//inid.me//Smart AR vCard//VN',
-      `FN;CHARSET=UTF-8:${rawFn}`,
-      `N;CHARSET=UTF-8:${lastName};${firstName};${middleName};;`
+      `FN;CHARSET=UTF-8:${escapeVCard(rawFn)}`,
+      `N;CHARSET=UTF-8:${escapeVCard(lastName)};${escapeVCard(firstName)};${escapeVCard(middleName)};;`
     ];
 
     if (profile.title) lines.push(`TITLE;CHARSET=UTF-8:${profile.title}`);
