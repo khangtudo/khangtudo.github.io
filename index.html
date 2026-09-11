@@ -1822,6 +1822,14 @@ const BRAND_ICONS = {
   if (btnCopyToNfc) {
     btnCopyToNfc.onclick = async () => {
       const vcf = buildVCardString();
+      const vcfBytes = new TextEncoder().encode(vcf).length;
+
+      // Chặn và cảnh báo nếu dữ liệu vượt quá dung lượng chuẩn NTAG215
+      if (vcfBytes > NFC_MAX_BYTES) {
+        alert(`Dữ liệu vCard hiện tại (${vcfBytes} bytes) đã vượt quá dung lượng chuẩn của thẻ NFC NTAG215 (tối đa ${NFC_MAX_BYTES} bytes). Vui lòng rút gọn nội dung trước khi ghi.`);
+        return;
+      }
+
       let copied = false;
 
       // 1. Copy to Clipboard (UTF-8 NDEF Text for NFC Tools / TagWriter)
