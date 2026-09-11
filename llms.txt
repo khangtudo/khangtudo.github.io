@@ -1,0 +1,21 @@
+# inid.me — Smart AR Business Card & Offline vCard Platform
+> Documentation and Machine-Readable Spec for LLMs & AI Agents.
+> Based on Gravatar llms.txt standard: https://docs.gravatar.com/guides/llms-txt/
+
+## About inid.me
+inid.me is a high-performance, 100% static, client-side digital identity and smart business card platform hosted on GitHub Pages. It bridges physical offline networking and immersive WebXR/AR experiences.
+
+### Key Capabilities
+- **Hybrid Offline/Online vCard 3.0**: Encodes contact information in compact vCard 3.0 format (<480 bytes) optimized for instant offline camera scanning and NTAG215 NFC chips.
+- **2-Sided 3D AR Experience**: Front side features personal profile, phone, email, and social networks; back side showcases company logo, website, address, and tagline.
+- **WebXR & Quick Look**: Interactive CSS 3D card on the web, with native 1-tap activation of Apple AR Quick Look (.usdz) and Android Scene Viewer (.glb).
+- **Internationalization (i18n)**: Out-of-the-box static support for 27 languages including English, Vietnamese, Spanish, German, French, Japanese, Korean, and Chinese.
+
+## URL Structure
+- Profile: `https://inid.me/#data=<base64-compressed-profile>`
+- CMS Editor: `https://inid.me/edit/`
+- Spec: `https://inid.me/llms.txt`
+
+## Developer & Repository
+- Repository: https://github.com/khangtudo/khangtudo.github.io
+- Origin & Research: https://github.com/khangtudo/vcard-qr-offline

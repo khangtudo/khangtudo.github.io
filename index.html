@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>inid.me — Smart AR Business Card</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20100%22><text y=%22.9em%22 font-size=%2290%22>📇</text></svg>">
+  <script type="module" src="assets/vendor/model-viewer.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-front: linear-gradient(135deg, #1e293b, #0f172a);
+      --card-back: linear-gradient(135deg, #0f172a, #020617);
+      --border: rgba(255, 255, 255, 0.12);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+    .top-nav {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .logo-brand {
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .logo-brand span { color: var(--primary); }
+    .top-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-edit {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .lang-select {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    /* 3D Flip Card Container */
+    .card-perspective {
+      perspective: 1200px;
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 24px;
+    }
+    .card-perspective.horizontal {
+      max-width: 460px;
+    }
+    .card-3d {
+      width: 100%;
+      height: 480px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .card-perspective.horizontal .card-3d {
+      height: 280px;
+    }
+    .card-3d.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 40px -15px rgba(0,0,0,0.6);
+      user-select: none;
+    }
+    .card-front {
+      background: var(--card-front);
+    }
+    .card-back {
+      background: var(--card-back);
+      transform: rotateY(180deg);
+      text-align: center;
+    }
+
+    /* Front Elements */
+    .front-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .card-perspective.horizontal .front-top {
+      gap: 16px;
+    }
+    .avatar-img {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary);
+      background: #334155;
+    }
+    .card-perspective.horizontal .avatar-img {
+      width: 64px;
+      height: 64px;
+    }
+    .person-info h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .person-info p {
+      font-size: 0.88rem;
+      color: #38bdf8;
+      margin-top: 2px;
+    }
+    .front-contacts {
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: var(--text);
+      text-decoration: none;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.15s;
+    }
+    .contact-item:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: var(--primary);
+    }
+    .front-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .social-icons {
+      display: flex;
+      gap: 8px;
+    }
+    .soc-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.15s;
+    }
+    .soc-btn:hover { background: var(--primary); }
+    .flip-hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      opacity: 0.8;
+    }
+
+    /* Back Elements */
+    .back-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+    .company-logo {
+      max-width: 90px;
+      max-height: 90px;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+    .company-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .company-slogan {
+      font-size: 0.85rem;
+      color: #38bdf8;
+      font-style: italic;
+    }
+    .company-address {
+      font-size: 0.8rem;
+      color: var(--muted);
+      max-width: 280px;
+      line-height: 1.4;
+    }
+
+    /* Action Buttons */
+    .actions-bar {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card-perspective.horizontal + .actions-bar {
+      max-width: 460px;
+    }
+    .btn-main {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-main:active { transform: scale(0.98); }
+    .btn-main:hover { background: var(--primary-hover); }
+    .btn-outline {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* Model Viewer hidden until AR requested */
+    model-viewer {
+      display: none;
+      width: 100%;
+      height: 300px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <a href="#" class="logo-brand">inid<span>.me</span></a>
+    <div class="top-controls">
+      <select id="langSelect" class="lang-select"></select>
+      <a href="edit/" class="btn-edit" id="btnEditCard">✏️ Edit</a>
+    </div>
+  </nav>
+
+  <!-- Interactive 3D Flip Card -->
+  <div class="card-perspective" id="cardContainer">
+    <div class="card-3d" id="card3d" title="Click or tap to flip">
+      <!-- FRONT SIDE -->
+      <div class="card-face card-front">
+        <div class="front-top">
+          <img id="viewAvatar" class="avatar-img" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%233b82f6%22/><text x=%2250%22 y=%2260%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22white%22>AT</text></svg>" alt="Avatar">
+          <div class="person-info">
+            <h2 id="viewFn">Nguyen Anh Tuyet</h2>
+            <p id="viewTitle">Head of Relations</p>
+            <p id="viewOrg" style="font-size:0.8rem; color:var(--muted)">Dong Phuong Corp</p>
+          </div>
+        </div>
+
+        <div class="front-contacts">
+          <a id="viewTelLink" href="tel:+84901112233" class="contact-item">
+            <span>📞</span> <span id="viewTel">+84 90 111 2233</span>
+          </a>
+          <a id="viewEmailLink" href="mailto:tuyet.nguyen@dongphuong.test" class="contact-item">
+            <span>✉️</span> <span id="viewEmail">tuyet.nguyen@dongphuong.test</span>
+          </a>
+          <a id="viewUrlLink" href="https://inid.me" target="_blank" class="contact-item">
+            <span>🌐</span> <span id="viewUrl">https://inid.me</span>
+          </a>
+        </div>
+
+        <div class="front-bottom">
+          <div class="social-icons" id="socialBox"></div>
+          <span class="flip-hint" id="txtFlipHint">Tap to flip 🔄</span>
+        </div>
+      </div>
+
+      <!-- BACK SIDE -->
+      <div class="card-face card-back">
+        <div class="back-content">
+          <img id="viewLogo" class="company-logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2338bdf8%22/><text x=%2250%22 y=%2262%22 font-size=%2238%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%230f172a%22>DP</text></svg>" alt="Logo">
+          <h3 class="company-name" id="viewBackOrg">Dong Phuong Corp</h3>
+          <p class="company-slogan" id="viewSlogan">Innovation in Digital Identity</p>
+          <p class="company-address" id="viewAdr">Ho Chi Minh City, Vietnam</p>
+        </div>
+        <div class="front-bottom" style="justify-content: center;">
+          <span class="flip-hint" id="txtFlipHintBack">Tap to flip 🔄</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions-bar">
+    <button class="btn-main" id="btnSaveVcf">
+      <span>💾</span> <span id="txtSaveVcf">Save Contact (.vcf)</span>
+    </button>
+    <button class="btn-main btn-outline" id="btnLaunchAr">
+      <span>🕶️</span> <span id="txtViewAr">View in 3D AR Space</span>
+    </button>
+    <button class="btn-main btn-outline" id="btnToggleOrient" style="font-size:0.85rem;">
+      <span>📐</span> <span id="txtToggleOrient">Switch Layout (Dọc / Ngang)</span>
+    </button>
+  </div>
+
+  <!-- Native AR Model Viewer Engine -->
+  <model-viewer id="arViewer"
+    src="assets/3d/card.glb"
+    ios-src="assets/3d/card.usdz"
+    alt="3D Smart Business Card"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    camera-controls
+    auto-rotate>
+  </model-viewer>
+
+<script type="module">
+  import { I18N, getTranslation } from './assets/i18n.js';
+
+  let currentLang = 'en';
+  let profile = {
+    fn: "Nguyen Anh Tuyet",
+    org: "Dong Phuong Corp",
+    title: "Head of Relations",
+    tel: "+84901112233",
+    email: "tuyet.nguyen@dongphuong.test",
+    url: "https://inid.me",
+    adr: "Ho Chi Minh City, Vietnam",
+    slogan: "Innovation in Digital Identity",
+    orientation: "vertical",
+    soc: { li: "", gh: "", x: "" },
+    avatar: "",
+    logo: ""
+  };
+
+  // Decode profile from URL hash if present
+  if (window.location.hash.startsWith('#data=')) {
+    try {
+      const b64 = window.location.hash.slice(6);
+      const jsonStr = decodeURIComponent(atob(b64));
+      profile = Object.assign(profile, JSON.parse(jsonStr));
+    } catch(e) {
+      console.warn('Could not parse profile from URL hash:', e);
+    }
+  }
+
+  // Populate Languages
+  const langSelect = document.getElementById('langSelect');
+  Object.keys(I18N).forEach(code => {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = I18N[code].name;
+    if (code === (profile.lang || 'en')) opt.selected = true;
+    langSelect.appendChild(opt);
+  });
+
+  currentLang = langSelect.value;
+  langSelect.addEventListener('change', (e) => {
+    currentLang = e.target.value;
+    updateI18n();
+  });
+
+  function updateI18n() {
+    document.getElementById('txtSaveVcf').textContent = getTranslation(currentLang, 'saveVcf');
+    document.getElementById('txtViewAr').textContent = getTranslation(currentLang, 'viewAr');
+    document.getElementById('txtFlipHint').textContent = getTranslation(currentLang, 'flipCard') + ' 🔄';
+    document.getElementById('txtFlipHintBack').textContent = getTranslation(currentLang, 'flipCard') + ' 🔄';
+  }
+
+  // Bind Data to UI
+  function renderProfile() {
+    document.getElementById('viewFn').textContent = profile.fn || 'Anonymous';
+    document.getElementById('viewTitle').textContent = profile.title || '';
+    document.getElementById('viewOrg').textContent = profile.org || '';
+    document.getElementById('viewBackOrg').textContent = profile.org || '';
+    document.getElementById('viewTel').textContent = profile.tel || '';
+    document.getElementById('viewTelLink').href = `tel:${profile.tel || ''}`;
+    document.getElementById('viewEmail').textContent = profile.email || '';
+    document.getElementById('viewEmailLink').href = `mailto:${profile.email || ''}`;
+    document.getElementById('viewUrl').textContent = profile.url || 'https://inid.me';
+    document.getElementById('viewUrlLink').href = profile.url || 'https://inid.me';
+    document.getElementById('viewSlogan').textContent = profile.slogan || '';
+    document.getElementById('viewAdr').textContent = profile.adr || '';
+
+    if (profile.avatar) document.getElementById('viewAvatar').src = profile.avatar;
+    if (profile.logo) document.getElementById('viewLogo').src = profile.logo;
+
+    // Social buttons
+    const socBox = document.getElementById('socialBox');
+    socBox.innerHTML = '';
+    if (profile.soc?.li) addSocIcon(socBox, 'in', profile.soc.li);
+    if (profile.soc?.gh) addSocIcon(socBox, 'GH', profile.soc.gh);
+    if (profile.soc?.x) addSocIcon(socBox, '𝕏', profile.soc.x);
+
+    // Orientation
+    applyOrientation(profile.orientation || 'vertical');
+  }
+
+  function addSocIcon(parent, label, url) {
+    const a = document.createElement('a');
+    a.className = 'soc-btn';
+    a.textContent = label;
+    a.href = url;
+    a.target = '_blank';
+    parent.appendChild(a);
+  }
+
+  function applyOrientation(orient) {
+    const c = document.getElementById('cardContainer');
+    if (orient === 'horizontal') c.classList.add('horizontal');
+    else c.classList.remove('horizontal');
+  }
+
+  // 3D Flip Card interaction
+  const card3d = document.getElementById('card3d');
+  card3d.addEventListener('click', () => {
+    card3d.classList.toggle('flipped');
+  });
+
+  // Toggle Orientation Button
+  document.getElementById('btnToggleOrient').addEventListener('click', () => {
+    profile.orientation = profile.orientation === 'horizontal' ? 'vertical' : 'horizontal';
+    applyOrientation(profile.orientation);
+  });
+
+  // Download .vcf
+  document.getElementById('btnSaveVcf').addEventListener('click', () => {
+    const lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN;CHARSET=UTF-8:${profile.fn || 'Anonymous'}`,
+      `N;CHARSET=UTF-8:;;;;`
+    ];
+    if (profile.org) lines.push(`ORG;CHARSET=UTF-8:${profile.org}`);
+    if (profile.title) lines.push(`TITLE;CHARSET=UTF-8:${profile.title}`);
+    if (profile.tel) lines.push(`TEL;TYPE=CELL:${profile.tel}`);
+    if (profile.email) lines.push(`EMAIL;TYPE=INTERNET:${profile.email}`);
+    if (profile.adr) lines.push(`ADR;TYPE=WORK;CHARSET=UTF-8:;;${profile.adr};;;;`);
+    lines.push(`URL:${profile.url || 'https://inid.me'}`);
+    lines.push('END:VCARD\r\n');
+
+    const vcfText = lines.join('\r\n');
+    const blob = new Blob([vcfText], { type: 'text/vcard;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${profile.fn || 'contact'}.vcf`;
+    a.click();
+  });
+
+  // Launch AR Native Viewer
+  document.getElementById('btnLaunchAr').addEventListener('click', () => {
+    const viewer = document.getElementById('arViewer');
+    if (viewer.canActivateAR) {
+      viewer.activateAR();
+    } else {
+      // Direct trigger for iOS Safari Quick Look anchor
+      const usdzUrl = 'assets/3d/card.usdz';
+      const a = document.createElement('a');
+      a.setAttribute('rel', 'ar');
+      a.appendChild(document.createElement('img'));
+      a.setAttribute('href', usdzUrl);
+      a.click();
+    }
+  });
+
+  renderProfile();
+  updateI18n();
+</script>
+
+</body>
+</html>

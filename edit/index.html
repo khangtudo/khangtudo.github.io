@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>inid.me — Minimalist Smart Card Editor</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20100%22><text y=%22.9em%22 font-size=%2290%22>📇</text></svg>">
+  <script src="../assets/vendor/qrcode.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --danger: #ef4444;
+      --success: #10b981;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 680px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header h1 { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .header p { font-size: 0.9rem; color: var(--muted); }
+    .lang-bar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+    select.lang-select {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .gauge-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .gauge-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      background: #090d16;
+      border-radius: 999px;
+      height: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 20%;
+      background: var(--success);
+      transition: width 0.2s ease, background 0.2s ease;
+    }
+    .gauge-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .section-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #38bdf8;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 540px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    input[type="text"], input[type="email"], input[type="tel"], input[type="url"] {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border 0.15s;
+    }
+    input:focus { border-color: var(--primary); }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .btn {
+      flex: 1;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary {
+      background: #334155;
+    }
+    .btn-secondary:hover { background: #475569; }
+    .qr-preview-box {
+      text-align: center;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #qrcode canvas, #qrcode img {
+      margin: 0 auto;
+    }
+    .social-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .social-row input { flex: 1; }
+    .preview-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      width: 100%;
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16, 185, 129, 0.95);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="lang-bar">
+    <select id="langSelect" class="lang-select"></select>
+  </div>
+
+  <div class="header">
+    <h1 id="txtEditTitle">Smart Card Creator</h1>
+    <p id="txtSubTitle">Minimalist offline vCard 3.0 & interactive 3D AR Business Card</p>
+  </div>
+
+  <!-- Real-time NTAG215 Budget Gauge -->
+  <div class="gauge-card">
+    <div class="gauge-header">
+      <span id="txtNtagBudget">NTAG215 NFC Memory Budget</span>
+      <span id="byteCounter">0 / 480 bytes</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div id="byteProgress" class="progress-bar-fill"></div>
+    </div>
+    <div class="gauge-note" id="byteStatus">Within 480B Safe Limit (UTF-8 CRLF format)</div>
+  </div>
+
+  <!-- Front: Personal Information -->
+  <div class="section-box">
+    <div class="section-title">
+      <span>👤</span> <span id="txtFrontSide">Personal Info (Front Side)</span>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label id="lblFullName">Full Name *</label>
+        <input type="text" id="fn" placeholder="e.g. Alex Johnson" value="Nguyen Anh Tuyet" required>
+      </div>
+      <div class="form-group">
+        <label id="lblTitleRole">Job Title / Role</label>
+        <input type="text" id="title" placeholder="e.g. Head of Relations" value="Head of Relations">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label id="lblPhone">Mobile Phone (tel:) *</label>
+        <input type="tel" id="tel" placeholder="+84 90 111 2233" value="+84901112233" required>
+      </div>
+      <div class="form-group">
+        <label id="lblEmail">Email Address (mailto:)</label>
+        <input type="email" id="email" placeholder="alex@company.com" value="tuyet.nguyen@dongphuong.test">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label id="lblAvatar">Avatar Image (<2MB)</label>
+        <input type="file" id="avatarFile" accept="image/*" style="font-size:0.8rem; color:var(--muted)">
+      </div>
+      <div class="form-group">
+        <label id="lblOrientation">Display Layout</label>
+        <select id="orientation" class="lang-select" style="width:100%; padding:9px;">
+          <option value="vertical" selected>Vertical Card (Dọc)</option>
+          <option value="horizontal">Horizontal Card (Ngang)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back: Company Information -->
+  <div class="section-box">
+    <div class="section-title">
+      <span>🏢</span> <span id="txtBackSide">Company Info (Back Side)</span>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label id="lblCompany">Company Name</label>
+        <input type="text" id="org" placeholder="e.g. Dong Phuong Co." value="Dong Phuong Corp">
+      </div>
+      <div class="form-group">
+        <label id="lblWebsite">Company Website</label>
+        <input type="url" id="url" placeholder="https://dongphuong.test" value="https://inid.me">
+      </div>
+    </div>
+    <div class="form-group">
+      <label id="lblAddress">Work Address</label>
+      <input type="text" id="adr" placeholder="Ho Chi Minh City, Vietnam" value="Ho Chi Minh City">
+    </div>
+    <div class="form-group">
+      <label id="lblSlogan">Slogan / Tagline</label>
+      <input type="text" id="slogan" placeholder="Connecting smart minds" value="Innovation in Identity">
+    </div>
+    <div class="form-group">
+      <label id="lblLogo">Company Logo (<2MB)</label>
+      <input type="file" id="logoFile" accept="image/*" style="font-size:0.8rem; color:var(--muted)">
+    </div>
+  </div>
+
+  <!-- Social Links -->
+  <div class="section-box">
+    <div class="section-title">
+      <span>🌐</span> <span id="txtSocials">Social Links (Optional)</span>
+    </div>
+    <div class="social-row">
+      <input type="url" id="socLinkedin" placeholder="LinkedIn URL (e.g. https://linkedin.com/in/...)">
+    </div>
+    <div class="social-row">
+      <input type="url" id="socGithub" placeholder="GitHub URL (e.g. https://github.com/...)">
+    </div>
+    <div class="social-row">
+      <input type="url" id="socX" placeholder="X / Twitter URL (e.g. https://x.com/...)">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" id="btnGenerate">📇 Generate QR & Preview Card</button>
+    <a href="../" class="btn btn-secondary" id="btnViewCard" target="_blank">👁️ View Public Card</a>
+  </div>
+
+  <!-- QR Display & Download Section -->
+  <div class="qr-preview-box" id="qrContainer" style="display:none;">
+    <div id="qrcode"></div>
+    <div class="preview-actions">
+      <button class="btn btn-secondary" id="btnDownloadQr" style="font-size:0.85rem;">📥 Download QR (.png)</button>
+      <button class="btn btn-secondary" id="btnDownloadVcf" style="font-size:0.85rem;">💾 Download .vcf</button>
+      <button class="btn" id="btnShareLink" style="font-size:0.85rem;">🔗 Copy Link</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied to clipboard!</div>
+
+<script type="module">
+  import { I18N, getTranslation } from '../assets/i18n.js';
+
+  let currentLang = 'en';
+  let avatarDataUrl = '';
+  let logoDataUrl = '';
+
+  // Setup Language Dropdown
+  const langSelect = document.getElementById('langSelect');
+  Object.keys(I18N).forEach(code => {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = I18N[code].name;
+    if (code === 'en') opt.selected = true;
+    langSelect.appendChild(opt);
+  });
+
+  langSelect.addEventListener('change', (e) => {
+    currentLang = e.target.value;
+    updateLabels();
+  });
+
+  function updateLabels() {
+    document.getElementById('txtEditTitle').textContent = getTranslation(currentLang, 'editTitle');
+    document.getElementById('txtFrontSide').textContent = getTranslation(currentLang, 'frontSide');
+    document.getElementById('txtBackSide').textContent = getTranslation(currentLang, 'backSide');
+    document.getElementById('lblFullName').textContent = getTranslation(currentLang, 'fullName') + ' *';
+    document.getElementById('lblCompany').textContent = getTranslation(currentLang, 'company');
+    document.getElementById('lblTitleRole').textContent = getTranslation(currentLang, 'titleRole');
+    document.getElementById('lblPhone').textContent = getTranslation(currentLang, 'phone') + ' *';
+    document.getElementById('lblEmail').textContent = getTranslation(currentLang, 'email');
+    document.getElementById('lblWebsite').textContent = getTranslation(currentLang, 'website');
+    document.getElementById('lblAddress').textContent = getTranslation(currentLang, 'address');
+    document.getElementById('lblSlogan').textContent = getTranslation(currentLang, 'slogan');
+    document.getElementById('lblAvatar').textContent = getTranslation(currentLang, 'avatar');
+    document.getElementById('lblLogo').textContent = getTranslation(currentLang, 'logo');
+    document.getElementById('txtSocials').textContent = getTranslation(currentLang, 'socials');
+    document.getElementById('txtNtagBudget').textContent = getTranslation(currentLang, 'ntagBudget');
+  }
+
+  // Handle Image uploads (<2MB compressed)
+  function handleImage(inputEl, callback) {
+    const file = inputEl.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max = 300;
+        let w = img.width;
+        let h = img.height;
+        if (w > h && w > max) { h = Math.round(h * (max / w)); w = max; }
+        else if (h > max) { w = Math.round(w * (max / h)); h = max; }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL('image/webp', 0.8));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('avatarFile').addEventListener('change', (e) => {
+    handleImage(e.target, (data) => { avatarDataUrl = data; });
+  });
+
+  document.getElementById('logoFile').addEventListener('change', (e) => {
+    handleImage(e.target, (data) => { logoDataUrl = data; });
+  });
+
+  // Strict NTAG215 UTF-8 CRLF Byte Counter
+  function buildVCardString() {
+    const fn = document.getElementById('fn').value.trim() || 'Anonymous';
+    const org = document.getElementById('org').value.trim();
+    const title = document.getElementById('title').value.trim();
+    const tel = document.getElementById('tel').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const url = document.getElementById('url').value.trim();
+    const adr = document.getElementById('adr').value.trim();
+
+    const lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN;CHARSET=UTF-8:${fn}`,
+      `N;CHARSET=UTF-8:;;;;`
+    ];
+    if (org) lines.push(`ORG;CHARSET=UTF-8:${org}`);
+    if (title) lines.push(`TITLE;CHARSET=UTF-8:${title}`);
+    if (tel) lines.push(`TEL;TYPE=CELL:${tel}`);
+    if (email) lines.push(`EMAIL;TYPE=INTERNET:${email}`);
+    if (adr) lines.push(`ADR;TYPE=WORK;CHARSET=UTF-8:;;${adr};;;;`);
+    lines.push(`URL:https://inid.me`);
+    lines.push('END:VCARD');
+
+    return lines.join('\r\n') + '\r\n';
+  }
+
+  function updateByteCount() {
+    const vcard = buildVCardString();
+    const bytes = new TextEncoder().encode(vcard).length;
+    const counterEl = document.getElementById('byteCounter');
+    const progressEl = document.getElementById('byteProgress');
+    const statusEl = document.getElementById('byteStatus');
+
+    counterEl.textContent = `${bytes} / 480 bytes`;
+    const percent = Math.min(100, (bytes / 480) * 100);
+    progressEl.style.width = `${percent}%`;
+
+    if (bytes <= 480) {
+      progressEl.style.background = 'var(--success)';
+      statusEl.textContent = getTranslation(currentLang, 'ntagSafe');
+      statusEl.style.color = 'var(--muted)';
+    } else {
+      progressEl.style.background = 'var(--danger)';
+      statusEl.textContent = getTranslation(currentLang, 'ntagWarning') + ` (+${bytes - 480} bytes)`;
+      statusEl.style.color = 'var(--danger)';
+    }
+  }
+
+  const inputs = document.querySelectorAll('input');
+  inputs.forEach(i => i.addEventListener('input', updateByteCount));
+  updateByteCount();
+
+  // Generate Profile & QR
+  document.getElementById('btnGenerate').addEventListener('click', () => {
+    const profile = {
+      fn: document.getElementById('fn').value.trim(),
+      org: document.getElementById('org').value.trim(),
+      title: document.getElementById('title').value.trim(),
+      tel: document.getElementById('tel').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      url: document.getElementById('url').value.trim(),
+      adr: document.getElementById('adr').value.trim(),
+      slogan: document.getElementById('slogan').value.trim(),
+      orientation: document.getElementById('orientation').value,
+      soc: {
+        li: document.getElementById('socLinkedin').value.trim(),
+        gh: document.getElementById('socGithub').value.trim(),
+        x: document.getElementById('socX').value.trim()
+      },
+      avatar: avatarDataUrl,
+      logo: logoDataUrl,
+      lang: currentLang
+    };
+
+    const jsonStr = JSON.stringify(profile);
+    const b64Data = btoa(encodeURIComponent(jsonStr));
+    const publicUrl = `${window.location.origin}/#data=${b64Data}`;
+
+    // Render QR Code (Offline vCard 3.0)
+    const qrContainer = document.getElementById('qrContainer');
+    const qrcodeDiv = document.getElementById('qrcode');
+    qrcodeDiv.innerHTML = '';
+    qrContainer.style.display = 'flex';
+
+    const vcard = buildVCardString();
+    new QRCode(qrcodeDiv, {
+      text: vcard,
+      width: 200,
+      height: 200,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    document.getElementById('btnViewCard').href = `../#data=${b64Data}`;
+
+    // Copy link
+    document.getElementById('btnShareLink').onclick = () => {
+      navigator.clipboard.writeText(publicUrl).then(() => {
+        showToast(getTranslation(currentLang, 'copied'));
+      });
+    };
+
+    // Download VCF
+    document.getElementById('btnDownloadVcf').onclick = () => {
+      const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${profile.fn || 'contact'}.vcf`;
+      a.click();
+    };
+
+    // Download QR
+    document.getElementById('btnDownloadQr').onclick = () => {
+      const img = qrcodeDiv.querySelector('img') || qrcodeDiv.querySelector('canvas');
+      const a = document.createElement('a');
+      a.href = img.src || img.toDataURL();
+      a.download = `qrcode-${profile.fn || 'contact'}.png`;
+      a.click();
+    };
+  });
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 2000);
+  }
+</script>
+
+</body>
+</html>
