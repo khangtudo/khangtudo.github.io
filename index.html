@@ -351,9 +351,9 @@
     /* 4. Action Dock (Bottom on Mobile, Right Rail on PC) */
     .action-dock {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       width: 100%;
       max-width: 440px;
       margin: 0 auto;
@@ -369,12 +369,12 @@
     }
     .dock-btn {
       width: 100%;
-      height: 46px;
+      height: 44px;
       border-radius: 12px;
       border: 1px solid var(--surface-border);
       background: var(--surface);
       color: #fff;
-      font-size: clamp(0.75rem, 2.5vw, 0.85rem);
+      font-size: clamp(0.7rem, 2.8vw, 0.82rem);
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
@@ -384,7 +384,9 @@
       text-decoration: none;
       transition: all 0.15s;
       white-space: nowrap;
-      padding: 0 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 4px;
       box-sizing: border-box;
     }
     @media (min-width: 1024px) {
@@ -826,8 +828,8 @@
   <div class="toast" id="toast" role="status" aria-live="polite">Đã cập nhật!</div>
 
 <script type="module">
-  import { I18N, getTranslation } from './assets/i18n.js';
-  import { BRAND_ICONS } from './assets/social-icons.js';
+  import { I18N, getTranslation } from './assets/i18n.js?v=20260911_2030';
+  import { BRAND_ICONS } from './assets/social-icons.js?v=20260911_2030';
 
   let currentLang = 'vi';
   let lastFocusedTrigger = null;
@@ -944,11 +946,12 @@
   document.addEventListener('click', closeFlagMenu);
 
   function updateI18n() {
-    document.getElementById('txtCreateNew').textContent = getTranslation(currentLang, 'createNew');
-    document.getElementById('txtSaveVcf').textContent = getTranslation(currentLang, 'saveVcf');
-    document.getElementById('txtViewAr').textContent = getTranslation(currentLang, 'viewAr');
+    const createNewTxt = getTranslation(currentLang, 'createNew') || '+ Tạo mới';
+    document.getElementById('txtCreateNew').textContent = createNewTxt;
+    document.getElementById('txtSaveVcf').textContent = getTranslation(currentLang, 'saveVcf') || 'Lưu Danh Bạ';
+    document.getElementById('txtViewAr').textContent = getTranslation(currentLang, 'viewAr') || 'Xem AR';
     document.getElementById('txtMore').textContent = getTranslation(currentLang, 'more') || 'Thêm';
-    document.getElementById('txtFlipTag').textContent = getTranslation(currentLang, 'flipCard') + ' 🔄';
+    document.getElementById('txtFlipTag').textContent = (getTranslation(currentLang, 'flipCard') || 'Chạm để lật thẻ') + ' 🔄';
   }
 
   // Render Card to Stage
