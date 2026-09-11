@@ -1001,6 +1001,12 @@
           <span style="font-size:0.7rem; color:var(--primary);">Kiểu Gravatar • Thêm không giới hạn</span>
         </label>
         
+        <!-- Notice rõ ràng về lưu trữ hồ sơ web và chip NFC -->
+        <div style="background:rgba(56,189,248,0.06); border:1px dashed rgba(56,189,248,0.25); border-radius:8px; padding:8px 10px; font-size:0.72rem; color:#94a3b8; line-height:1.45; display:flex; gap:6px; align-items:flex-start;">
+          <span style="font-size:0.9rem; line-height:1; flex-shrink:0;">💡</span>
+          <span><b>Lưu ý bộ nhớ:</b> Các kênh mạng xã hội được lưu hiển thị trên <b>Hồ sơ Web cá nhân</b>, không ghi vào thẻ NFC/QR offline để tối ưu dung lượng dưới 480B cho chip NTAG215.</span>
+        </div>
+
         <div class="gravatar-social-wrap">
           <!-- Dynamic Social List Container -->
           <div class="gravatar-social-list" id="gravatarSocialList"></div>
@@ -1422,9 +1428,40 @@ const BRAND_ICONS = {
     btnOpenQrDirect.onclick = openQr;
   }
 
+  // Constant for standard NTAG215 maximum usable user memory
+  const NFC_MAX_BYTES = 480;
+
+  // Helper to extract live draft data from EditSheet inputs
+  function getLiveSheetData() {
+    const fnVal = (document.getElementById('inFn')?.value || '').trim();
+    const titleVal = (document.getElementById('inTitle')?.value || '').trim();
+    const telVal = (document.getElementById('inTel')?.value || '').trim();
+    const emailVal = (document.getElementById('inEmail')?.value || '').trim();
+    const orgVal = (document.getElementById('inOrg')?.value || '').trim();
+    const rawUrl = (document.getElementById('inUrl')?.value || '').trim();
+    const urlVal = rawUrl ? `https://${rawUrl.replace(/^https?:\/\//i, '')}` : '';
+    const adrVal = (document.getElementById('inAdr')?.value || '').trim();
+    const sloganVal = (document.getElementById('inSlogan')?.value || '').trim();
+
+    return {
+      fn: fnVal,
+      title: titleVal,
+      tel: telVal,
+      email: emailVal,
+      org: orgVal,
+      url: urlVal,
+      adr: adrVal,
+      slogan: sloganVal
+    };
+  }
+
   // VCF Builder & Byte Counter with A11y Progressbar
-  function buildVCardString() {
-    const rawFn = (profile.fn || 'Liên hệ').trim();
+  // Lưu ý: Chỉ đóng gói thông tin danh bạ thiết yếu cho vCard offline (QR / NFC / VCF).
+  // Các liên kết mạng xã hội (Facebook, Zalo, Instagram...) được hiển thị trên hồ sơ web danh thiếp,
+  // không nhồi vào chip NFC để đảm bảo tuyệt đối không vượt ngưỡng NTAG215 (<480B).
+  function buildVCardString(targetData = null) {
+    const data = targetData || (editSheet && editSheet.classList.contains('active') ? getLiveSheetData() : profile);
+    const rawFn = (data.fn || '').trim() || (targetData ? '' : (profile.fn || 'Liên hệ').trim());
 
     // Escape special characters in vCard text (; , \)
     const escapeVCard = (str) => (str || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,');
@@ -1432,55 +1469,59 @@ const BRAND_ICONS = {
     // Phản biện chuẩn xác của Papa: Để họ (Family Name) rỗng và điền trọn vẹn fullname vào Tên (Given Name)
     // Cấu trúc N: Family Name; Given Name; Additional/Middle; Prefix; Suffix
     // => N;CHARSET=UTF-8:;[Full Name];;;
-    // Ưu điểm vượt trội:
-    // 1. Không cần suy đoán hay phân biệt cấu trúc tên quốc gia phương Tây hay Châu Á.
-    // 2. Trên iOS/Android, ô "Tên" nhận trọn vẹn nguyên vẹn cả Họ và Tên (vd: "Phan Mạnh Khang"), không bao giờ bị đảo ngược trật tự tên.
-    // 3. Trong danh bạ điện thoại hiển thị đúng từng chữ người dùng gõ, không bị lỗi xáo trộn hay nhầm họ thành tên.
+    // Chuẩn hóa cú pháp vCard 3.0 tinh gọn để tối ưu từng byte bộ nhớ NTAG215
     const lines = [
       'BEGIN:VCARD',
       'VERSION:3.0',
-      'PRODID:-//inid.me//Smart AR vCard//VN',
       `FN;CHARSET=UTF-8:${escapeVCard(rawFn)}`,
       `N;CHARSET=UTF-8:;${escapeVCard(rawFn)};;;;`
     ];
 
-    if (profile.title) lines.push(`TITLE;CHARSET=UTF-8:${profile.title}`);
-    if (profile.org) lines.push(`ORG;CHARSET=UTF-8:${profile.org}`);
-    if (profile.tel) lines.push(`TEL;TYPE=CELL,VOICE,PREF:${profile.tel}`);
-    if (profile.email) lines.push(`EMAIL;TYPE=INTERNET,WORK:${profile.email}`);
-    if (profile.url) lines.push(`URL;TYPE=WORK:${profile.url}`);
-    if (profile.adr) lines.push(`ADR;TYPE=WORK;CHARSET=UTF-8:;;${profile.adr};;;;`);
-    if (profile.slogan) lines.push(`NOTE;CHARSET=UTF-8:${profile.slogan}`);
-
-    // Add social links as URL / X-SOCIAL profiles
-    if (Array.isArray(profile.socials)) {
-      profile.socials.forEach(s => {
-        if (s && s.url) {
-          lines.push(`URL;TYPE=${(s.type || 'SOCIAL').toUpperCase()}:${s.url}`);
-        }
-      });
-    }
+    if (data.title) lines.push(`TITLE;CHARSET=UTF-8:${escapeVCard(data.title)}`);
+    if (data.org) lines.push(`ORG;CHARSET=UTF-8:${escapeVCard(data.org)}`);
+    if (data.tel) lines.push(`TEL;TYPE=CELL:${data.tel.trim()}`);
+    if (data.email) lines.push(`EMAIL:${data.email.trim()}`);
+    if (data.url) lines.push(`URL:${data.url.trim()}`);
+    if (data.adr) lines.push(`ADR;CHARSET=UTF-8:;;${escapeVCard(data.adr)};;;;`);
+    if (data.slogan) lines.push(`NOTE;CHARSET=UTF-8:${escapeVCard(data.slogan)}`);
 
     lines.push('END:VCARD\r\n');
     return lines.join('\r\n');
   }
 
   function updateByteGauge() {
-    const vcard = buildVCardString();
+    const isSheetActive = editSheet && editSheet.classList.contains('active');
+    const targetData = isSheetActive ? getLiveSheetData() : profile;
+    const vcard = buildVCardString(targetData);
     const bytes = new TextEncoder().encode(vcard).length;
-    document.getElementById('sheetByteCount').textContent = `${bytes} / 480B`;
-    const percent = Math.min(100, (bytes / 480) * 100);
+    
+    const countEl = document.getElementById('sheetByteCount');
+    if (countEl) countEl.textContent = `${bytes} / ${NFC_MAX_BYTES}B`;
+    
+    const percent = Math.min(100, (bytes / NFC_MAX_BYTES) * 100);
     const fill = document.getElementById('sheetByteFill');
-    fill.style.width = `${percent}%`;
-    const isSafe = bytes <= 480;
-    fill.style.background = isSafe ? 'var(--success)' : 'var(--danger)';
+    if (fill) {
+      fill.style.width = `${percent}%`;
+      const isSafe = bytes <= NFC_MAX_BYTES;
+      fill.style.background = isSafe ? 'var(--success)' : 'var(--danger)';
+    }
 
     const pbar = document.getElementById('byteProgressbar');
-    pbar.setAttribute('aria-valuenow', bytes);
-    pbar.setAttribute('aria-valuetext', `${bytes} trên 480 bytes ${isSafe ? 'an toàn' : 'cảnh báo vượt ngưỡng'}`);
-    document.getElementById('gaugeAriaStatus').textContent = isSafe 
-      ? `Dung lượng ${bytes}/480 bytes, an toàn ghi chip NFC NTAG215.`
-      : `Cảnh báo: Đã vượt quá dung lượng NFC ${bytes - 480} bytes!`;
+    if (pbar) {
+      pbar.setAttribute('aria-valuenow', bytes);
+      pbar.setAttribute('aria-valuetext', `${bytes} trên ${NFC_MAX_BYTES} bytes ${bytes <= NFC_MAX_BYTES ? 'an toàn' : 'cảnh báo vượt ngưỡng'}`);
+    }
+
+    const statusEl = document.getElementById('gaugeAriaStatus');
+    if (statusEl) {
+      if (bytes <= NFC_MAX_BYTES) {
+        statusEl.textContent = `Dung lượng ${bytes}/${NFC_MAX_BYTES} bytes, an toàn ghi chip NFC NTAG215 & QR offline.`;
+        statusEl.style.color = 'var(--muted)';
+      } else {
+        statusEl.textContent = `Cảnh báo: Đã vượt quá dung lượng NFC ${bytes - NFC_MAX_BYTES} bytes!`;
+        statusEl.style.color = 'var(--danger)';
+      }
+    }
   }
 
   // EditSheet Open / Close with Focus Trap & Focus Restoration
@@ -1550,10 +1591,10 @@ const BRAND_ICONS = {
     };
   }
 
-  function openSheet() {
+  function openSheet(clearFields = false) {
     lastFocusedTrigger = btnOpenEdit;
-    // Check if user clicked "+ Tạo mới" to clear all fields
-    const isCreateNew = (lastFocusedTrigger === btnOpenEdit);
+    // Bấm "+ Tạo mới" sẽ dọn sạch form để bắt đầu điền thẻ mới từ đầu
+    const isCreateNew = clearFields || (lastFocusedTrigger === btnOpenEdit);
 
     if (isCreateNew) {
       // Clear all fields for clean slate
@@ -1567,6 +1608,8 @@ const BRAND_ICONS = {
       document.getElementById('inSlogan').value = '';
 
       renderGravatarSocialList([]);
+      const titleEl = document.getElementById('sheetTitle');
+      if (titleEl) titleEl.textContent = 'Tạo Mới Danh Thiếp';
     } else {
       // Populate with existing profile
       document.getElementById('inFn').value = profile.fn || '';
@@ -1579,6 +1622,8 @@ const BRAND_ICONS = {
       document.getElementById('inSlogan').value = profile.slogan || '';
 
       renderGravatarSocialList(Array.isArray(profile.socials) ? profile.socials : []);
+      const titleEl = document.getElementById('sheetTitle');
+      if (titleEl) titleEl.textContent = 'Chỉnh Sửa Danh Thiếp';
     }
 
     overlayBackdrop.classList.add('active');
@@ -1632,6 +1677,13 @@ const BRAND_ICONS = {
       setTimeout(() => {
         e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 100);
+    }
+  });
+
+  // Real-time update of Byte Gauge whenever user types or edits inside EditSheet
+  sheetBody.addEventListener('input', (e) => {
+    if (e.target && e.target.matches('input, textarea')) {
+      updateByteGauge();
     }
   });
 
