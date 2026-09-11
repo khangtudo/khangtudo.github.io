@@ -3,446 +3,763 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>inid.me — Smart AR Business Card</title>
+  <title>inid.me — Smart AR Business Card (1-Page Spatial)</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📇</text></svg>">
   <script type="module" src="assets/vendor/model-viewer.min.js"></script>
+  <script src="assets/vendor/qrcode.min.js"></script>
   <style>
     :root {
       --bg: #070a12;
-      --card-front: linear-gradient(145deg, #131b2e, #090d16);
-      --card-back: linear-gradient(145deg, #0f172a, #020617);
-      --border: rgba(255, 255, 255, 0.1);
+      --surface: rgba(16, 23, 38, 0.75);
+      --surface-border: rgba(255, 255, 255, 0.1);
       --primary: #38bdf8;
-      --primary-hover: #0284c7;
+      --primary-hover: #7dd3fc;
       --text: #f8fafc;
       --muted: #94a3b8;
+      --danger: #ef4444;
+      --success: #10b981;
       --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --header-h: 52px;
+      --dock-h: 60px;
+      --safe-t: env(safe-area-inset-top, 0px);
+      --safe-b: env(safe-area-inset-bottom, 0px);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
+    html, body {
+      height: 100%;
+      overflow: hidden; /* Strict Zero Document Scroll */
       background: var(--bg);
       color: var(--text);
       font-family: var(--font);
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: clamp(16px, 3vw, 32px) clamp(12px, 3vw, 24px);
-      padding-bottom: max(32px, env(safe-area-inset-bottom));
-    }
-    .wrapper {
-      width: 100%;
-      max-width: 580px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0 auto;
+      user-select: none;
     }
 
-    /* Top Bar */
-    .top-bar {
-      width: 100%;
+    /* Ambient Spatial Glow */
+    .ambient-glow {
+      position: fixed;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(7, 10, 18, 0) 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Base 1-Page App Shell */
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      height: 100svh;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: var(--header-h) minmax(0, 1fr) var(--dock-h);
+      gap: 12px;
+      padding: max(10px, var(--safe-t)) 16px max(12px, var(--safe-b));
+      max-width: 1360px;
+      margin: 0 auto;
+    }
+    @media (min-width: 1024px) {
+      .app-shell {
+        grid-template-columns: 280px minmax(380px, 1fr) 240px;
+        grid-template-rows: var(--header-h) minmax(0, 1fr);
+        gap: 24px;
+        padding: 20px 32px;
+      }
+      .utility-header { grid-column: 1 / -1; }
+    }
+
+    /* 1. Utility Header */
+    .utility-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      height: var(--header-h);
     }
-    .top-actions {
+    .brand-group {
       display: flex;
-      gap: 10px;
       align-items: center;
+      gap: 12px;
+      text-decoration: none;
     }
-    .btn-create-new {
+    .brand-group img {
+      height: 38px;
+      width: auto;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-create-sheet {
       background: var(--primary);
       color: #070a12;
       border: none;
-      padding: 9px 18px;
+      padding: 7px 14px;
       border-radius: 20px;
-      font-size: 0.88rem;
-      text-decoration: none;
+      font-size: 0.84rem;
       font-weight: 700;
-      display: inline-flex;
+      cursor: pointer;
+      display: flex;
       align-items: center;
       gap: 6px;
       transition: all 0.15s;
     }
-    .btn-create-new:hover { background: #7dd3fc; transform: translateY(-1px); }
-
+    .btn-create-sheet:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    
     /* Flag Dropdown */
-    .flag-dropdown-wrap {
-      position: relative;
-    }
+    .flag-wrap { position: relative; }
     .flag-btn {
-      background: #131b2e;
-      border: 1px solid var(--border);
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
       color: #fff;
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 20px;
+      font-size: 1.1rem;
       cursor: pointer;
-      font-size: 1.15rem;
       display: flex;
       align-items: center;
       gap: 6px;
-      min-height: 38px;
     }
-    .flag-dropdown {
+    .flag-menu {
       position: absolute;
       right: 0;
-      top: 44px;
-      background: #131b2e;
-      border: 1px solid rgba(255,255,255,0.15);
+      top: 42px;
+      background: #101726;
+      border: 1px solid var(--surface-border);
       border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      max-height: 280px;
+      max-height: 240px;
       overflow-y: auto;
-      width: 170px;
+      width: 160px;
       display: none;
-      z-index: 1000;
+      z-index: 100;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
       padding: 6px 0;
     }
     .flag-item {
-      padding: 8px 14px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 0.85rem;
-      color: var(--text);
+      gap: 8px;
+      font-size: 0.82rem;
       cursor: pointer;
-      transition: background 0.1s;
     }
     .flag-item:hover { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
 
-    /* Big Brand Header */
-    .brand-hero {
-      text-align: center;
-      margin-bottom: clamp(24px, 4vh, 40px);
-      width: 100%;
+    /* 2. Desktop Identity Rail (Hidden on Mobile) */
+    .identity-rail {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
     }
-    .brand-hero img {
-      height: clamp(54px, 10vw, 110px); /* 3x bigger on desktop */
+    @media (min-width: 1024px) {
+      .identity-rail { display: flex; }
+    }
+    .big-logo img {
+      height: 76px;
       width: auto;
-      margin: 0 auto 10px auto;
-      display: block;
+      margin-bottom: 8px;
     }
-    .brand-hero p {
-      font-size: clamp(0.95rem, 2.5vw, 1.25rem);
+    .identity-rail p {
+      font-size: 0.95rem;
       color: var(--muted);
-      font-weight: 500;
-      letter-spacing: 0.5px;
+      line-height: 1.5;
+    }
+    .badge-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.74rem;
+      color: var(--primary);
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 4px 10px;
+      border-radius: 20px;
+      width: fit-content;
     }
 
-    /* 3D Flip Card Container */
+    /* 3. Card Stage (Center) */
+    .card-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
     .card-perspective {
-      perspective: 1400px;
+      perspective: 1200px;
       width: 100%;
-      max-width: clamp(320px, 92vw, 400px);
-      margin-bottom: 24px;
+      max-width: 360px;
+      height: 100%;
+      max-height: min(56dvh, 460px);
+      display: flex;
+      align-items: center;
     }
     .card-perspective.horizontal {
-      max-width: clamp(360px, 95vw, 520px);
+      max-width: 440px;
+      max-height: min(44dvh, 310px);
     }
     .card-3d {
       width: 100%;
-      min-height: clamp(480px, 62vh, 520px);
+      height: 100%;
       position: relative;
       transform-style: preserve-3d;
       transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
     }
-    .card-perspective.horizontal .card-3d {
-      min-height: clamp(310px, 45vh, 340px);
-    }
-    .card-3d.flipped {
-      transform: rotateY(180deg);
-    }
+    .card-3d.flipped { transform: rotateY(180deg); }
     .card-face {
       position: absolute;
       width: 100%;
       height: 100%;
       backface-visibility: hidden;
-      border-radius: 24px;
-      padding: clamp(22px, 4vw, 30px);
+      border-radius: 20px;
+      padding: clamp(16px, 2.5vh, 24px) clamp(16px, 3vw, 22px);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      border: 1px solid var(--border);
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
-      user-select: none;
-    }
-    .card-front {
-      background: var(--card-front);
+      border: 1px solid var(--surface-border);
+      box-shadow: 0 15px 35px -10px rgba(0,0,0,0.8);
+      background: linear-gradient(145deg, #131b2e, #090d16);
     }
     .card-back {
-      background: var(--card-back);
       transform: rotateY(180deg);
+      background: linear-gradient(145deg, #0f172a, #020617);
       text-align: center;
     }
 
-    /* Front Elements */
-    .front-top {
+    /* Front Face Elements */
+    .person-row {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
-    .avatar-img {
-      width: clamp(68px, 16vw, 84px);
-      height: clamp(68px, 16vw, 84px);
+    .card-avatar {
+      width: clamp(48px, 10vw, 64px);
+      height: clamp(48px, 10vw, 64px);
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--primary);
       background: #1e293b;
       flex-shrink: 0;
     }
-    .person-info h2 {
-      font-size: clamp(1.2rem, 3.8vw, 1.45rem);
-      font-weight: 700;
+    .person-text h2 {
+      font-size: clamp(1.05rem, 2.5vw, 1.25rem);
       color: #fff;
-      line-height: 1.25;
+      font-weight: 700;
+      line-height: 1.2;
     }
-    .person-info p {
-      font-size: clamp(0.85rem, 2.6vw, 0.95rem);
+    .person-text p {
+      font-size: clamp(0.78rem, 1.8vw, 0.85rem);
       color: var(--primary);
-      margin-top: 3px;
+      margin-top: 2px;
     }
-    .front-contacts {
-      margin: 18px 0;
+    .contacts-stack {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+      margin: 10px 0;
     }
-    .contact-item {
+    .contact-badge {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: clamp(0.84rem, 2.5vw, 0.92rem);
+      gap: 8px;
+      font-size: clamp(0.78rem, 1.8vw, 0.84rem);
       color: var(--text);
       text-decoration: none;
-      padding: 10px 14px;
+      padding: 8px 12px;
       background: rgba(255,255,255,0.03);
-      border-radius: 12px;
+      border-radius: 10px;
       border: 1px solid rgba(255,255,255,0.05);
-      min-height: 46px;
-      transition: all 0.15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .contact-item:hover {
-      background: rgba(56, 189, 248, 0.12);
-      border-color: var(--primary);
-    }
-
-    /* Social Icon Buttons (Circular Brand Icons) */
-    .front-bottom {
+    .contact-badge:hover { background: rgba(56, 189, 248, 0.15); border-color: var(--primary); }
+    .card-bottom {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
-    .social-icon-row {
+    .social-icons-box {
       display: flex;
+      gap: 8px;
       flex-wrap: wrap;
-      gap: 10px;
     }
     .soc-circle-btn {
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       text-decoration: none;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      transition: transform 0.15s, filter 0.15s;
-      flex-shrink: 0;
+      transition: transform 0.15s;
     }
-    .soc-circle-btn:hover {
-      transform: translateY(-2px) scale(1.05);
-      filter: brightness(1.15);
-    }
-    .flip-hint {
-      font-size: 0.76rem;
+    .soc-circle-btn:hover { transform: scale(1.1); }
+    .flip-tag {
+      font-size: 0.72rem;
       color: var(--muted);
-      opacity: 0.85;
+      opacity: 0.8;
     }
 
-    /* Back Elements */
-    .back-content {
+    /* Back Face Elements */
+    .company-stack {
       height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 14px;
+      gap: 10px;
     }
     .company-logo {
-      max-width: clamp(76px, 18vw, 96px);
-      max-height: clamp(76px, 18vw, 96px);
+      max-width: 64px;
+      max-height: 64px;
+      border-radius: 12px;
       object-fit: contain;
-      border-radius: 16px;
     }
-    .company-name {
-      font-size: clamp(1.15rem, 3.8vw, 1.35rem);
-      font-weight: 700;
-      color: #fff;
-    }
-    .company-slogan {
-      font-size: 0.88rem;
-      color: var(--primary);
-      font-style: italic;
-    }
-    .company-address {
-      font-size: 0.84rem;
-      color: var(--muted);
-      max-width: 320px;
-      line-height: 1.4;
-    }
+    .company-stack h3 { font-size: 1.1rem; color: #fff; font-weight: 700; }
+    .company-stack .slogan { font-size: 0.8rem; color: var(--primary); font-style: italic; }
+    .company-stack .address { font-size: 0.76rem; color: var(--muted); max-width: 260px; line-height: 1.4; }
 
-    /* Action Buttons */
-    .actions-bar {
-      width: 100%;
-      max-width: clamp(320px, 92vw, 400px);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .card-perspective.horizontal + .actions-bar {
-      max-width: clamp(360px, 95vw, 520px);
-    }
-    .btn-main {
-      width: 100%;
-      background: var(--primary);
-      color: #070a12;
-      border: none;
-      padding: 14px 20px;
-      font-size: 0.96rem;
-      font-weight: 700;
-      border-radius: 14px;
-      cursor: pointer;
+    /* 4. Action Dock (Bottom on Mobile, Right Rail on PC) */
+    .action-dock {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      min-height: 50px;
-      text-decoration: none;
-      transition: background 0.15s, transform 0.1s;
+      gap: 10px;
+      height: var(--dock-h);
     }
-    .btn-main:active { transform: scale(0.98); }
-    .btn-main:hover { background: #7dd3fc; }
-    .btn-outline {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-weight: 600;
+    @media (min-width: 1024px) {
+      .action-dock {
+        flex-direction: column;
+        height: auto;
+        justify-content: center;
+      }
     }
-    .btn-outline:hover {
-      background: rgba(255,255,255,0.09);
-    }
-
-    /* Hand Gesture AR Instruction Tip */
-    .hand-ar-tip {
-      background: rgba(56, 189, 248, 0.08);
-      border: 1px dashed rgba(56, 189, 248, 0.3);
+    .dock-btn {
+      flex: 1;
+      height: 48px;
       border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-top: 14px;
-      line-height: 1.5;
-      text-align: center;
+      border: 1px solid var(--surface-border);
+      background: var(--surface);
+      color: #fff;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
     }
-    .hand-ar-tip strong { color: var(--primary); }
+    @media (min-width: 1024px) {
+      .dock-btn { width: 100%; flex: initial; }
+    }
+    .dock-btn-primary {
+      background: var(--primary);
+      color: #070a12;
+      font-weight: 700;
+      border: none;
+    }
+    .dock-btn-primary:hover { background: var(--primary-hover); }
+    .dock-btn:hover:not(.dock-btn-primary) { background: rgba(255,255,255,0.08); }
 
-    model-viewer {
+    /* More Menu Modal */
+    .more-menu-modal {
+      position: fixed;
+      bottom: calc(var(--dock-h) + 24px);
+      background: #101726;
+      border: 1px solid var(--surface-border);
+      border-radius: 14px;
+      padding: 8px;
       display: none;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 100;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+      width: 220px;
+    }
+    .more-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+    }
+    .more-item:hover { background: rgba(56,189,248,0.12); color: var(--primary); }
+
+    /* 5. EditSheet (Modal Overlay: Bottom Sheet Mobile / Side Drawer Desktop) */
+    .overlay-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .overlay-backdrop.active { display: block; opacity: 1; }
+
+    .sheet-panel {
+      position: fixed;
+      background: #0d1320;
+      border: 1px solid var(--surface-border);
+      z-index: 201;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    /* Mobile: Bottom Sheet */
+    @media (max-width: 1023px) {
+      .sheet-panel {
+        bottom: 0; left: 0; right: 0;
+        height: 75dvh;
+        max-height: 92dvh;
+        border-radius: 20px 20px 0 0;
+        transform: translateY(100%);
+      }
+      .sheet-panel.active { transform: translateY(0); }
+    }
+    /* Desktop: Right Slide Drawer */
+    @media (min-width: 1024px) {
+      .sheet-panel {
+        top: 0; bottom: 0; right: 0;
+        width: 420px;
+        transform: translateX(100%);
+        border-left: 1px solid var(--surface-border);
+      }
+      .sheet-panel.active { transform: translateX(0); }
+    }
+
+    .sheet-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .sheet-header h2 { font-size: 1.05rem; font-weight: 700; color: #fff; }
+    .sheet-close {
+      background: none; border: none; color: var(--muted); font-size: 1.3rem; cursor: pointer; padding: 4px 8px;
+    }
+    .sheet-close:hover { color: #fff; }
+
+    /* Sticky Gauge inside Sheet */
+    .sheet-gauge {
+      padding: 12px 20px;
+      background: rgba(0,0,0,0.25);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .progress-bar-bg {
+      background: #06090e;
+      border-radius: 999px;
+      height: 6px;
+      overflow: hidden;
+      margin: 6px 0;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--success);
+      transition: width 0.2s, background 0.2s;
+    }
+
+    /* Scrollable Sheet Body */
+    .sheet-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      user-select: text;
+    }
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-group label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+    .input-row {
+      display: flex;
+      align-items: center;
+      background: #06090e;
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .input-row:focus-within { border-color: var(--primary); }
+    .input-prefix {
+      padding: 0 10px; font-size: 0.8rem; color: var(--muted); background: rgba(255,255,255,0.02);
+    }
+    .input-row input {
+      border: none !important; background: transparent !important;
+    }
+    input[type="text"], input[type="email"], input[type="tel"] {
       width: 100%;
-      height: 300px;
+      background: #06090e;
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      outline: none;
+    }
+    input:focus { border-color: var(--primary); }
+
+    .sheet-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: #0d1320;
+    }
+    .btn-save-sheet {
+      width: 100%;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #070a12;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-save-sheet:hover { background: var(--primary-hover); }
+
+    /* 6. QR Sheet Modal */
+    .qr-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .qr-modal.active { display: flex; }
+    .qr-card {
+      background: #fff;
+      color: #070a12;
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+      position: relative;
+    }
+    .qr-close {
+      position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;
+    }
+    #qrcode canvas, #qrcode img { margin: 12px auto; display: block; }
+    .qr-btn-row { display: flex; gap: 8px; margin-top: 14px; }
+    .btn-qr-action {
+      flex: 1; height: 38px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid #cbd5e1; background: #f8fafc; color: #0f172a;
+    }
+    .btn-qr-action:hover { background: #e2e8f0; }
+
+    /* Model Viewer */
+    model-viewer { display: none; width: 100%; height: 300px; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(16, 185, 129, 0.95);
+      color: #fff; padding: 8px 18px; border-radius: 20px;
+      font-size: 0.85rem; font-weight: 600;
+      display: none; z-index: 1000;
     }
   </style>
 </head>
 <body>
 
-  <div class="wrapper">
-    <!-- Top Bar -->
-    <div class="top-bar">
-      <div class="flag-dropdown-wrap">
-        <button class="flag-btn" id="flagBtn">
-          <span id="currentFlag">🇻🇳</span> <span style="font-size:0.75rem; opacity:0.7;">▼</span>
-        </button>
-        <div class="flag-dropdown" id="flagDropdown"></div>
-      </div>
-      <div class="top-actions">
-        <a href="edit/" class="btn-create-new" id="btnCreateNew">
+  <div class="ambient-glow"></div>
+
+  <!-- 1-Page Zero-Scroll Shell -->
+  <div class="app-shell" id="mainAppShell">
+
+    <!-- Utility Header -->
+    <header class="utility-header">
+      <a href="#" class="brand-group">
+        <img src="assets/logo.svg" alt="inid.me">
+      </a>
+      <div class="header-actions">
+        <button class="btn-create-sheet" id="btnOpenEdit">
           <span>✨</span> <span id="txtCreateNew">+ Tạo mới</span>
-        </a>
+        </button>
+        <div class="flag-wrap">
+          <button class="flag-btn" id="flagBtn">
+            <span id="currentFlag">🇻🇳</span> <span style="font-size:0.65rem; opacity:0.6;">▼</span>
+          </button>
+          <div class="flag-menu" id="flagMenu"></div>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <!-- 3X Bigger Brand Header (Centered on Mobile & PC) -->
-    <div class="brand-hero">
-      <img src="assets/logo.svg" alt="inid.me logo">
-      <p id="txtHeroSlogan">Smart AR VCard & Offline QR</p>
-    </div>
+    <!-- Desktop Identity Rail (Hidden on Mobile) -->
+    <aside class="identity-rail">
+      <div class="big-logo">
+        <img src="assets/logo.svg" alt="inid.me logo">
+      </div>
+      <div class="badge-chip">⚡ SPATIAL AR VCARD</div>
+      <p id="txtHeroSlogan">Smart AR VCard & Offline QR.<br>Một chạm lưu danh bạ không mạng, mở rộng không gian 3D AR đa chiều.</p>
+    </aside>
 
-    <!-- Interactive 3D Flip Card -->
-    <div class="card-perspective" id="cardContainer">
-      <div class="card-3d" id="card3d" title="Chạm để lật thẻ 🔄">
-        <!-- FRONT SIDE -->
-        <div class="card-face card-front">
-          <div class="front-top">
-            <img id="viewAvatar" class="avatar-img" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%223%22/><text x=%2250%22 y=%2258%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%2338bdf8%22>PMK</text></svg>" alt="Avatar">
-            <div class="person-info">
-              <h2 id="viewFn">Phan Mạnh Khang</h2>
-              <p id="viewTitle">Kỹ Thuật Viên Trưởng</p>
-              <p id="viewOrg" style="font-size:0.8rem; color:var(--muted)">Minh Tam Prolab</p>
+    <!-- Center Card Stage -->
+    <main class="card-stage">
+      <div class="card-perspective" id="cardPerspective">
+        <div class="card-3d" id="card3d" role="button" tabindex="0" aria-label="Chạm hoặc ấn Space/Enter để lật thẻ 3D" title="Chạm để lật thẻ 🔄">
+          
+          <!-- Front Face -->
+          <div class="card-face card-front">
+            <div class="person-row">
+              <img id="cardAvatar" class="card-avatar" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%223%22/><text x=%2250%22 y=%2258%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%2338bdf8%22>PMK</text></svg>" alt="Avatar">
+              <div class="person-text">
+                <h2 id="cardFn">Phan Mạnh Khang</h2>
+                <p id="cardTitle">Kỹ Thuật Viên Trưởng</p>
+                <p id="cardOrg" style="font-size:0.75rem; color:var(--muted)">Minh Tam Prolab</p>
+              </div>
+            </div>
+
+            <div class="contacts-stack">
+              <a id="cardTelLink" href="tel:+84901112233" class="contact-badge">📞 <span id="cardTel">+84 90 111 2233</span></a>
+              <a id="cardEmailLink" href="mailto:khang@minhtamprolab.com.vn" class="contact-badge">✉️ <span id="cardEmail">khang@minhtamprolab.com.vn</span></a>
+              <a id="cardUrlLink" href="https://minhtamprolab.com.vn" target="_blank" class="contact-badge">🌐 <span id="cardUrl">minhtamprolab.com.vn</span></a>
+            </div>
+
+            <div class="card-bottom">
+              <div class="social-icons-box" id="cardSocials"></div>
+              <span class="flip-tag" id="txtFlipTag">Chạm lật 🔄</span>
             </div>
           </div>
 
-          <div class="front-contacts">
-            <a id="viewTelLink" href="tel:+84901112233" class="contact-item">
-              <span>📞</span> <span id="viewTel">+84 90 111 2233</span>
-            </a>
-            <a id="viewEmailLink" href="mailto:khang@minhtamprolab.com.vn" class="contact-item">
-              <span>✉️</span> <span id="viewEmail">khang@minhtamprolab.com.vn</span>
-            </a>
-            <a id="viewUrlLink" href="https://minhtamprolab.com.vn" target="_blank" class="contact-item">
-              <span>🌐</span> <span id="viewUrl">minhtamprolab.com.vn</span>
-            </a>
+          <!-- Back Face -->
+          <div class="card-face card-back">
+            <div class="company-stack">
+              <img id="cardLogo" class="company-logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%222%22/><text x=%2250%22 y=%2260%22 font-size=%2232%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%2338bdf8%22>MT</text></svg>" alt="Logo">
+              <h3 id="cardBackOrg">Minh Tam Prolab</h3>
+              <p class="slogan" id="cardSlogan">Professional Digital Laboratory</p>
+              <p class="address" id="cardAdr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</p>
+            </div>
+            <div style="font-size:0.72rem; color:var(--muted); text-align:center;">Chạm để lật thẻ 🔄</div>
           </div>
 
-          <div class="front-bottom">
-            <div class="social-icon-row" id="socialBox"></div>
-            <span class="flip-hint" id="txtFlipHint">Chạm để lật 🔄</span>
-          </div>
         </div>
+      </div>
+    </main>
 
-        <!-- BACK SIDE -->
-        <div class="card-face card-back">
-          <div class="back-content">
-            <img id="viewLogo" class="company-logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%222%22/><text x=%2250%22 y=%2260%22 font-size=%2232%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%2338bdf8%22>MT</text></svg>" alt="Logo">
-            <h3 class="company-name" id="viewBackOrg">Minh Tam Prolab</h3>
-            <p class="company-slogan" id="viewSlogan">Professional Digital Laboratory</p>
-            <p class="company-address" id="viewAdr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</p>
-          </div>
-          <div class="front-bottom" style="justify-content: center;">
-            <span class="flip-hint" id="txtFlipHintBack">Chạm để lật 🔄</span>
-          </div>
-        </div>
+    <!-- Action Dock -->
+    <footer class="action-dock">
+      <button class="dock-btn dock-btn-primary" id="btnSaveVcf">
+        <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ</span>
+      </button>
+      <button class="dock-btn" id="btnLaunchAr">
+        <span>🕶️</span> <span id="txtViewAr">Xem AR</span>
+      </button>
+      <button class="dock-btn" id="btnMoreActions">
+        <span>⚙️</span> <span id="txtMore">Thêm</span>
+      </button>
+    </footer>
+
+  </div>
+
+  <!-- More Menu Dropup -->
+  <div class="more-menu-modal" id="moreMenu">
+    <button class="more-item" id="btnMenuQr"><span>📱</span> <span>Xem Mã QR Offline</span></button>
+    <button class="more-item" id="btnMenuToggleOrient"><span>📐</span> <span>Đổi Dọc / Ngang</span></button>
+    <button class="more-item" id="btnMenuSample"><span>✨</span> <span>Nạp Mẫu Minh Tâm</span></button>
+  </div>
+
+  <!-- EditSheet (Overlay Slide-over / Bottom Sheet) -->
+  <div class="overlay-backdrop" id="overlayBackdrop"></div>
+  
+  <div class="sheet-panel" id="editSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-header">
+      <h2 id="sheetTitle">Chỉnh Sửa Danh Thiếp</h2>
+      <button class="sheet-close" id="btnCloseEdit" aria-label="Đóng">✕</button>
+    </div>
+
+    <!-- Sticky Gauge inside Sheet -->
+    <div class="sheet-gauge">
+      <div style="display:flex; justify-content:space-between; font-size:0.76rem; font-weight:600;">
+        <span>NFC NTAG215 (<480B)</span>
+        <span id="sheetByteCount">0 / 480B</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="sheetByteFill"></div>
       </div>
     </div>
 
-    <!-- Actions Bar -->
-    <div class="actions-bar">
-      <button class="btn-main" id="btnSaveVcf">
-        <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ (.vcf)</span>
-      </button>
-      <button class="btn-main btn-outline" id="btnLaunchAr">
-        <span>🕶️</span> <span id="txtViewAr">Xem Thẻ 3D Trong Không Gian AR</span>
-      </button>
-      <button class="btn-main btn-outline" id="btnToggleOrient" style="font-size:0.88rem;">
-        <span>📐</span> <span id="txtToggleOrient">Đổi Bố Cục Thẻ (Dọc / Ngang)</span>
-      </button>
+    <!-- Sheet Scrollable Form Body -->
+    <div class="sheet-body">
+      <div class="field-group">
+        <label>Họ và Tên *</label>
+        <input type="text" id="inFn" placeholder="vd: Phan Mạnh Khang" required>
+      </div>
+      <div class="field-group">
+        <label>Chức danh / Vị trí</label>
+        <input type="text" id="inTitle" placeholder="vd: Kỹ Thuật Viên Trưởng">
+      </div>
+      <div class="field-group">
+        <label>Số điện thoại (tel:) *</label>
+        <input type="tel" id="inTel" placeholder="vd: +84901112233" required>
+      </div>
+      <div class="field-group">
+        <label>Email (mailto:)</label>
+        <input type="email" id="inEmail" placeholder="vd: khang@minhtamprolab.com.vn">
+      </div>
+      <div class="field-group">
+        <label>Tên công ty / Đơn vị</label>
+        <input type="text" id="inOrg" placeholder="vd: Minh Tam Prolab">
+      </div>
+      <div class="field-group">
+        <label>Website doanh nghiệp</label>
+        <div class="input-row">
+          <span class="input-prefix">https://</span>
+          <input type="text" id="inUrl" placeholder="minhtamprolab.com.vn">
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Địa chỉ làm việc</label>
+        <input type="text" id="inAdr" placeholder="vd: 40A-40B Lý Tự Trọng, Quận 1, TPHCM">
+      </div>
+      <div class="field-group">
+        <label>Khẩu hiệu / Slogan</label>
+        <input type="text" id="inSlogan" placeholder="vd: Professional Digital Laboratory">
+      </div>
+      <div class="field-group">
+        <label>Mạng xã hội (Facebook, Zalo, Instagram...)</label>
+        <input type="text" id="inSocialFb" placeholder="Facebook username / link">
+        <input type="text" id="inSocialZalo" placeholder="Zalo phone / link" style="margin-top:6px;">
+        <input type="text" id="inSocialInsta" placeholder="Instagram username" style="margin-top:6px;">
+      </div>
+    </div>
 
-      <!-- Hand Gesture Interaction Tip -->
-      <div class="hand-ar-tip">
-        👋 <strong>Trải nghiệm AR trên tay:</strong> Khi vào chế độ AR, xòe lòng bàn tay hoặc chụm ngón tay giữ phía sau, thẻ kích thước thật (91×55mm) sẽ nằm ngay ngắn và lật xoay 2 mặt trước mắt bạn!
+    <div class="sheet-footer">
+      <button class="btn-save-sheet" id="btnSaveSheet">Lưu & Đồng Bộ Thẻ</button>
+    </div>
+  </div>
+
+  <!-- QR Sheet Modal -->
+  <div class="qr-modal" id="qrModal">
+    <div class="qr-card">
+      <button class="qr-close" id="btnCloseQr">✕</button>
+      <h3 style="font-size:1rem; margin-bottom:4px;">Mã QR Offline vCard</h3>
+      <p style="font-size:0.75rem; color:#64748b;">Quét lưu danh bạ ngay không cần mạng</p>
+      <div id="qrcode"></div>
+      <div class="qr-btn-row">
+        <button class="btn-qr-action" id="btnDownloadQr">📥 Tải Ảnh</button>
+        <button class="btn-qr-action" id="btnDownloadVcf">💾 Tải .vcf</button>
       </div>
     </div>
   </div>
@@ -457,6 +774,8 @@
     camera-controls
     auto-rotate>
   </model-viewer>
+
+  <div class="toast" id="toast">Đã cập nhật!</div>
 
 <script type="module">
   import { I18N, getTranslation } from './assets/i18n.js';
@@ -475,29 +794,22 @@
     orientation: "vertical",
     socials: [
       { type: "fb", url: "https://facebook.com/phanmanhkhang" },
-      { type: "insta", url: "https://instagram.com/minhtam.prolab" },
-      { type: "threads", url: "https://threads.net/@minhtam.prolab" },
-      { type: "tiktok", url: "https://tiktok.com/@minhtam.prolab" },
-      { type: "zalo", url: "https://zalo.me/0901112233" }
-    ],
-    avatar: "",
-    logo: ""
+      { type: "zalo", url: "https://zalo.me/0901112233" },
+      { type: "insta", url: "https://instagram.com/minhtamprolab" }
+    ]
   };
 
   // Decode profile from URL hash if present
   if (window.location.hash.startsWith('#data=')) {
     try {
       const b64 = window.location.hash.slice(6);
-      const jsonStr = decodeURIComponent(atob(b64));
-      profile = Object.assign(profile, JSON.parse(jsonStr));
-    } catch(e) {
-      console.warn('Could not parse profile from URL hash:', e);
-    }
+      profile = Object.assign(profile, JSON.parse(decodeURIComponent(atob(b64))));
+    } catch(e) {}
   }
 
   // Setup Flag Dropdown
   const flagBtn = document.getElementById('flagBtn');
-  const flagDropdown = document.getElementById('flagDropdown');
+  const flagMenu = document.getElementById('flagMenu');
   const currentFlag = document.getElementById('currentFlag');
 
   Object.keys(I18N).forEach(code => {
@@ -507,52 +819,42 @@
     item.onclick = () => {
       currentLang = code;
       currentFlag.textContent = I18N[code].flag;
-      flagDropdown.style.display = 'none';
+      flagMenu.style.display = 'none';
       updateI18n();
     };
-    flagDropdown.appendChild(item);
+    flagMenu.appendChild(item);
   });
 
   flagBtn.onclick = (e) => {
     e.stopPropagation();
-    flagDropdown.style.display = flagDropdown.style.display === 'block' ? 'none' : 'block';
+    flagMenu.style.display = flagMenu.style.display === 'block' ? 'none' : 'block';
   };
-
-  document.addEventListener('click', () => {
-    flagDropdown.style.display = 'none';
-  });
+  document.addEventListener('click', () => { flagMenu.style.display = 'none'; });
 
   function updateI18n() {
     document.getElementById('txtCreateNew').textContent = getTranslation(currentLang, 'createNew');
     document.getElementById('txtSaveVcf').textContent = getTranslation(currentLang, 'saveVcf');
     document.getElementById('txtViewAr').textContent = getTranslation(currentLang, 'viewAr');
-    document.getElementById('txtFlipHint').textContent = getTranslation(currentLang, 'flipCard') + ' 🔄';
-    document.getElementById('txtFlipHintBack').textContent = getTranslation(currentLang, 'flipCard') + ' 🔄';
+    document.getElementById('txtFlipTag').textContent = getTranslation(currentLang, 'flipCard') + ' 🔄';
   }
 
-  // Bind Data to UI
-  function renderProfile() {
-    document.getElementById('viewFn').textContent = profile.fn || 'Chưa đặt tên';
-    document.getElementById('viewTitle').textContent = profile.title || '';
-    document.getElementById('viewOrg').textContent = profile.org || '';
-    document.getElementById('viewBackOrg').textContent = profile.org || '';
-    document.getElementById('viewTel').textContent = profile.tel || '';
-    document.getElementById('viewTelLink').href = `tel:${profile.tel || ''}`;
-    document.getElementById('viewEmail').textContent = profile.email || '';
-    document.getElementById('viewEmailLink').href = `mailto:${profile.email || ''}`;
-    
-    const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
-    document.getElementById('viewUrl').textContent = displayUrl;
-    document.getElementById('viewUrlLink').href = profile.url ? (profile.url.startsWith('http') ? profile.url : `https://${profile.url}`) : 'https://inid.me';
-    
-    document.getElementById('viewSlogan').textContent = profile.slogan || '';
-    document.getElementById('viewAdr').textContent = profile.adr || '';
+  // Render Card to Stage
+  function renderCard() {
+    document.getElementById('cardFn').textContent = profile.fn || 'Chưa đặt tên';
+    document.getElementById('cardTitle').textContent = profile.title || '';
+    document.getElementById('cardOrg').textContent = profile.org || '';
+    document.getElementById('cardBackOrg').textContent = profile.org || '';
+    document.getElementById('cardTel').textContent = profile.tel || '';
+    document.getElementById('cardTelLink').href = `tel:${profile.tel || ''}`;
+    document.getElementById('cardEmail').textContent = profile.email || '';
+    document.getElementById('cardEmailLink').href = `mailto:${profile.email || ''}`;
+    document.getElementById('cardUrl').textContent = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
+    document.getElementById('cardUrlLink').href = profile.url || 'https://inid.me';
+    document.getElementById('cardSlogan').textContent = profile.slogan || '';
+    document.getElementById('cardAdr').textContent = profile.adr || '';
 
-    if (profile.avatar) document.getElementById('viewAvatar').src = profile.avatar;
-    if (profile.logo) document.getElementById('viewLogo').src = profile.logo;
-
-    // Render Circular Social Icons
-    const socBox = document.getElementById('socialBox');
+    // Render Social Icons
+    const socBox = document.getElementById('cardSocials');
     socBox.innerHTML = '';
     if (Array.isArray(profile.socials)) {
       profile.socials.forEach(s => {
@@ -563,39 +865,46 @@
         a.style.color = brand.color;
         a.href = s.url;
         a.target = '_blank';
-        a.title = brand.name;
         a.innerHTML = brand.svg;
         socBox.appendChild(a);
       });
     }
 
     // Orientation
-    applyOrientation(profile.orientation || 'vertical');
+    const stage = document.getElementById('cardPerspective');
+    if (profile.orientation === 'horizontal') stage.classList.add('horizontal');
+    else stage.classList.remove('horizontal');
+
+    updateByteGauge();
   }
 
-  function applyOrientation(orient) {
-    const c = document.getElementById('cardContainer');
-    if (orient === 'horizontal') c.classList.add('horizontal');
-    else c.classList.remove('horizontal');
-  }
-
-  // 3D Flip Card interaction
+  // Card Flip with Keyboard Support (Enter / Space)
   const card3d = document.getElementById('card3d');
-  card3d.addEventListener('click', () => {
-    card3d.classList.toggle('flipped');
+  function flipCard() { card3d.classList.toggle('flipped'); }
+  card3d.addEventListener('click', flipCard);
+  card3d.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipCard(); }
   });
 
-  // Toggle Orientation Button
-  document.getElementById('btnToggleOrient').addEventListener('click', () => {
+  // More Menu Modal
+  const moreBtn = document.getElementById('btnMoreActions');
+  const moreMenu = document.getElementById('moreMenu');
+  moreBtn.onclick = (e) => {
+    e.stopPropagation();
+    moreMenu.style.display = moreMenu.style.display === 'flex' ? 'none' : 'flex';
+  };
+  document.addEventListener('click', () => { moreMenu.style.display = 'none'; });
+
+  // Toggle Orientation
+  document.getElementById('btnMenuToggleOrient').onclick = () => {
     profile.orientation = profile.orientation === 'horizontal' ? 'vertical' : 'horizontal';
-    applyOrientation(profile.orientation);
-  });
+    renderCard();
+  };
 
-  // Download clean vcf (<480B)
-  document.getElementById('btnSaveVcf').addEventListener('click', () => {
+  // VCF Builder & Byte Counter
+  function buildVCardString() {
     const lines = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
+      'BEGIN:VCARD', 'VERSION:3.0',
       `FN;CHARSET=UTF-8:${profile.fn || 'Contact'}`,
       `N;CHARSET=UTF-8:;;;;`
     ];
@@ -606,31 +915,142 @@
     if (profile.adr) lines.push(`ADR;TYPE=WORK;CHARSET=UTF-8:;;${profile.adr};;;;`);
     lines.push(`URL:${profile.url || 'https://inid.me'}`);
     lines.push('END:VCARD\r\n');
+    return lines.join('\r\n');
+  }
 
-    const vcfText = lines.join('\r\n');
-    const blob = new Blob([vcfText], { type: 'text/vcard;charset=utf-8' });
+  function updateByteGauge() {
+    const vcard = buildVCardString();
+    const bytes = new TextEncoder().encode(vcard).length;
+    document.getElementById('sheetByteCount').textContent = `${bytes} / 480B`;
+    const percent = Math.min(100, (bytes / 480) * 100);
+    const fill = document.getElementById('sheetByteFill');
+    fill.style.width = `${percent}%`;
+    fill.style.background = bytes <= 480 ? 'var(--success)' : 'var(--danger)';
+  }
+
+  // EditSheet Open / Close (with Inert on Main Shell)
+  const btnOpenEdit = document.getElementById('btnOpenEdit');
+  const btnCloseEdit = document.getElementById('btnCloseEdit');
+  const editSheet = document.getElementById('editSheet');
+  const overlayBackdrop = document.getElementById('overlayBackdrop');
+  const mainAppShell = document.getElementById('mainAppShell');
+
+  function openSheet() {
+    // Populate form inputs
+    document.getElementById('inFn').value = profile.fn || '';
+    document.getElementById('inTitle').value = profile.title || '';
+    document.getElementById('inTel').value = profile.tel || '';
+    document.getElementById('inEmail').value = profile.email || '';
+    document.getElementById('inOrg').value = profile.org || '';
+    document.getElementById('inUrl').value = (profile.url || '').replace(/^https?:\/\//i, '');
+    document.getElementById('inAdr').value = profile.adr || '';
+    document.getElementById('inSlogan').value = profile.slogan || '';
+
+    overlayBackdrop.classList.add('active');
+    editSheet.classList.add('active');
+    mainAppShell.setAttribute('inert', 'true');
+    updateByteGauge();
+  }
+
+  function closeSheet() {
+    overlayBackdrop.classList.remove('active');
+    editSheet.classList.remove('active');
+    mainAppShell.removeAttribute('inert');
+  }
+
+  btnOpenEdit.onclick = openSheet;
+  btnCloseEdit.onclick = closeSheet;
+  overlayBackdrop.onclick = () => { closeSheet(); closeQr(); };
+
+  // Save Sheet Changes
+  document.getElementById('btnSaveSheet').onclick = () => {
+    profile.fn = document.getElementById('inFn').value.trim();
+    profile.title = document.getElementById('inTitle').value.trim();
+    profile.tel = document.getElementById('inTel').value.trim();
+    profile.email = document.getElementById('inEmail').value.trim();
+    profile.org = document.getElementById('inOrg').value.trim();
+    const rawUrl = document.getElementById('inUrl').value.trim();
+    profile.url = rawUrl ? `https://${rawUrl.replace(/^https?:\/\//i, '')}` : 'https://inid.me';
+    profile.adr = document.getElementById('inAdr').value.trim();
+    profile.slogan = document.getElementById('inSlogan').value.trim();
+
+    closeSheet();
+    renderCard();
+
+    // Update URL hash without reload
+    const b64 = btoa(encodeURIComponent(JSON.stringify(profile)));
+    history.replaceState(null, '', `#data=${b64}`);
+    showToast('Đã lưu & đồng bộ!');
+  };
+
+  // Load Minh Tam Prolab Sample
+  document.getElementById('btnMenuSample').onclick = () => {
+    profile.fn = "Phan Mạnh Khang";
+    profile.title = "Kỹ Thuật Viên Trưởng";
+    profile.org = "Minh Tam Prolab";
+    profile.tel = "+84901112233";
+    profile.email = "khang@minhtamprolab.com.vn";
+    profile.url = "https://minhtamprolab.com.vn";
+    profile.adr = "40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM";
+    profile.slogan = "Professional Digital Laboratory";
+    renderCard();
+    showToast('Đã nạp mẫu Minh Tâm Prolab!');
+  };
+
+  // QR Modal
+  const qrModal = document.getElementById('qrModal');
+  const qrcodeDiv = document.getElementById('qrcode');
+  function openQr() {
+    qrcodeDiv.innerHTML = '';
+    new QRCode(qrcodeDiv, { text: buildVCardString(), width: 190, height: 190, correctLevel: QRCode.CorrectLevel.M });
+    qrModal.classList.add('active');
+  }
+  function closeQr() { qrModal.classList.remove('active'); }
+  document.getElementById('btnMenuQr').onclick = openQr;
+  document.getElementById('btnCloseQr').onclick = closeQr;
+
+  // Downloads
+  document.getElementById('btnSaveVcf').onclick = () => {
+    const vcf = buildVCardString();
+    const blob = new Blob([vcf], { type: 'text/vcard;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `${profile.fn || 'contact'}.vcf`;
     a.click();
-  });
+  };
+  document.getElementById('btnDownloadVcf').onclick = document.getElementById('btnSaveVcf').onclick;
+  document.getElementById('btnDownloadQr').onclick = () => {
+    const img = qrcodeDiv.querySelector('img') || qrcodeDiv.querySelector('canvas');
+    const a = document.createElement('a');
+    a.href = img.src || img.toDataURL();
+    a.download = `qrcode-${profile.fn || 'contact'}.png`;
+    a.click();
+  };
 
-  // Launch AR Native Viewer
-  document.getElementById('btnLaunchAr').addEventListener('click', () => {
+  // Launch AR Native Quick Look / Scene Viewer
+  document.getElementById('btnLaunchAr').onclick = () => {
     const viewer = document.getElementById('arViewer');
     if (viewer.canActivateAR) {
       viewer.activateAR();
     } else {
-      const usdzUrl = 'assets/3d/card.usdz';
       const a = document.createElement('a');
       a.setAttribute('rel', 'ar');
       a.appendChild(document.createElement('img'));
-      a.setAttribute('href', usdzUrl);
+      a.setAttribute('href', 'assets/3d/card.usdz');
       a.click();
     }
-  });
+  };
 
-  renderProfile();
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 2000);
+  }
+
+  // Open Edit Sheet if #edit in URL
+  if (window.location.hash.includes('edit')) { openSheet(); }
+
+  renderCard();
   updateI18n();
 </script>
 
