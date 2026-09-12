@@ -1447,10 +1447,20 @@ const BRAND_ICONS = {
       });
     }
 
-    // Orientation
+    // Orientation & Dynamic AR Model selection
     const stage = document.getElementById('cardPerspective');
+    const arViewer = document.getElementById('arViewer');
+    const isVert = (profile.orientation !== 'horizontal');
+    const currentGlb = isVert ? 'assets/3d/card-vertical.glb' : 'assets/3d/card.glb';
+    const currentUsdz = isVert ? 'assets/3d/card-vertical.usdz' : 'assets/3d/card.usdz';
+
     if (profile.orientation === 'horizontal') stage.classList.add('horizontal');
     else stage.classList.remove('horizontal');
+
+    if (arViewer) {
+      arViewer.setAttribute('src', currentGlb);
+      arViewer.setAttribute('ios-src', currentUsdz);
+    }
 
     updateByteGauge();
   }
@@ -1946,14 +1956,17 @@ const BRAND_ICONS = {
     btnLaunchAr.onclick = () => {
       const viewer = document.getElementById('arViewer');
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      
+      const isVert = (profile.orientation !== 'horizontal');
+      const glbFile = isVert ? 'assets/3d/card-vertical.glb' : 'assets/3d/card.glb';
+      const usdzFile = isVert ? 'assets/3d/card-vertical.usdz' : 'assets/3d/card.usdz';
+
       if (isIOS) {
         // Native Quick Look for Safari iOS
         const a = document.createElement('a');
         a.setAttribute('rel', 'ar');
         const img = document.createElement('img');
         a.appendChild(img);
-        a.setAttribute('href', 'assets/3d/card.usdz');
+        a.setAttribute('href', usdzFile);
         document.body.appendChild(a);
         a.click();
         setTimeout(() => a.remove(), 200);
@@ -1961,7 +1974,8 @@ const BRAND_ICONS = {
         viewer.activateAR();
       } else {
         // Android Scene Viewer Fallback
-        const intentUrl = 'intent://arvr.google.com/scene-viewer/1.0?file=' + encodeURIComponent(window.location.origin + '/assets/3d/card.glb') + '&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=' + encodeURIComponent(window.location.href) + ';end;';
+        const fullGlbUrl = window.location.origin + '/' + glbFile;
+        const intentUrl = 'intent://arvr.google.com/scene-viewer/1.0?file=' + encodeURIComponent(fullGlbUrl) + '&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=' + encodeURIComponent(window.location.href) + ';end;';
         window.location.href = intentUrl;
       }
     };

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>inid.me 3D Card Texture Generator</title>
+  <style>
+    body { background: #111; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 20px; }
+    canvas { border: 1px solid #444; margin: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Texture Canvas: Horizontal & Vertical</h2>
+  <canvas id="cvsHoriz" width="1024" height="1024"></canvas>
+  <canvas id="cvsVert" width="1024" height="1024"></canvas>
+
+  <script>
+    // Colors
+    const BG_GRAD_START = '#0f172a';
+    const BG_GRAD_END = '#020617';
+    const CYAN = '#38bdf8';
+    const BLUE_ACCENT = '#3b82f6';
+    const TEXT_MUTED = '#94a3b8';
+    const WHITE = '#ffffff';
+
+    // -------------------------------------------------------------
+    // 1. RENDER HORIZONTAL TEXTURE (1024 x 1024)
+    // -------------------------------------------------------------
+    function renderHorizontal() {
+      const cvs = document.getElementById('cvsHoriz');
+      const ctx = cvs.getContext('2d');
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // Card dimensions on texture: 860 x 480 (aspect ratio 860/480 = 1.79 ~ 91/55 = 1.654)
+      // Let's use exact 860 x 520 -> 860 / 520 = 1.6538! Perfect!
+      const W = 860;
+      const H = 520;
+      const R = 28; // corner radius
+
+      // Helper for rounded rect
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.arcTo(x + w, y, x + w, y + r, r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+        ctx.lineTo(x + r, y + h);
+        ctx.arcTo(x, y + h, x, y + h - r, r);
+        ctx.lineTo(x, y + r);
+        ctx.arcTo(x, y, x + r, y, r);
+        ctx.closePath();
+      }
+
+      // FRONT FACE (Top half: centered at X=82, Y=0)
+      const fx = 82, fy = 0;
+      ctx.save();
+      roundRect(fx, fy, W, H, R);
+      ctx.clip();
+      const gradF = ctx.createLinearGradient(fx, fy, fx + W, fy + H);
+      gradF.addColorStop(0, '#131b2e');
+      gradF.addColorStop(1, '#090d16');
+      ctx.fillStyle = gradF;
+      ctx.fill();
+
+      // Cyan outer border
+      ctx.strokeStyle = CYAN;
+      ctx.lineWidth = 6;
+      ctx.stroke();
+
+      // Left blue vertical accent bar
+      ctx.fillStyle = CYAN;
+      ctx.fillRect(fx + 50, fy + 55, 8, 90);
+
+      // Name & Title
+      ctx.fillStyle = WHITE;
+      ctx.font = 'bold 44px Arial, sans-serif';
+      ctx.fillText('Phan Mạnh Khang', fx + 75, fy + 100);
+
+      ctx.fillStyle = CYAN;
+      ctx.font = 'bold 24px Arial, sans-serif';
+      ctx.fillText('CGO - Giám Đốc Tăng Trưởng', fx + 75, fy + 138);
+
+      ctx.fillStyle = TEXT_MUTED;
+      ctx.font = '500 20px Arial, sans-serif';
+      ctx.fillText('Minh Tam Prolab', fx + 75, fy + 172);
+
+      // Thin divider
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(fx + 50, fy + 205);
+      ctx.lineTo(fx + W - 50, fy + 205);
+      ctx.stroke();
+
+      // Contact details
+      const iconX = fx + 60;
+      const textX = fx + 100;
+
+      // Phone
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath(); ctx.arc(iconX + 10, fy + 245, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = WHITE;
+      ctx.font = '16px Arial';
+      ctx.fillText('📞', iconX, fy + 251);
+      ctx.fillStyle = WHITE;
+      ctx.font = 'bold 22px Arial, sans-serif';
+      ctx.fillText('+84 937 550 989', textX, fy + 253);
+
+      // Email
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath(); ctx.arc(iconX + 10, fy + 295, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = WHITE;
+      ctx.font = '16px Arial';
+      ctx.fillText('✉️', iconX, fy + 301);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '500 21px Arial, sans-serif';
+      ctx.fillText('manhkhang@minhtamprolab.com.vn', textX, fy + 303);
+
+      // Website
+      ctx.fillStyle = '#0ea5e9';
+      ctx.beginPath(); ctx.arc(iconX + 10, fy + 345, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = WHITE;
+      ctx.font = '16px Arial';
+      ctx.fillText('🌐', iconX, fy + 351);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '500 21px Arial, sans-serif';
+      ctx.fillText('minhtamprolab.com.vn', textX, fy + 353);
+
+      // Footer Tagline
+      ctx.fillStyle = CYAN;
+      ctx.font = 'bold 16px Arial, sans-serif';
+      ctx.letterSpacing = '1px';
+      ctx.fillText('INID.ME • SMART AR BUSINESS CARD', fx + 60, fy + 460);
+
+      // Mini 3D Logo right top
+      ctx.fillStyle = '#1e293b';
+      roundRect(fx + W - 140, fy + 60, 80, 80, 16);
+      ctx.fill();
+      ctx.strokeStyle = CYAN;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = CYAN;
+      ctx.font = 'bold 30px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('PMK', fx + W - 100, fy + 110);
+      ctx.textAlign = 'left';
+      ctx.restore();
+
+      // BACK FACE (Bottom half: centered at X=82, Y=504)
+      const bx = 82, by = 504;
+      ctx.save();
+      roundRect(bx, by, W, H, R);
+      ctx.clip();
+      const gradB = ctx.createLinearGradient(bx, by, bx + W, by + H);
+      gradB.addColorStop(0, '#0f172a');
+      gradB.addColorStop(1, '#020617');
+      ctx.fillStyle = gradB;
+      ctx.fill();
+
+      // Cyan outer border
+      ctx.strokeStyle = CYAN;
+      ctx.lineWidth = 6;
+      ctx.stroke();
+
+      // Centered MT Logo Box
+      const cx = bx + W / 2;
+      ctx.fillStyle = '#0f172a';
+      roundRect(cx - 50, by + 60, 100, 100, 24);
+      ctx.fill();
+      ctx.strokeStyle = CYAN;
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
+      ctx.fillStyle = CYAN;
+      ctx.font = 'bold 42px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('MT', cx, by + 125);
+
+      // Company Title
+      ctx.fillStyle = WHITE;
+      ctx.font = 'bold 42px Arial, sans-serif';
+      ctx.fillText('Minh Tam Prolab', cx, by + 215);
+
+      // Slogan
+      ctx.fillStyle = CYAN;
+      ctx.font = 'italic bold 23px Arial, sans-serif';
+      ctx.fillText('Professional Digital Laboratory Since 1993', cx, by + 265);
+
+      // Address
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '500 21px Arial, sans-serif';
+      ctx.fillText('40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM', cx, by + 325);
+
+      // Sub-caption
+      ctx.fillStyle = TEXT_MUTED;
+      ctx.font = '600 16px Arial, sans-serif';
+      ctx.letterSpacing = '1px';
+      ctx.fillText('TAP OR SCAN TO CONNECT INSTANTLY', cx, by + 440);
+      ctx.textAlign = 'left';
+      ctx.restore();
+    }
+
+    // -------------------------------------------------------------
+    // 2. RENDER VERTICAL TEXTURE (1024 x 1024)
+    // -------------------------------------------------------------
+    function renderVertical() {
+      const cvs = document.getElementById('cvsVert');
+      const ctx = cvs.getContext('2d');
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // Vertical card dimensions: 480 x 794 (480 / 794 = 0.6045 ~ 55/91 = 0.6044!)
+      const W = 480;
+      const H = 794;
+      const R = 28;
+
+      function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.arcTo(x + w, y, x + w, y + r, r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+        ctx.lineTo(x + r, y + h);
+        ctx.arcTo(x, y + h, x, y + h - r, r);
+        ctx.lineTo(x, y + r);
+        ctx.arcTo(x, y, x + r, y, r);
+        ctx.closePath();
+      }
+
+      // FRONT FACE (Left: X=20, Y=115)
+      const fx = 20, fy = 115;
+      ctx.save();
+      roundRect(fx, fy, W, H, R);
+      ctx.clip();
+      const gradF = ctx.createLinearGradient(fx, fy, fx + W, fy + H);
+      gradF.addColorStop(0, '#131b2e');
+      gradF.addColorStop(1, '#090d16');
+      ctx.fillStyle = gradF;
+      ctx.fill();
+
+      // Border
+      ctx.strokeStyle = CYAN;
+      ctx.lineWidth = 6;
+      ctx.stroke();
+
+      const cx = fx + W / 2;
+
+      // Avatar Monogram circle
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(cx, fy + 120, 52, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = CYAN;
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
+      ctx.fillStyle = CYAN;
+      ctx.font = 'bold 36px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('PMK', cx, fy + 133);
+
+      // Name & Title
+      ctx.fillStyle = WHITE;
+      ctx.font = 'bold 36px Arial, sans-serif';
+      ctx.fillText('Phan Mạnh Khang', cx, fy + 225);
+
+      ctx.fillStyle = CYAN;
+      ctx.font = 'bold 20px Arial, sans-serif';
+      ctx.fillText('CGO - Giám Đốc Tăng Trưởng', cx, fy + 265);
+
+      ctx.fillStyle = TEXT_MUTED;
+      ctx.font = '500 19px Arial, sans-serif';
+      ctx.fillText('Minh Tam Prolab', cx, fy + 300);
+
+      // Divider
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(fx + 40, fy + 335);
+      ctx.lineTo(fx + W - 40, fy + 335);
+      ctx.stroke();
+
+      // Contact details
+      const cLeft = fx + 40;
+      ctx.textAlign = 'left';
+
+      // Phone
+      ctx.fillStyle = WHITE;
+      ctx.font = 'bold 20px Arial, sans-serif';
+      ctx.fillText('📞  +84 937 550 989', cLeft, fy + 385);
+
+      // Email
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '500 17px Arial, sans-serif';
+      ctx.fillText('✉️  manhkhang@minhtamprolab.com.vn', cLeft, fy + 435);
+
+      // Website
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '500 18px Arial, sans-serif';
+      ctx.fillText('🌐  minhtamprolab.com.vn', cLeft, fy + 485);
+
+      // Address
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '15px Arial, sans-serif';
+      ctx.fillText('📍  40A-40B Lý Tự Trọng, Phường Sài Gòn', cLeft, fy + 535);
+
+      // Slogan
+      ctx.fillStyle = CYAN;
+      ctx.font = 'italic 15px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Professional Digital Laboratory Since 1993', cx, fy + 650);
+
+      // Footer
+      ctx.fillStyle = TEXT_MUTED;
+      ctx.font = 'bold 14px Arial, sans-serif';
+      ctx.letterSpacing = '1px';
+      ctx.fillText('INID.ME • SMART AR BUSINESS CARD', cx, fy + 735);
+      ctx.restore();
+
+      // BACK FACE (Right: X=524, Y=115)
+      const bx = 524, by = 115;
+      ctx.save();
+      roundRect(bx, by, W, H, R);
+      ctx.clip();
+      const gradB = ctx.createLinearGradient(bx, by, bx + W, by + H);
+      gradB.addColorStop(0, '#0f172a');
+      gradB.addColorStop(1, '#020617');
+      ctx.fillStyle = gradB;
+      ctx.fill();
+
+      // Border
+      ctx.strokeStyle = CYAN;
+      ctx.lineWidth = 6;
+      ctx.stroke();
+
+      const bcx = bx + W / 2;
+
+      // MT Logo Box
+      ctx.fillStyle = '#0f172a';
+      roundRect(bcx - 55, by + 130, 110, 110, 26);
+      ctx.fill();
+      ctx.strokeStyle = CYAN;
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
+      ctx.fillStyle = CYAN;
+      ctx.font = 'bold 46px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('MT', bcx, by + 202);
+
+      // Title
+      ctx.fillStyle = WHITE;
+      ctx.font = 'bold 36px Arial, sans-serif';
+      ctx.fillText('Minh Tam Prolab', bcx, by + 295);
+
+      // Slogan
+      ctx.fillStyle = CYAN;
+      ctx.font = 'italic bold 18px Arial, sans-serif';
+      ctx.fillText('Professional Digital Laboratory', bcx, by + 340);
+      ctx.fillText('Since 1993', bcx, by + 370);
+
+      // Address
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '500 18px Arial, sans-serif';
+      ctx.fillText('40A-40B Lý Tự Trọng', bcx, by + 440);
+      ctx.fillText('Phường Sài Gòn, TPHCM', bcx, by + 472);
+
+      // Sub-caption
+      ctx.fillStyle = TEXT_MUTED;
+      ctx.font = '600 14px Arial, sans-serif';
+      ctx.letterSpacing = '1px';
+      ctx.fillText('TAP OR SCAN TO CONNECT INSTANTLY', bcx, by + 680);
+
+      ctx.restore();
+    }
+
+    renderHorizontal();
+    renderVertical();
+
+    window.getHorizBase64 = () => document.getElementById('cvsHoriz').toDataURL('image/png').split(',')[1];
+    window.getVertBase64 = () => document.getElementById('cvsVert').toDataURL('image/png').split(',')[1];
+  </script>
+</body>
+</html>
