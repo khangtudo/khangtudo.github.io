@@ -258,6 +258,7 @@
     // FPS Tracker
     let frameCount = 0;
     let lastFpsTime = performance.now();
+    let lastFrameTime = performance.now();
     let lastInferenceStart = performance.now();
 
     // -------------------------------------------------------------
@@ -509,13 +510,18 @@
     function animate() {
       requestAnimationFrame(animate);
 
-      // Smooth dampening (lerp)
-      cardGroup.position.lerp(targetPos, 0.15);
-      cardGroup.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.15);
+      // Smooth exponential dampening (Frame-rate independent: tau = 0.12s)
+      const nowMs = performance.now();
+      const dt = Math.min(0.1, (nowMs - lastFrameTime) * 0.001);
+      lastFrameTime = nowMs;
+      const smoothFactor = 1 - Math.exp(-dt / 0.12);
+
+      cardGroup.position.lerp(targetPos, smoothFactor);
+      cardGroup.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), smoothFactor);
       
-      cardGroup.rotation.x += (targetRot.x - cardGroup.rotation.x) * 0.15;
-      cardGroup.rotation.y += (targetRot.y - cardGroup.rotation.y) * 0.15;
-      cardGroup.rotation.z += (targetRot.z - cardGroup.rotation.z) * 0.15;
+      cardGroup.rotation.x += (targetRot.x - cardGroup.rotation.x) * smoothFactor;
+      cardGroup.rotation.y += (targetRot.y - cardGroup.rotation.y) * smoothFactor;
+      cardGroup.rotation.z += (targetRot.z - cardGroup.rotation.z) * smoothFactor;
 
       renderer.render(scene, camera);
 
