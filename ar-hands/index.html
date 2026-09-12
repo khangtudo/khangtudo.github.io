@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>inid.me — MediaPipe Hands AI AR Prototype</title>
+  <title>inid.me — MediaPipe Hands AI AR Prototype (v2.1)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -255,7 +255,7 @@
     let lastFingerPose = 'UNKNOWN'; // 'EXTENDED' | 'CURLED'
     let consecutivePoseFrames = 0;
     let lastPoseFlipTime = 0;
-    const POSE_COOLDOWN_MS = 650; // cooldown giữa các lần nắm/mở để chống giật
+    const POSE_COOLDOWN_MS = 800; // cooldown giữa các lần nắm/mở để chống giật
 
     // Flip cooldown & hysteresis
     let lastFlipTime = 0;
@@ -583,7 +583,7 @@
 
       // Smooth exponential dampening (Frame-rate independent: tau = 0.12s)
       const nowMs = performance.now();
-      const dt = Math.min(0.1, (nowMs - lastFrameTime) * 0.001);
+      const dt = Math.min(0.05, (nowMs - lastFrameTime) * 0.001);
       lastFrameTime = nowMs;
       const smoothFactor = 1 - Math.exp(-dt / 0.12);
 
