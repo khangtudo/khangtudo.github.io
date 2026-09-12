@@ -386,9 +386,9 @@
         // Also measure 5-finger spread (Thumb tip 4 to Pinky tip 20)
         const fingerSpread = dist(lm[4], lm[20]);
 
-        // Hand closer to camera (larger span) or fingers spread wide -> zoom in (scale up to 1.8x)
-        // Hand further away or fist clenched -> zoom out (scale down to 0.7x)
-        const rawZoomRatio = Math.max(0.65, Math.min(2.0, (currentHandSpan / baseHandSpan) * 1.05));
+        // Hand closer to camera (larger span) -> zoom in (scale up to 1.5x / 150% max)
+        // Hand further away -> zoom out (scale down to 0.7x / 70% min) smoothly
+        const rawZoomRatio = Math.max(0.70, Math.min(1.50, (currentHandSpan / baseHandSpan)));
         const dynamicCardScale = rawZoomRatio;
 
         // 4. PINCH TO FLIP (Kẹp 2 ngón trỏ & cái để lật 180° mặt sau / mặt trước)
@@ -427,13 +427,13 @@
           currentGesture = 'PALM';
           txtGestureIcon.textContent = '🖐️';
           txtGestureTitle.textContent = 'Thẻ Nổi Trên Lòng Bàn Tay';
-          txtGestureDesc.textContent = 'Đưa tay lại gần/xa để thu phóng (Zoom: ' + Math.round(dynamicCardScale * 100) + '%)';
+          txtGestureDesc.textContent = 'Đưa tay lại gần/xa để thu phóng (Zoom: ' + Math.min(150, Math.round(dynamicCardScale * 100)) + '%)';
           txtCardState.textContent = 'THU PHÓNG TAY';
           txtCardState.style.color = '#10b981';
 
           // Float slightly above palm center
           targetPos.set(handX, handY + 0.14, 0.1);
-          targetScale = dynamicCardScale * 1.1;
+          targetScale = Math.min(1.50, dynamicCardScale * 1.05);
 
           // Compute palm normal/tilt from wrist 0 to middle mcp 9 & index 5
           const roll = (lm[17].y - lm[5].y) * 2.0;
