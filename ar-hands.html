@@ -431,33 +431,33 @@
         const now = performance.now();
         const fourFingers = analyzeFourFingers(lm);
 
-        // Động tác A: Đang MỞ ➔ NẮM 4 ngón lại: Card lật 180° từ Trái sang Phải (+Math.PI)
+        // Động tác A: Đang MỞ ➔ NẮM 4 ngón lại: Card lật 180° từ Trái sang Phải (Mặt Trước -> Mặt Sau)
         if (fourFingers.isCurled) {
           if (lastFingerPose === 'EXTENDED' && (now - lastPoseFlipTime > POSE_COOLDOWN_MS)) {
             consecutivePoseFrames++;
-            if (consecutivePoseFrames >= 2) {
-              targetRotationY += Math.PI; // Lật 180° từ trái sang phải
-              cardFlipped = !cardFlipped;
+            if (consecutivePoseFrames >= 3) {
+              cardFlipped = true;
+              targetRotationY = Math.PI; // Target state-driven 180° (xoay thuận chiều sang phải)
               lastPoseFlipTime = now;
               lastFingerPose = 'CURLED';
               consecutivePoseFrames = 0;
-              btnFlipCard.textContent = cardFlipped ? '🔄 Mặt Sau' : '🔄 Mặt Trước';
+              btnFlipCard.textContent = '🔄 Mặt Sau';
             }
           } else {
             lastFingerPose = 'CURLED';
           }
         }
-        // Động tác B: Đang NẮM ➔ MỞ 4 ngón ra: Card lật 180° từ Phải sang Trái (-Math.PI)
+        // Động tác B: Đang NẮM ➔ MỞ 4 ngón ra: Card lật 180° từ Phải sang Trái (Mặt Sau -> Mặt Trước)
         else if (fourFingers.isExtended) {
           if (lastFingerPose === 'CURLED' && (now - lastPoseFlipTime > POSE_COOLDOWN_MS)) {
             consecutivePoseFrames++;
-            if (consecutivePoseFrames >= 2) {
-              targetRotationY -= Math.PI; // Lật 180° từ phải sang trái
-              cardFlipped = !cardFlipped;
+            if (consecutivePoseFrames >= 3) {
+              cardFlipped = false;
+              targetRotationY = 0; // Target state-driven 0° (xoay ngược chiều về trái)
               lastPoseFlipTime = now;
               lastFingerPose = 'EXTENDED';
               consecutivePoseFrames = 0;
-              btnFlipCard.textContent = cardFlipped ? '🔄 Mặt Sau' : '🔄 Mặt Trước';
+              btnFlipCard.textContent = '🔄 Mặt Trước';
             }
           } else {
             lastFingerPose = 'EXTENDED';
@@ -765,7 +765,7 @@
 
     btnFlipCard.onclick = () => {
       cardFlipped = !cardFlipped;
-      targetRotationY += (cardFlipped ? Math.PI : -Math.PI);
+      targetRotationY = cardFlipped ? Math.PI : 0;
       btnFlipCard.textContent = cardFlipped ? '🔄 Mặt Sau' : '🔄 Mặt Trước';
     };
 
