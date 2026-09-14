@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>inid.me — MediaPipe Hands AI AR Prototype (v2.1)</title>
+  <title>inid.me — MediaPipe Hands AI AR Production (v2.1)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -194,7 +194,7 @@
   <div class="ar-hud-header">
     <div class="hud-brand">
       <div class="hud-brand-title">inid<span>.me</span></div>
-      <div class="hud-badge">AI HAND TRACKING</div>
+      <div class="hud-badge" style="background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.5); color:#34d399;">PRODUCTION • AI HAND AR</div>
     </div>
     <div class="hud-metrics">
       <span>FPS: <span class="hud-fps" id="txtFps">0</span></span>
@@ -305,7 +305,7 @@
 
     // Load extracted card texture from assets
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load('/assets/3d/extracted-texture.png', () => {
+    const texture = textureLoader.load('/assets/3d/extracted-texture.png?v=20260914-prod', () => {
       console.log('3D Card Texture loaded!');
     });
 
@@ -329,18 +329,26 @@
     ];
 
     // Adjust UV coordinates for BoxGeometry face 4 (front) & face 5 (back)
+    // Texture is 1024x1024 with card bounds: X: 82..942, Front Y: 0..520, Back Y: 504..1024
     const uvAttr = geom.attributes.uv;
-    // Front face (index 16..19 in BoxGeometry) -> V: 0.5 to 1.0
-    uvAttr.setXY(16, 0, 1.0);
-    uvAttr.setXY(17, 1, 1.0);
-    uvAttr.setXY(18, 0, 0.5);
-    uvAttr.setXY(19, 1, 0.5);
+    const uMin = 82 / 1024;
+    const uMax = 942 / 1024;
+    const vFrontTop = 1.0;
+    const vFrontBottom = 504 / 1024; // (1024 - 520) / 1024 = 0.4921875
 
-    // Back face (index 20..23) -> V: 0.0 to 0.5 (Un-mirrored: text reads normally from back)
-    uvAttr.setXY(20, 0, 0.5);
-    uvAttr.setXY(21, 1, 0.5);
-    uvAttr.setXY(22, 0, 0.0);
-    uvAttr.setXY(23, 1, 0.0);
+    // Front face (index 16..19 in BoxGeometry)
+    uvAttr.setXY(16, uMin, vFrontTop);
+    uvAttr.setXY(17, uMax, vFrontTop);
+    uvAttr.setXY(18, uMin, vFrontBottom);
+    uvAttr.setXY(19, uMax, vFrontBottom);
+
+    // Back face (index 20..23) -> Un-mirrored: text reads normally from back
+    const vBackTop = 520 / 1024;    // (1024 - 504) / 1024 = 0.5078125
+    const vBackBottom = 0.0;
+    uvAttr.setXY(20, uMin, vBackTop);
+    uvAttr.setXY(21, uMax, vBackTop);
+    uvAttr.setXY(22, uMin, vBackBottom);
+    uvAttr.setXY(23, uMax, vBackBottom);
     uvAttr.needsUpdate = true;
 
     const cardMesh = new THREE.Mesh(geom, materials);
