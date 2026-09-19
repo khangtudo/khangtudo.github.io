@@ -72,6 +72,8 @@
       width: 100%;
       height: clamp(44px, 6vh, 56px);
       flex-shrink: 0;
+      padding-right: clamp(6px, 2vw, 12px);
+      box-sizing: border-box;
     }
     .brand-group {
       display: flex;
@@ -248,33 +250,57 @@
       }
     }
 
-    /* Horizontal Card Adaptive Layout - Prevents Overflow */
+    /* Horizontal Card Adaptive Layout - Prevents Overflow & Ensures Visible Social Icons */
     .card-perspective.horizontal .card-face {
-      padding: clamp(10px, 2vh, 16px) clamp(14px, 2.5vw, 20px);
+      padding: clamp(8px, 1.8vh, 14px) clamp(12px, 2.5vw, 18px);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .card-perspective.horizontal .person-row {
-      gap: 12px;
+      gap: 10px;
+      margin-bottom: 2px;
+      flex-shrink: 0;
     }
     .card-perspective.horizontal .card-avatar {
-      width: clamp(40px, 8vw, 52px);
-      height: clamp(40px, 8vw, 52px);
+      width: clamp(36px, 8vw, 48px);
+      height: clamp(36px, 8vw, 48px);
     }
-    .card-perspective.horizontal .contact-list {
+    .card-perspective.horizontal .person-text h2 {
+      font-size: clamp(0.95rem, 3.2vw, 1.35rem);
+      line-height: 1.15;
+    }
+    .card-perspective.horizontal .person-text p {
+      font-size: clamp(0.7rem, 2vw, 0.85rem);
+      margin-top: 1px;
+    }
+    .card-perspective.horizontal .contacts-stack {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
       margin: 4px 0;
-      gap: 3px;
+      flex-shrink: 0;
     }
-    .card-perspective.horizontal .contact-item {
-      font-size: clamp(0.72rem, 1.8vw, 0.82rem);
+    .card-perspective.horizontal .contact-badge {
+      min-height: 30px;
+      height: 30px;
+      padding: 0 8px;
+      font-size: clamp(0.65rem, 1.6vw, 0.78rem);
+      gap: 4px;
+      border-radius: 8px;
     }
     .card-perspective.horizontal .card-bottom {
       margin-top: auto;
       gap: 8px;
       align-items: center;
+      width: 100%;
+      flex-shrink: 0;
+      padding-top: 2px;
     }
     .card-perspective.horizontal .social-icons-box {
-      flex: 1;
-      display: flex;
+      width: 100%;
+      display: flex !important;
       gap: 6px;
       flex-wrap: nowrap;
       overflow-x: auto;
@@ -282,19 +308,14 @@
       padding-bottom: 2px;
       scrollbar-width: none;
       -ms-overflow-style: none;
+      justify-content: flex-start;
     }
     .card-perspective.horizontal .social-icons-box::-webkit-scrollbar {
       display: none;
     }
     .card-perspective.horizontal .soc-circle-btn {
-      width: 28px;
-      height: 28px;
-      flex-shrink: 0;
-    }
-    .card-perspective.horizontal .btn-toggle-orient-card {
-      font-size: 0.7rem;
-      padding: 4px 8px;
-      white-space: nowrap;
+      width: 26px;
+      height: 26px;
       flex-shrink: 0;
     }
 
@@ -569,11 +590,11 @@
     /* 3. Action Dock: 3 Buttons */
     .action-dock {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       width: 100%;
-      max-width: 440px;
+      max-width: 540px;
       margin: 0 auto;
       flex-shrink: 0;
       padding-top: 6px;
@@ -584,7 +605,7 @@
         flex-direction: column;
         width: 100%;
         max-width: 250px;
-        gap: 14px;
+        gap: 12px;
         align-self: center;
         margin: 0;
         padding-top: 0;
@@ -592,28 +613,42 @@
     }
     .dock-btn {
       width: 100%;
-      height: 44px;
+      height: 46px;
       border-radius: 12px;
       border: 1px solid var(--surface-border);
       background: var(--surface);
       color: #fff;
-      font-size: clamp(0.72rem, 2.6vw, 0.84rem);
+      font-size: clamp(0.65rem, 2.2vw, 0.76rem);
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 2px;
       text-decoration: none;
       transition: all 0.15s;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      padding: 0 4px;
+      padding: 3px 2px;
       box-sizing: border-box;
+      line-height: 1.1;
+    }
+    .dock-btn span:first-child {
+      font-size: 1.1rem;
+      line-height: 1;
     }
     @media (min-width: 1024px) {
-      .dock-btn { height: 54px; font-size: 0.95rem; border-radius: 14px; }
+      .dock-btn {
+        height: 50px;
+        font-size: 0.92rem;
+        border-radius: 14px;
+        flex-direction: row;
+        gap: 8px;
+        padding: 0 12px;
+      }
+      .dock-btn span:first-child { font-size: 1.25rem; }
     }
     .dock-btn-primary {
       background: var(--primary);
@@ -988,11 +1023,14 @@
           <div class="brand-tagline-prominent">SMART AR CARD • OFFLINE QR</div>
         </div>
       </a>
-      <div class="header-actions">
-        <button class="btn-create-sheet" id="btnOpenEdit" aria-haspopup="dialog" aria-expanded="false" aria-controls="editSheet">
+      <div class="header-actions" style="display:flex; align-items:center; gap:8px; margin-right:8px;">
+        <button type="button" class="btn-create-sheet" id="btnToggleOrientationHeader" aria-label="Đổi hướng thẻ Dọc hoặc Ngang" style="background:rgba(56, 189, 248, 0.12); border:1px solid rgba(56, 189, 248, 0.4); color:#38bdf8; font-size:0.75rem; padding:6px 10px; border-radius:10px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;">
+          <span style="font-size:0.9rem;">📐</span> <span id="txtOrientHeader">Đổi Ngang</span>
+        </button>
+        <button class="btn-create-sheet" id="btnOpenEdit" aria-haspopup="dialog" aria-expanded="false" aria-controls="editSheet" style="display:none;">
           <span>✨</span> <span id="txtCreateNew">+ Tạo mới</span>
         </button>
-        <div class="flag-wrap">
+        <div class="flag-wrap" style="margin-right:4px;">
           <button class="flag-btn" id="flagBtn" aria-haspopup="true" aria-expanded="false" aria-controls="flagMenu" aria-label="Chọn ngôn ngữ">
             <span id="currentFlag">🇻🇳</span> <span style="font-size:0.65rem; opacity:0.6;">▼</span>
           </button>
@@ -1041,13 +1079,16 @@
       <!-- Center Card Stage -->
       <main class="card-stage">
       
-      <!-- Luxury Spatial Studio / VIP UX Builder Floating Toolbar -->
-      <div id="builderControlBar" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px; z-index:40; flex-wrap:wrap;">
-        <button type="button" id="btnToggleBuilderMode" style="background:linear-gradient(135deg, rgba(216,175,98,0.25), rgba(56,189,248,0.25)); border:1px solid #d8af62; color:#fff0be; font-weight:700; font-size:0.8rem; padding:7px 16px; border-radius:99px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 4px 14px rgba(0,0,0,0.5); backdrop-filter:blur(8px); transition:all 0.2s ease;">
-          <span>✨</span> <span id="txtBuilderMode">Bật Chế Độ Kéo Thả UX Builder</span>
+      <!-- Builder Mode Exit Bar (only visible when UX Builder is active) -->
+      <div id="builderControlBar" style="display:none; align-items:center; justify-content:center; gap:8px; margin-bottom:8px; z-index:40; flex-wrap:wrap;">
+        <span style="font-size:0.75rem; color:#f7e5ad; font-weight:700; background:rgba(0,0,0,0.6); padding:4px 10px; border-radius:99px; border:1px solid rgba(216,175,98,0.4);">
+          ✨ Chế độ UX Builder đang BẬT (Kéo thả / Nhấp đúp gõ)
+        </span>
+        <button type="button" id="btnDoneBuilderMode" style="background:#38bdf8; color:#070a12; border:none; font-weight:700; font-size:0.75rem; padding:5px 12px; border-radius:99px; cursor:pointer;">
+          ✓ Xong & Lưu
         </button>
-        <button type="button" id="btnResetBuilderLayout" style="display:none; background:rgba(30,41,59,0.8); border:1px solid #475569; color:#94a3b8; font-size:0.75rem; padding:7px 12px; border-radius:99px; cursor:pointer; align-items:center; gap:4px;">
-          <span>↺</span> Đặt Lại Layout Gốc
+        <button type="button" id="btnResetBuilderLayout" style="background:rgba(30,41,59,0.8); border:1px solid #475569; color:#94a3b8; font-size:0.72rem; padding:5px 10px; border-radius:99px; cursor:pointer;">
+          ↺ Đặt Lại Gốc
         </button>
       </div>
 
@@ -1108,9 +1149,6 @@
 
             <div class="card-bottom ux-draggable" id="layerCardBottom" data-layer-id="card_bottom">
               <div class="social-icons-box" id="cardSocials" aria-label="Liên kết mạng xã hội"></div>
-              <button type="button" class="btn-toggle-orient-card" id="btnOrientInside" aria-label="Đổi hướng thẻ Dọc hoặc Ngang">
-                <span>📐</span> <span id="txtOrientInside">Đổi Dọc/Ngang</span>
-              </button>
             </div>
           </div>
 
@@ -1124,11 +1162,7 @@
                 <span id="cardAdr" class="ux-editable" data-layer-id="adr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</span>
               </a>
             </div>
-            <div class="card-bottom" style="justify-content: flex-end;">
-              <button type="button" class="btn-toggle-orient-card" id="btnOrientInsideBack" aria-label="Đổi hướng thẻ Dọc hoặc Ngang">
-                <span>📐</span> <span>Đổi Dọc/Ngang</span>
-              </button>
-            </div>
+            <div class="card-bottom" style="display:none;"></div>
           </div>
 
         </div>
@@ -1141,16 +1175,22 @@
       </div>
     </main>
 
-    <!-- Action Dock -->
+    <!-- Action Dock (5 Buttons Compact Refactored) -->
     <footer class="action-dock">
       <button class="dock-btn dock-btn-primary" id="btnSaveVcf" aria-label="Lưu danh bạ vCard vào máy">
         <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ</span>
       </button>
       <button class="dock-btn" id="btnLaunchAr" aria-label="Xem thẻ trong không gian 3D AR">
-        <span>🕶️</span> <span id="txtViewAr">Xem AR Card</span>
+        <span>✨</span> <span id="txtViewAr">Xem AR Card</span>
       </button>
       <button class="dock-btn" id="btnOpenQrDirect" aria-label="Xem mã QR Offline">
         <span>📱</span> <span id="txtViewQr">Xem QR Offline</span>
+      </button>
+      <button class="dock-btn" id="btnFlipCardDock" aria-label="Lật mặt trước hoặc mặt sau danh thiếp">
+        <span>🔄</span> <span id="lblFlipCardDock">Lật Mặt Thẻ</span>
+      </button>
+      <button class="dock-btn" id="btnCreateNewDock" aria-label="Tạo danh thiếp mới hoặc chỉnh sửa">
+        <span>✏️</span> <span id="txtCreateDock">Tạo Thẻ Mới</span>
       </button>
     </footer>
     </div> <!-- /main-canvas-row -->
@@ -1369,6 +1409,41 @@
         <button class="btn-qr-action" id="btnDownloadQr">📥 Tải Ảnh QR</button>
         <button class="btn-qr-action" id="btnCopyToNfc" title="Sao chép dữ liệu vCard NDEF hoặc chạm ghi vào thẻ NFC">📲 <span id="txtCopyToNfc">Sao Chép Vào NFC</span></button>
       </div>
+    </div>
+  </div>
+
+  <!-- Create Card / Edit Mode Choice Modal -->
+  <div class="qr-modal" id="createChoiceModal" role="dialog" aria-modal="true" aria-label="Tạo danh thiếp hoặc Chỉnh sửa">
+    <div class="qr-card" style="max-width: 360px; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(216, 175, 98, 0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.95);">
+      <button class="qr-close" id="btnCloseCreateChoiceModal" aria-label="Đóng bảng tùy chọn" style="color: #94a3b8;">✕</button>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+        <span style="font-size:1.4rem; line-height:1;">👑</span>
+        <h3 style="font-size:1.05rem; font-weight:700; color:#fff0be;">Tạo & Chỉnh Sửa Danh Thiếp</h3>
+      </div>
+      <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:16px;">Chọn phương thức tạo mẫu danh thiếp phù hợp với bạn</p>
+      
+      <!-- Option 1: Nhập liệu form đơn -->
+      <button type="button" id="btnChoiceOpenForm" style="width:100%; display:flex; align-items:center; gap:12px; padding:14px; border-radius:12px; background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.35); text-align:left; cursor:pointer; margin-bottom:10px; transition:background 0.15s ease;">
+        <div style="font-size:1.8rem; line-height:1;">📝</div>
+        <div style="flex:1;">
+          <div style="font-size:0.92rem; font-weight:700; color:#38bdf8;">Nhập Liệu Vào Đơn</div>
+          <div style="font-size:0.75rem; color:#cbd5e1; margin-top:3px; line-height:1.35;">Nhập biểu mẫu chi tiết: Họ tên, chức danh, hotline, avatar, logo, Pro/VIP presets</div>
+        </div>
+        <span style="color:#38bdf8; font-size:1.2rem; font-weight:700;">→</span>
+      </button>
+
+      <!-- Option 2: UX Builder Kéo thả trực tiếp -->
+      <button type="button" id="btnChoiceOpenBuilder" style="width:100%; display:flex; align-items:center; gap:12px; padding:14px; border-radius:12px; background:rgba(216, 175, 98, 0.12); border:1px solid rgba(216, 175, 98, 0.45); text-align:left; cursor:pointer; transition:background 0.15s ease;">
+        <div style="font-size:1.8rem; line-height:1;">🎨</div>
+        <div style="flex:1;">
+          <div style="font-size:0.92rem; font-weight:700; color:#fff0be; display:flex; align-items:center; gap:6px;">
+            Chỉnh Sửa Trực Tiếp
+            <span style="font-size:0.65rem; background:linear-gradient(135deg, #d8af62, #f7e5ad); color:#070a12; padding:2px 6px; border-radius:4px; font-weight:800; letter-spacing:0.5px;">VIP PRO</span>
+          </div>
+          <div style="font-size:0.75rem; color:#cbd5e1; margin-top:3px; line-height:1.35;">Kéo thả vị trí các phần tử, nhấp đúp gõ chữ, Enter ngắt dòng, ép kim vàng & dập nổi</div>
+        </div>
+        <span style="color:#d8af62; font-size:1.2rem; font-weight:700;">→</span>
+      </button>
     </div>
   </div>
 
@@ -1835,16 +1910,71 @@ const BRAND_ICONS = {
     btnFlipBelow.onclick = flipCard;
   }
 
-  // Toggle Orientation (Inside Card corner buttons)
+  // Toggle Orientation (Header & inside buttons)
   function toggleCardOrientation(e) {
     if (e) e.stopPropagation();
     profile.orientation = profile.orientation === 'horizontal' ? 'vertical' : 'horizontal';
     renderCard();
+    const txtOrientHeader = document.getElementById('txtOrientHeader');
+    if (txtOrientHeader) {
+      txtOrientHeader.textContent = profile.orientation === 'horizontal' ? 'Đổi Dọc' : 'Đổi Ngang';
+    }
   }
+  const btnToggleOrientationHeader = document.getElementById('btnToggleOrientationHeader');
+  if (btnToggleOrientationHeader) btnToggleOrientationHeader.onclick = toggleCardOrientation;
   const btnOrientInside = document.getElementById('btnOrientInside');
   if (btnOrientInside) btnOrientInside.onclick = toggleCardOrientation;
   const btnOrientInsideBack = document.getElementById('btnOrientInsideBack');
   if (btnOrientInsideBack) btnOrientInsideBack.onclick = toggleCardOrientation;
+
+  // Bottom Dock Flip Card Button
+  const btnFlipCardDock = document.getElementById('btnFlipCardDock');
+  if (btnFlipCardDock) {
+    btnFlipCardDock.onclick = flipCard;
+  }
+
+  // Create Choice Modal Controls (Popup with 2 choices: Form or UX Builder)
+  const createChoiceModal = document.getElementById('createChoiceModal');
+  const btnCloseCreateChoiceModal = document.getElementById('btnCloseCreateChoiceModal');
+  const btnChoiceOpenForm = document.getElementById('btnChoiceOpenForm');
+  const btnChoiceOpenBuilder = document.getElementById('btnChoiceOpenBuilder');
+  const btnCreateNewDock = document.getElementById('btnCreateNewDock');
+
+  function openCreateChoiceModal() {
+    if (createChoiceModal) {
+      createChoiceModal.classList.add('active');
+      mainAppShell.setAttribute('inert', 'true');
+    }
+  }
+  function closeCreateChoiceModal() {
+    if (createChoiceModal) {
+      createChoiceModal.classList.remove('active');
+      mainAppShell.removeAttribute('inert');
+    }
+  }
+
+  if (btnCreateNewDock) btnCreateNewDock.onclick = openCreateChoiceModal;
+  if (btnCloseCreateChoiceModal) btnCloseCreateChoiceModal.onclick = closeCreateChoiceModal;
+
+  if (createChoiceModal) {
+    createChoiceModal.addEventListener('click', (e) => {
+      if (e.target === createChoiceModal) closeCreateChoiceModal();
+    });
+  }
+
+  if (btnChoiceOpenForm) {
+    btnChoiceOpenForm.onclick = () => {
+      closeCreateChoiceModal();
+      openSheet(true);
+    };
+  }
+
+  if (btnChoiceOpenBuilder) {
+    btnChoiceOpenBuilder.onclick = () => {
+      closeCreateChoiceModal();
+      setBuilderMode(true);
+    };
+  }
 
   // Direct Open QR Offline Button
   const btnOpenQrDirect = document.getElementById('btnOpenQrDirect');
@@ -2598,18 +2728,13 @@ const BRAND_ICONS = {
   function setBuilderMode(enable) {
     isBuilderMode = enable;
     document.body.classList.toggle('builder-active', enable);
+    const builderBar = document.getElementById('builderControlBar');
+    if (builderBar) builderBar.style.display = enable ? 'flex' : 'none';
     if (safeZoneGuide) safeZoneGuide.style.display = enable ? 'block' : 'none';
-    if (btnResetBuilderLayout) btnResetBuilderLayout.style.display = enable ? 'inline-flex' : 'none';
 
     if (enable) {
-      txtBuilderMode.textContent = 'Đang Bật UX Builder (Nhấp sửa / Kéo thả)';
-      btnToggleBuilderMode.style.borderColor = '#38bdf8';
-      btnToggleBuilderMode.style.background = 'linear-gradient(135deg, rgba(56,189,248,0.35), rgba(216,175,98,0.35))';
       showToast('Đã bật chế độ UX Builder! Kéo thả hoặc nhấp đúp để gõ.');
     } else {
-      txtBuilderMode.textContent = 'Bật Chế Độ Kéo Thả UX Builder';
-      btnToggleBuilderMode.style.borderColor = '#d8af62';
-      btnToggleBuilderMode.style.background = 'linear-gradient(135deg, rgba(216,175,98,0.25), rgba(56,189,248,0.25))';
       hideFloatingToolbar();
       deselectActiveElement();
       saveBuilderLayoutToStorage();
@@ -2621,8 +2746,12 @@ const BRAND_ICONS = {
     });
   }
 
-  if (btnToggleBuilderMode) {
-    btnToggleBuilderMode.onclick = () => setBuilderMode(!isBuilderMode);
+  const btnDoneBuilderMode = document.getElementById('btnDoneBuilderMode');
+  if (btnDoneBuilderMode) {
+    btnDoneBuilderMode.onclick = () => {
+      setBuilderMode(false);
+      showToast('Đã lưu thiết kế Builder!');
+    };
   }
 
   if (btnResetBuilderLayout) {
