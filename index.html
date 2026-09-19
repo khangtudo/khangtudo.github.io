@@ -595,7 +595,7 @@
     .company-stack .slogan { font-size: 0.8rem; color: var(--primary); font-style: italic; }
     .company-stack .address { font-size: 0.76rem; color: var(--muted); max-width: 260px; line-height: 1.4; }
 
-    /* Corner Flip Hint Badge (i) */
+    /* Corner Flip Hint Badge (i) on both front and back */
     .card-flip-info-badge {
       position: absolute;
       bottom: clamp(10px, 2vh, 16px);
@@ -619,10 +619,10 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
       user-select: none;
     }
-    /* On flipped back face, mirror the horizontal coordinate so it stays in the bottom-right corner visually */
     .card-back .card-flip-info-badge {
-      right: auto;
-      left: clamp(10px, 2.5vw, 16px);
+      left: clamp(10px, 2.5vw, 16px) !important;
+      right: auto !important;
+      transform: scaleX(-1);
     }
     .card-flip-info-badge:hover {
       background: rgba(56, 189, 248, 0.25);
