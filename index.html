@@ -57,11 +57,12 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: max(8px, var(--safe-t)) clamp(14px, 3vw, 32px) max(12px, var(--safe-b));
+      padding: max(8px, var(--safe-t)) clamp(8px, 2.5vw, 24px) max(10px, var(--safe-b));
       max-width: 1360px;
       margin: 0 auto;
       box-sizing: border-box;
       width: 100%;
+      overflow-x: hidden;
     }
 
     /* 1. Header */
@@ -70,25 +71,41 @@
       justify-content: space-between;
       align-items: center;
       width: 100%;
-      height: clamp(44px, 6vh, 56px);
+      height: clamp(42px, 5.5vh, 52px);
       flex-shrink: 0;
-      padding-right: clamp(6px, 2vw, 12px);
+      padding: 0 4px;
       box-sizing: border-box;
+      overflow: hidden;
     }
     .brand-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
       text-decoration: none;
+      min-width: 0;
+      flex-shrink: 1;
     }
-    .brand-group img {
-      height: clamp(32px, 5vh, 44px);
-      width: auto;
+    .brand-title-wrap {
+      min-width: 0;
+      overflow: hidden;
+    }
+    .brand-main-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-tagline-prominent {
+      font-size: clamp(0.55rem, 1.6vw, 0.68rem);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      flex-shrink: 0;
     }
     .btn-create-sheet {
       background: var(--primary);
@@ -1023,14 +1040,14 @@
           <div class="brand-tagline-prominent">SMART AR CARD • OFFLINE QR</div>
         </div>
       </a>
-      <div class="header-actions" style="display:flex; align-items:center; gap:8px; margin-right:8px;">
-        <button type="button" class="btn-create-sheet" id="btnToggleOrientationHeader" aria-label="Đổi hướng thẻ Dọc hoặc Ngang" style="background:rgba(56, 189, 248, 0.12); border:1px solid rgba(56, 189, 248, 0.4); color:#38bdf8; font-size:0.75rem; padding:6px 10px; border-radius:10px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;">
-          <span style="font-size:0.9rem;">📐</span> <span id="txtOrientHeader">Đổi Ngang</span>
+      <div class="header-actions">
+        <button type="button" class="btn-create-sheet" id="btnToggleOrientationHeader" aria-label="Đổi hướng thẻ Dọc hoặc Ngang" style="background:rgba(56, 189, 248, 0.12); border:1px solid rgba(56, 189, 248, 0.4); color:#38bdf8; font-size:0.72rem; padding:4px 8px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:3px; white-space:nowrap; height:32px;">
+          <span style="font-size:0.85rem;">📐</span> <span id="txtOrientHeader">Ngang</span>
         </button>
         <button class="btn-create-sheet" id="btnOpenEdit" aria-haspopup="dialog" aria-expanded="false" aria-controls="editSheet" style="display:none;">
           <span>✨</span> <span id="txtCreateNew">+ Tạo mới</span>
         </button>
-        <div class="flag-wrap" style="margin-right:4px;">
+        <div class="flag-wrap">
           <button class="flag-btn" id="flagBtn" aria-haspopup="true" aria-expanded="false" aria-controls="flagMenu" aria-label="Chọn ngôn ngữ">
             <span id="currentFlag">🇻🇳</span> <span style="font-size:0.65rem; opacity:0.6;">▼</span>
           </button>
@@ -1178,19 +1195,19 @@
     <!-- Action Dock (5 Buttons Compact Refactored) -->
     <footer class="action-dock">
       <button class="dock-btn dock-btn-primary" id="btnSaveVcf" aria-label="Lưu danh bạ vCard vào máy">
-        <span>💾</span> <span id="txtSaveVcf">Lưu Danh Bạ</span>
+        <span>💾</span> <span id="txtSaveVcf">Lưu Thẻ</span>
       </button>
       <button class="dock-btn" id="btnLaunchAr" aria-label="Xem thẻ trong không gian 3D AR">
-        <span>✨</span> <span id="txtViewAr">Xem AR Card</span>
+        <span>✨</span> <span id="txtViewAr">Xem AR</span>
       </button>
       <button class="dock-btn" id="btnOpenQrDirect" aria-label="Xem mã QR Offline">
-        <span>📱</span> <span id="txtViewQr">Xem QR Offline</span>
+        <span>📱</span> <span id="txtViewQr">Mã QR</span>
       </button>
       <button class="dock-btn" id="btnFlipCardDock" aria-label="Lật mặt trước hoặc mặt sau danh thiếp">
-        <span>🔄</span> <span id="lblFlipCardDock">Lật Mặt Thẻ</span>
+        <span>🔄</span> <span id="lblFlipCardDock">Lật Thẻ</span>
       </button>
       <button class="dock-btn" id="btnCreateNewDock" aria-label="Tạo danh thiếp mới hoặc chỉnh sửa">
-        <span>✏️</span> <span id="txtCreateDock">Tạo Thẻ Mới</span>
+        <span>✏️</span> <span id="txtCreateDock">Tạo Mới</span>
       </button>
     </footer>
     </div> <!-- /main-canvas-row -->
@@ -1414,35 +1431,35 @@
 
   <!-- Create Card / Edit Mode Choice Modal -->
   <div class="qr-modal" id="createChoiceModal" role="dialog" aria-modal="true" aria-label="Tạo danh thiếp hoặc Chỉnh sửa">
-    <div class="qr-card" style="max-width: 360px; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(216, 175, 98, 0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.95);">
-      <button class="qr-close" id="btnCloseCreateChoiceModal" aria-label="Đóng bảng tùy chọn" style="color: #94a3b8;">✕</button>
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-        <span style="font-size:1.4rem; line-height:1;">👑</span>
-        <h3 style="font-size:1.05rem; font-weight:700; color:#fff0be;">Tạo & Chỉnh Sửa Danh Thiếp</h3>
+    <div class="qr-card" style="max-width: 350px; width: 92%; max-height: min(85vh, 440px); overflow-y: auto; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(216, 175, 98, 0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.95); padding: 18px 16px; border-radius: 18px; box-sizing: border-box;">
+      <button class="qr-close" id="btnCloseCreateChoiceModal" aria-label="Đóng bảng tùy chọn" style="color: #94a3b8; top: 12px; right: 12px;">✕</button>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+        <span style="font-size:1.3rem; line-height:1;">👑</span>
+        <h3 style="font-size:1rem; font-weight:700; color:#fff0be; margin:0;">Tạo & Chỉnh Sửa Thẻ</h3>
       </div>
-      <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:16px;">Chọn phương thức tạo mẫu danh thiếp phù hợp với bạn</p>
+      <p style="font-size:0.72rem; color:#94a3b8; margin: 0 0 14px 0;">Chọn phương thức tạo mẫu danh thiếp phù hợp với bạn</p>
       
       <!-- Option 1: Nhập liệu form đơn -->
-      <button type="button" id="btnChoiceOpenForm" style="width:100%; display:flex; align-items:center; gap:12px; padding:14px; border-radius:12px; background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.35); text-align:left; cursor:pointer; margin-bottom:10px; transition:background 0.15s ease;">
-        <div style="font-size:1.8rem; line-height:1;">📝</div>
-        <div style="flex:1;">
-          <div style="font-size:0.92rem; font-weight:700; color:#38bdf8;">Nhập Liệu Vào Đơn</div>
-          <div style="font-size:0.75rem; color:#cbd5e1; margin-top:3px; line-height:1.35;">Nhập biểu mẫu chi tiết: Họ tên, chức danh, hotline, avatar, logo, Pro/VIP presets</div>
+      <button type="button" id="btnChoiceOpenForm" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.35); text-align:left; cursor:pointer; margin-bottom:8px; transition:background 0.15s ease; box-sizing: border-box;">
+        <div style="font-size:1.6rem; line-height:1;">📝</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:0.88rem; font-weight:700; color:#38bdf8;">Nhập Liệu Vào Đơn</div>
+          <div style="font-size:0.7rem; color:#cbd5e1; margin-top:2px; line-height:1.3;">Biểu mẫu chi tiết: Họ tên, hotline, avatar, logo, 5 preset Pro/VIP</div>
         </div>
-        <span style="color:#38bdf8; font-size:1.2rem; font-weight:700;">→</span>
+        <span style="color:#38bdf8; font-size:1.1rem; font-weight:700;">→</span>
       </button>
 
       <!-- Option 2: UX Builder Kéo thả trực tiếp -->
-      <button type="button" id="btnChoiceOpenBuilder" style="width:100%; display:flex; align-items:center; gap:12px; padding:14px; border-radius:12px; background:rgba(216, 175, 98, 0.12); border:1px solid rgba(216, 175, 98, 0.45); text-align:left; cursor:pointer; transition:background 0.15s ease;">
-        <div style="font-size:1.8rem; line-height:1;">🎨</div>
-        <div style="flex:1;">
-          <div style="font-size:0.92rem; font-weight:700; color:#fff0be; display:flex; align-items:center; gap:6px;">
+      <button type="button" id="btnChoiceOpenBuilder" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:rgba(216, 175, 98, 0.12); border:1px solid rgba(216, 175, 98, 0.45); text-align:left; cursor:pointer; transition:background 0.15s ease; box-sizing: border-box;">
+        <div style="font-size:1.6rem; line-height:1;">🎨</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:0.88rem; font-weight:700; color:#fff0be; display:flex; align-items:center; gap:6px;">
             Chỉnh Sửa Trực Tiếp
-            <span style="font-size:0.65rem; background:linear-gradient(135deg, #d8af62, #f7e5ad); color:#070a12; padding:2px 6px; border-radius:4px; font-weight:800; letter-spacing:0.5px;">VIP PRO</span>
+            <span style="font-size:0.6rem; background:linear-gradient(135deg, #d8af62, #f7e5ad); color:#070a12; padding:1px 5px; border-radius:4px; font-weight:800;">VIP PRO</span>
           </div>
-          <div style="font-size:0.75rem; color:#cbd5e1; margin-top:3px; line-height:1.35;">Kéo thả vị trí các phần tử, nhấp đúp gõ chữ, Enter ngắt dòng, ép kim vàng & dập nổi</div>
+          <div style="font-size:0.7rem; color:#cbd5e1; margin-top:2px; line-height:1.3;">Kéo thả phần tử, gõ chữ, Enter ngắt dòng, ép kim vàng & dập nổi</div>
         </div>
-        <span style="color:#d8af62; font-size:1.2rem; font-weight:700;">→</span>
+        <span style="color:#d8af62; font-size:1.1rem; font-weight:700;">→</span>
       </button>
     </div>
   </div>
@@ -1748,13 +1765,13 @@ const BRAND_ICONS = {
     if (elCreateNew) elCreateNew.textContent = createNewTxt;
     
     const elSaveVcf = document.getElementById('txtSaveVcf');
-    if (elSaveVcf) elSaveVcf.textContent = getTranslation(currentLang, 'saveVcf') || 'Lưu Danh Bạ';
+    if (elSaveVcf) elSaveVcf.textContent = currentLang === 'vi' ? 'Lưu Thẻ' : (getTranslation(currentLang, 'saveVcf') || 'Save');
     
     const elViewAr = document.getElementById('txtViewAr');
-    if (elViewAr) elViewAr.textContent = (getTranslation(currentLang, 'viewAr') || 'Xem AR') + ' Card';
+    if (elViewAr) elViewAr.textContent = currentLang === 'vi' ? 'Xem AR' : (getTranslation(currentLang, 'viewAr') || 'AR Card');
 
     const elViewQr = document.getElementById('txtViewQr');
-    if (elViewQr) elViewQr.textContent = 'Xem QR Offline';
+    if (elViewQr) elViewQr.textContent = currentLang === 'vi' ? 'Mã QR' : 'QR Offline';
 
     const elFlipBelow = document.getElementById('txtFlipBelow');
     if (elFlipBelow) elFlipBelow.textContent = getTranslation(currentLang, 'flipCard') || 'Chạm để lật thẻ 3D';
