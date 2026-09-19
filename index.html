@@ -1021,6 +1021,30 @@
 
     <!-- Sheet Scrollable Form Body -->
     <div class="sheet-body">
+      <div class="field-group" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label for="inAvatarFile" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Ảnh đại diện</span>
+            <span style="font-size:0.68rem; color:var(--primary);">&lt; 1MB</span>
+          </label>
+          <input type="file" id="inAvatarFile" accept="image/*" style="font-size:0.75rem; padding:6px; width:100%; box-sizing:border-box;">
+          <div id="avatarPreviewBox" style="margin-top:6px; display:flex; align-items:center; gap:8px;">
+            <img id="avatarMiniThumb" src="" alt="Avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid var(--primary); display:none;">
+            <button type="button" id="btnRemoveAvatar" style="display:none; font-size:0.7rem; color:#f43f5e; background:none; border:none; cursor:pointer; padding:0;">Xóa ảnh</button>
+          </div>
+        </div>
+        <div>
+          <label for="inLogoFile" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Logo công ty</span>
+            <span style="font-size:0.68rem; color:var(--primary);">&lt; 1MB</span>
+          </label>
+          <input type="file" id="inLogoFile" accept="image/*" style="font-size:0.75rem; padding:6px; width:100%; box-sizing:border-box;">
+          <div id="logoPreviewBox" style="margin-top:6px; display:flex; align-items:center; gap:8px;">
+            <img id="logoMiniThumb" src="" alt="Logo" style="width:36px; height:36px; border-radius:6px; object-fit:contain; border:1px solid var(--primary); background:#0b1220; display:none;">
+            <button type="button" id="btnRemoveLogo" style="display:none; font-size:0.7rem; color:#f43f5e; background:none; border:none; cursor:pointer; padding:0;">Xóa logo</button>
+          </div>
+        </div>
+      </div>
       <div class="field-group">
         <label for="inFn">Họ và Tên *</label>
         <input type="text" id="inFn" placeholder="vd: Phan Mạnh Khang" required>
@@ -1434,6 +1458,26 @@ const BRAND_ICONS = {
     document.getElementById('cardTitle').textContent = profile.title || '';
     document.getElementById('cardOrg').textContent = profile.org || '';
     document.getElementById('cardBackOrg').textContent = profile.org || '';
+
+    // Render Avatar & Logo if present
+    const elCardAvatar = document.getElementById('cardAvatar');
+    if (elCardAvatar) {
+      if (profile.avatar) {
+        elCardAvatar.src = profile.avatar;
+      } else {
+        const initials = (profile.fn || 'ID').trim().split(/\s+/).map(p => p[0]).join('').slice(0, 3).toUpperCase();
+        elCardAvatar.src = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23131b2e" stroke="%2338bdf8" stroke-width="3"/><text x="50" y="58" font-size="32" text-anchor="middle" fill="%2338bdf8">${encodeURIComponent(initials)}</text></svg>`;
+      }
+    }
+    const elCardLogo = document.getElementById('cardLogo');
+    if (elCardLogo) {
+      if (profile.logo) {
+        elCardLogo.src = profile.logo;
+      } else {
+        const orgInitials = (profile.org || profile.fn || 'ID').trim().split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
+        elCardLogo.src = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="18" fill="%23131b2e" stroke="%2338bdf8" stroke-width="2"/><text x="50" y="60" font-size="32" text-anchor="middle" font-weight="bold" fill="%2338bdf8">${encodeURIComponent(orgInitials)}</text></svg>`;
+      }
+    }
     document.getElementById('cardTel').textContent = profile.tel || '';
     document.getElementById('cardTelLink').href = `tel:${profile.tel || ''}`;
     document.getElementById('cardEmail').textContent = profile.email || '';
@@ -1696,12 +1740,90 @@ const BRAND_ICONS = {
     };
   }
 
+  // File inputs for Avatar & Logo
+  let tempAvatarData = null;
+  let tempLogoData = null;
+
+  const inAvatarFile = document.getElementById('inAvatarFile');
+  const inLogoFile = document.getElementById('inLogoFile');
+  const avatarMiniThumb = document.getElementById('avatarMiniThumb');
+  const logoMiniThumb = document.getElementById('logoMiniThumb');
+  const btnRemoveAvatar = document.getElementById('btnRemoveAvatar');
+  const btnRemoveLogo = document.getElementById('btnRemoveLogo');
+
+  function setupImageUpload(fileInput, maxBytes, callback) {
+    if (!fileInput) return;
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (file.size > maxBytes) {
+        showToast('Ảnh vượt quá dung lượng 1MB! Vui lòng chọn ảnh nhỏ hơn.');
+        fileInput.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        callback(evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  setupImageUpload(inAvatarFile, 1024 * 1024, (dataUrl) => {
+    tempAvatarData = dataUrl;
+    if (avatarMiniThumb) {
+      avatarMiniThumb.src = dataUrl;
+      avatarMiniThumb.style.display = 'block';
+    }
+    if (btnRemoveAvatar) btnRemoveAvatar.style.display = 'inline';
+    showToast('Đã nạp ảnh đại diện!');
+  });
+
+  setupImageUpload(inLogoFile, 1024 * 1024, (dataUrl) => {
+    tempLogoData = dataUrl;
+    if (logoMiniThumb) {
+      logoMiniThumb.src = dataUrl;
+      logoMiniThumb.style.display = 'block';
+    }
+    if (btnRemoveLogo) btnRemoveLogo.style.display = 'inline';
+    showToast('Đã nạp logo công ty!');
+  });
+
+  if (btnRemoveAvatar) {
+    btnRemoveAvatar.onclick = () => {
+      tempAvatarData = '';
+      if (inAvatarFile) inAvatarFile.value = '';
+      if (avatarMiniThumb) { avatarMiniThumb.src = ''; avatarMiniThumb.style.display = 'none'; }
+      btnRemoveAvatar.style.display = 'none';
+      showToast('Đã bỏ ảnh đại diện');
+    };
+  }
+
+  if (btnRemoveLogo) {
+    btnRemoveLogo.onclick = () => {
+      tempLogoData = '';
+      if (inLogoFile) inLogoFile.value = '';
+      if (logoMiniThumb) { logoMiniThumb.src = ''; logoMiniThumb.style.display = 'none'; }
+      btnRemoveLogo.style.display = 'none';
+      showToast('Đã bỏ logo công ty');
+    };
+  }
+
   function openSheet(clearFields = false) {
     lastFocusedTrigger = btnOpenEdit;
     // Bấm "+ Tạo mới" sẽ dọn sạch form để bắt đầu điền thẻ mới từ đầu
     const isCreateNew = clearFields || (lastFocusedTrigger === btnOpenEdit);
 
     if (isCreateNew) {
+      tempAvatarData = '';
+      tempLogoData = '';
+      if (inAvatarFile) inAvatarFile.value = '';
+      if (inLogoFile) inLogoFile.value = '';
+      if (avatarMiniThumb) { avatarMiniThumb.src = ''; avatarMiniThumb.style.display = 'none'; }
+      if (logoMiniThumb) { logoMiniThumb.src = ''; logoMiniThumb.style.display = 'none'; }
+      if (btnRemoveAvatar) btnRemoveAvatar.style.display = 'none';
+      if (btnRemoveLogo) btnRemoveLogo.style.display = 'none';
+
       // Clear all fields for clean slate
       document.getElementById('inFn').value = '';
       document.getElementById('inTitle').value = '';
@@ -1716,6 +1838,32 @@ const BRAND_ICONS = {
       const titleEl = document.getElementById('sheetTitle');
       if (titleEl) titleEl.textContent = 'Tạo Mới Danh Thiếp';
     } else {
+      // Pre-fill avatar and logo
+      tempAvatarData = profile.avatar || null;
+      tempLogoData = profile.logo || null;
+      if (avatarMiniThumb) {
+        if (tempAvatarData) {
+          avatarMiniThumb.src = tempAvatarData;
+          avatarMiniThumb.style.display = 'block';
+          if (btnRemoveAvatar) btnRemoveAvatar.style.display = 'inline';
+        } else {
+          avatarMiniThumb.src = '';
+          avatarMiniThumb.style.display = 'none';
+          if (btnRemoveAvatar) btnRemoveAvatar.style.display = 'none';
+        }
+      }
+      if (logoMiniThumb) {
+        if (tempLogoData) {
+          logoMiniThumb.src = tempLogoData;
+          logoMiniThumb.style.display = 'block';
+          if (btnRemoveLogo) btnRemoveLogo.style.display = 'inline';
+        } else {
+          logoMiniThumb.src = '';
+          logoMiniThumb.style.display = 'none';
+          if (btnRemoveLogo) btnRemoveLogo.style.display = 'none';
+        }
+      }
+
       // Populate with existing profile
       document.getElementById('inFn').value = profile.fn || '';
       document.getElementById('inTitle').value = profile.title || '';
@@ -1822,6 +1970,14 @@ const BRAND_ICONS = {
     profile.url = rawUrl ? `https://${rawUrl.replace(/^https?:\/\//i, '')}` : 'https://inid.me';
     profile.adr = document.getElementById('inAdr').value.trim();
     profile.slogan = document.getElementById('inSlogan').value.trim();
+
+    // Save uploaded Avatar & Logo
+    if (tempAvatarData !== null) {
+      profile.avatar = tempAvatarData || '';
+    }
+    if (tempLogoData !== null) {
+      profile.logo = tempLogoData || '';
+    }
 
     // Read Gravatar dynamic social links
     const newSocials = [];

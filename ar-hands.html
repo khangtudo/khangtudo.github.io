@@ -331,26 +331,36 @@
     const cardGroup = new THREE.Group();
     scene.add(cardGroup);
 
-    // Standard Business card ratio: 0.91m x 0.55m -> scale down to 0.28m x 0.17m in AR space
-    const CARD_W = 0.58;
-    const CARD_H = 0.35;
+    // Orientation check: horizontal (0.58m x 0.35m) vs vertical (0.35m x 0.58m)
+    const isVertical = activeProfile ? (activeProfile.orientation === 'vertical') : false;
+    const CARD_W = isVertical ? 0.35 : 0.58;
+    const CARD_H = isVertical ? 0.58 : 0.35;
     const geom = new THREE.BoxGeometry(CARD_W, CARD_H, 0.003);
 
     // Create dynamic or fallback card texture
     let cardTexture;
+    const textureLoader = new THREE.TextureLoader();
     if (activeProfile && (activeProfile.fn || activeProfile.org)) {
-      console.log('Rendering dynamic AR card texture for profile:', activeProfile.fn);
-      const dynamicCanvas = createDynamicCardTexture(activeProfile, false);
-      cardTexture = new THREE.CanvasTexture(dynamicCanvas);
-      cardTexture.needsUpdate = true;
+      console.log('Rendering dynamic AR card texture for profile:', activeProfile.fn, 'isVertical:', isVertical);
+      // Create initial placeholder canvas texture while async image loading finishes
+      const placeholderCanvas = document.createElement('canvas');
+      placeholderCanvas.width = 1024; placeholderCanvas.height = 1024;
+      cardTexture = new THREE.CanvasTexture(placeholderCanvas);
+
+      createDynamicCardTexture(activeProfile, isVertical).then((dynamicCanvas) => {
+        cardTexture.image = dynamicCanvas;
+        cardTexture.needsUpdate = true;
+        console.log('✅ Dynamic AR card texture with images updated!');
+      }).catch(err => {
+        console.warn('Error generating dynamic texture:', err);
+      });
     } else {
-      const textureLoader = new THREE.TextureLoader();
       cardTexture = textureLoader.load('/assets/3d/extracted-texture.png?v=20260914-prod', () => {
         console.log('Default 3D Card Texture loaded!');
       });
     }
 
-    // Custom UV for Front (Top half) and Back (Bottom half)
+    // Custom UV for Front (Top half or Left) and Back (Bottom half or Right)
     const matFront = new THREE.MeshStandardMaterial({
       map: cardTexture,
       roughness: 0.3,
@@ -370,26 +380,44 @@
     ];
 
     // Adjust UV coordinates for BoxGeometry face 4 (front) & face 5 (back)
-    // Texture is 1024x1024 with card bounds: X: 82..942, Front Y: 0..520, Back Y: 504..1024
     const uvAttr = geom.attributes.uv;
-    const uMin = 82 / 1024;
-    const uMax = 942 / 1024;
-    const vFrontTop = 1.0;
-    const vFrontBottom = 504 / 1024; // (1024 - 520) / 1024 = 0.4921875
+    if (!isVertical) {
+      // Horizontal UV: X: 82..942, Front Y: 0..520, Back Y: 504..1024
+      const uMin = 82 / 1024;
+      const uMax = 942 / 1024;
+      const vFrontTop = 1.0;
+      const vFrontBottom = 504 / 1024;
 
-    // Front face (index 16..19 in BoxGeometry)
-    uvAttr.setXY(16, uMin, vFrontTop);
-    uvAttr.setXY(17, uMax, vFrontTop);
-    uvAttr.setXY(18, uMin, vFrontBottom);
-    uvAttr.setXY(19, uMax, vFrontBottom);
+      uvAttr.setXY(16, uMin, vFrontTop);
+      uvAttr.setXY(17, uMax, vFrontTop);
+      uvAttr.setXY(18, uMin, vFrontBottom);
+      uvAttr.setXY(19, uMax, vFrontBottom);
 
-    // Back face (index 20..23) -> Un-mirrored: text reads normally from back
-    const vBackTop = 520 / 1024;    // (1024 - 504) / 1024 = 0.5078125
-    const vBackBottom = 0.0;
-    uvAttr.setXY(20, uMin, vBackTop);
-    uvAttr.setXY(21, uMax, vBackTop);
-    uvAttr.setXY(22, uMin, vBackBottom);
-    uvAttr.setXY(23, uMax, vBackBottom);
+      const vBackTop = 520 / 1024;
+      const vBackBottom = 0.0;
+      uvAttr.setXY(20, uMin, vBackTop);
+      uvAttr.setXY(21, uMax, vBackTop);
+      uvAttr.setXY(22, uMin, vBackBottom);
+      uvAttr.setXY(23, uMax, vBackBottom);
+    } else {
+      // Vertical UV:
+      // Front (Left):  X: 20..500, Y: 115..909
+      // Back (Right):  X: 524..1004, Y: 115..909
+      const uFrontMin = 20 / 1024, uFrontMax = 500 / 1024;
+      const uBackMin = 524 / 1024, uBackMax = 1004 / 1024;
+      const vTop = (1024 - 115) / 1024;    // 0.8877
+      const vBottom = (1024 - 909) / 1024; // 0.1123
+
+      uvAttr.setXY(16, uFrontMin, vTop);
+      uvAttr.setXY(17, uFrontMax, vTop);
+      uvAttr.setXY(18, uFrontMin, vBottom);
+      uvAttr.setXY(19, uFrontMax, vBottom);
+
+      uvAttr.setXY(20, uBackMin, vTop);
+      uvAttr.setXY(21, uBackMax, vTop);
+      uvAttr.setXY(22, uBackMin, vBottom);
+      uvAttr.setXY(23, uBackMax, vBottom);
+    }
     uvAttr.needsUpdate = true;
 
     const cardMesh = new THREE.Mesh(geom, materials);
@@ -482,41 +510,28 @@
         const rawZoomRatio = Math.max(0.70, Math.min(1.50, (currentHandSpan / baseHandSpan)));
         const dynamicCardScale = rawZoomRatio;
 
-        // 4. KIỂM TRA ĐỘNG TÁC NẮM / MỞ 4 NGÓN TAY ĐỂ LẬT THẺ 180° CÓ HƯỚNG
+        // 4. KIỂM TRA ĐỘNG TÁC NẮM TAY (CURL) ĐỂ LẬT THẺ TIẾP TỤC 180° CÙNG CHIỀU VỀ MẶT TRƯỚC/MẶT SAU
         const now = performance.now();
         const fourFingers = analyzeFourFingers(lm);
 
-        // Động tác A: Đang MỞ ➔ NẮM 4 ngón lại: Card lật 180° từ Trái sang Phải (Mặt Trước -> Mặt Sau)
+        // Mỗi lần nắm 4 ngón tay (CURLED), lật tiếp 180° (Math.PI) theo đúng chiều vừa xoay
         if (fourFingers.isCurled) {
           if (lastFingerPose === 'EXTENDED' && (now - lastPoseFlipTime > POSE_COOLDOWN_MS)) {
             consecutivePoseFrames++;
             if (consecutivePoseFrames >= 3) {
-              cardFlipped = true;
-              targetRotationY = Math.PI; // Target state-driven 180° (xoay thuận chiều sang phải)
+              targetRotationY += Math.PI; // Tiếp tục quay thêm 180° cùng chiều
+              cardFlipped = !cardFlipped;
               lastPoseFlipTime = now;
               lastFingerPose = 'CURLED';
               consecutivePoseFrames = 0;
-              btnFlipCard.textContent = '🔄 Mặt Sau';
+              btnFlipCard.textContent = cardFlipped ? '🔄 Mặt Sau' : '🔄 Mặt Trước';
             }
           } else {
             lastFingerPose = 'CURLED';
           }
         }
-        // Động tác B: Đang NẮM ➔ MỞ 4 ngón ra: Card lật 180° từ Phải sang Trái (Mặt Sau -> Mặt Trước)
         else if (fourFingers.isExtended) {
-          if (lastFingerPose === 'CURLED' && (now - lastPoseFlipTime > POSE_COOLDOWN_MS)) {
-            consecutivePoseFrames++;
-            if (consecutivePoseFrames >= 3) {
-              cardFlipped = false;
-              targetRotationY = 0; // Target state-driven 0° (xoay ngược chiều về trái)
-              lastPoseFlipTime = now;
-              lastFingerPose = 'EXTENDED';
-              consecutivePoseFrames = 0;
-              btnFlipCard.textContent = '🔄 Mặt Trước';
-            }
-          } else {
-            lastFingerPose = 'EXTENDED';
-          }
+          lastFingerPose = 'EXTENDED';
         }
 
         // 5. CỬ CHỈ PINCH DỰ PHÒNG (Kẹp ngón trỏ & cái)
@@ -820,7 +835,7 @@
 
     btnFlipCard.onclick = () => {
       cardFlipped = !cardFlipped;
-      targetRotationY = cardFlipped ? Math.PI : 0;
+      targetRotationY += Math.PI; // Tiếp tục xoay tiếp 180° cùng chiều
       btnFlipCard.textContent = cardFlipped ? '🔄 Mặt Sau' : '🔄 Mặt Trước';
     };
 
