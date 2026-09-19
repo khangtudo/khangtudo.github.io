@@ -360,6 +360,54 @@
       box-shadow: 0 18px 40px -10px rgba(0,0,0,0.9), inset 0 0 0 3px rgba(216,175,98,0.3);
     }
 
+    /* VIP Luxury Text Effects */
+    .vip-fx-gold {
+      background: linear-gradient(135deg, #FFF0BE 0%, #D8AF62 50%, #FFF4D2 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 6px rgba(216,175,98,0.5)) !important;
+    }
+    .vip-fx-emboss {
+      text-shadow: -1px -1px 0 rgba(255,255,255,0.3), 1px 1px 2px rgba(0,0,0,0.8) !important;
+    }
+
+    /* Builder Mode Interactive Styling */
+    .builder-active .card-perspective {
+      outline: 2px dashed rgba(216,175,98,0.6);
+      box-shadow: 0 0 35px rgba(216,175,98,0.25);
+    }
+    .builder-active .ux-draggable {
+      cursor: grab !important;
+      outline: 1.5px solid transparent;
+      border-radius: 6px;
+      transition: outline 0.15s ease, transform 0.05s ease;
+      touch-action: none;
+      position: relative;
+    }
+    .builder-active .ux-draggable:hover {
+      outline: 1.5px dashed #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .builder-active .ux-draggable.active-selected {
+      outline: 2px solid #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.12);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    }
+    .builder-active .ux-draggable.dragging {
+      cursor: grabbing !important;
+      opacity: 0.9;
+    }
+    .builder-active .ux-editable {
+      cursor: text !important;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+    }
+    .builder-active .ux-editable:focus {
+      outline: 1.5px solid #d8af62 !important;
+      background: rgba(216, 175, 98, 0.15);
+      border-radius: 4px;
+    }
+
     .person-row {
       display: flex;
       align-items: center;
@@ -969,27 +1017,73 @@
 
       <!-- Center Card Stage -->
       <main class="card-stage">
+      
+      <!-- Luxury Spatial Studio / VIP UX Builder Floating Toolbar -->
+      <div id="builderControlBar" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px; z-index:40; flex-wrap:wrap;">
+        <button type="button" id="btnToggleBuilderMode" style="background:linear-gradient(135deg, rgba(216,175,98,0.25), rgba(56,189,248,0.25)); border:1px solid #d8af62; color:#fff0be; font-weight:700; font-size:0.8rem; padding:7px 16px; border-radius:99px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 4px 14px rgba(0,0,0,0.5); backdrop-filter:blur(8px); transition:all 0.2s ease;">
+          <span>✨</span> <span id="txtBuilderMode">Bật Chế Độ Kéo Thả UX Builder</span>
+        </button>
+        <button type="button" id="btnResetBuilderLayout" style="display:none; background:rgba(30,41,59,0.8); border:1px solid #475569; color:#94a3b8; font-size:0.75rem; padding:7px 12px; border-radius:99px; cursor:pointer; align-items:center; gap:4px;">
+          <span>↺</span> Đặt Lại Layout Gốc
+        </button>
+      </div>
+
+      <!-- Floating Context Toolbar (appears on active element) -->
+      <div id="floatingContextToolbar" style="display:none; position:absolute; z-index:90; background:rgba(15,23,42,0.92); border:1px solid #38bdf8; border-radius:12px; padding:6px 10px; box-shadow:0 12px 30px rgba(0,0,0,0.8); backdrop-filter:blur(16px); gap:8px; align-items:center;">
+        <div style="display:flex; align-items:center; gap:4px;">
+          <label style="font-size:0.68rem; color:#94a3b8;">Font:</label>
+          <select id="ctxFontSelect" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:6px; padding:3px 6px; font-size:0.72rem;">
+            <option value="inherit">Mặc định</option>
+            <option value="'Be Vietnam Pro', sans-serif">Be Vietnam Pro</option>
+            <option value="'Inter', sans-serif">Inter</option>
+            <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+            <option value="'Playfair Display', serif">Playfair Display</option>
+            <option value="'Cinzel', serif">Cinzel</option>
+          </select>
+        </div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <label style="font-size:0.68rem; color:#94a3b8;">Size:</label>
+          <button type="button" id="btnCtxSizeDown" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; width:22px; height:22px; cursor:pointer; font-weight:bold;">-</button>
+          <span id="lblCtxSize" style="font-size:0.72rem; color:#38bdf8; min-width:26px; text-align:center;">--</span>
+          <button type="button" id="btnCtxSizeUp" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; width:22px; height:22px; cursor:pointer; font-weight:bold;">+</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <label style="font-size:0.68rem; color:#94a3b8;">Màu:</label>
+          <input type="color" id="ctxColorPicker" style="width:24px; height:24px; border:none; border-radius:4px; background:transparent; cursor:pointer; padding:0;">
+        </div>
+        <div style="display:flex; align-items:center; gap:4px; border-left:1px solid #334155; padding-left:6px;">
+          <label style="font-size:0.68rem; color:#d8af62;">VIP:</label>
+          <button type="button" class="btn-vip-fx" data-fx="gold" style="background:#4d3212; color:#fff0be; border:1px solid #b88935; border-radius:4px; font-size:0.68rem; padding:2px 6px; cursor:pointer;" title="Ép kim vàng ánh kim">Foil ✨</button>
+          <button type="button" class="btn-vip-fx" data-fx="emboss" style="background:#1e293b; color:#e2e8f0; border:1px solid #64748b; border-radius:4px; font-size:0.68rem; padding:2px 6px; cursor:pointer;" title="Dập nổi 3D">Emboss 💎</button>
+        </div>
+      </div>
+
       <div class="card-perspective" id="cardPerspective">
+        <!-- 2mm Safe Zone Boundary Guide -->
+        <div id="safeZoneGuide" style="display:none; position:absolute; inset:14px; border:1.5px dashed rgba(56, 189, 248, 0.5); border-radius:18px; pointer-events:none; z-index:50;">
+          <span style="position:absolute; top:4px; right:8px; font-size:0.6rem; color:rgba(56, 189, 248, 0.7); letter-spacing:0.5px;">SAFE ZONE 2MM</span>
+        </div>
+
         <div class="card-3d" id="card3d" role="button" tabindex="0" aria-pressed="false" aria-label="Danh thiếp 3D hai mặt. Nhấn Enter hoặc Space để lật sang mặt sau." title="Chạm để lật thẻ 🔄">
           
           <!-- Front Face -->
           <div class="card-face card-front" aria-label="Mặt trước cá nhân">
-            <div class="person-row">
-              <img id="cardAvatar" class="card-avatar" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%223%22/><text x=%2250%22 y=%2258%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%2338bdf8%22>PMK</text></svg>" alt="Avatar">
+            <div class="person-row ux-draggable" id="layerPersonRow" data-layer-id="person_row">
+              <img id="cardAvatar" class="card-avatar ux-draggable" data-layer-id="avatar" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%223%22/><text x=%2250%22 y=%2258%22 font-size=%2232%22 text-anchor=%22middle%22 fill=%22%2338bdf8%22>PMK</text></svg>" alt="Avatar">
               <div class="person-text">
-                <h2 id="cardFn">Phan Mạnh Khang</h2>
-                <p id="cardTitle">Kỹ Thuật Viên Trưởng</p>
-                <p id="cardOrg" style="font-size:0.75rem; color:var(--muted)">Minh Tam Prolab</p>
+                <h2 id="cardFn" class="ux-editable" data-layer-id="name" title="Nhấp đúp để sửa chữ, gõ Enter để xuống dòng">Phan Mạnh Khang</h2>
+                <p id="cardTitle" class="ux-editable" data-layer-id="title" title="Nhấp đúp để sửa chữ, gõ Enter để xuống dòng">Kỹ Thuật Viên Trưởng</p>
+                <p id="cardOrg" class="ux-editable" data-layer-id="org" style="font-size:0.75rem; color:var(--muted)" title="Nhấp đúp để sửa chữ, gõ Enter để xuống dòng">Minh Tam Prolab</p>
               </div>
             </div>
 
-            <div class="contacts-stack">
-              <a id="cardTelLink" href="tel:+84901112233" class="contact-badge" aria-label="Gọi điện thoại">📞 <span id="cardTel">+84 90 111 2233</span></a>
-              <a id="cardEmailLink" href="mailto:khang@minhtamprolab.com.vn" class="contact-badge" aria-label="Gửi email">✉️ <span id="cardEmail">khang@minhtamprolab.com.vn</span></a>
-              <a id="cardUrlLink" href="https://minhtamprolab.com.vn" target="_blank" class="contact-badge" aria-label="Mở trang web doanh nghiệp">🌐 <span id="cardUrl">minhtamprolab.com.vn</span></a>
+            <div class="contacts-stack ux-draggable" id="layerContactsStack" data-layer-id="contacts_stack">
+              <a id="cardTelLink" href="tel:+84901112233" class="contact-badge" aria-label="Gọi điện thoại">📞 <span id="cardTel" class="ux-editable" data-layer-id="tel">+84 90 111 2233</span></a>
+              <a id="cardEmailLink" href="mailto:khang@minhtamprolab.com.vn" class="contact-badge" aria-label="Gửi email">✉️ <span id="cardEmail" class="ux-editable" data-layer-id="email">khang@minhtamprolab.com.vn</span></a>
+              <a id="cardUrlLink" href="https://minhtamprolab.com.vn" target="_blank" class="contact-badge" aria-label="Mở trang web doanh nghiệp">🌐 <span id="cardUrl" class="ux-editable" data-layer-id="url">minhtamprolab.com.vn</span></a>
             </div>
 
-            <div class="card-bottom">
+            <div class="card-bottom ux-draggable" id="layerCardBottom" data-layer-id="card_bottom">
               <div class="social-icons-box" id="cardSocials" aria-label="Liên kết mạng xã hội"></div>
               <button type="button" class="btn-toggle-orient-card" id="btnOrientInside" aria-label="Đổi hướng thẻ Dọc hoặc Ngang">
                 <span>📐</span> <span id="txtOrientInside">Đổi Dọc/Ngang</span>
@@ -999,12 +1093,12 @@
 
           <!-- Back Face -->
           <div class="card-face card-back" aria-label="Mặt sau doanh nghiệp">
-            <div class="company-stack">
-              <img id="cardLogo" class="company-logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%222%22/><text x=%2250%22 y=%2260%22 font-size=%2232%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%2338bdf8%22>MT</text></svg>" alt="Logo">
-              <h3 id="cardBackOrg">Minh Tam Prolab</h3>
-              <p class="slogan" id="cardSlogan">Professional Digital Laboratory Since 1993</p>
+            <div class="company-stack ux-draggable" id="layerCompanyStack" data-layer-id="company_stack">
+              <img id="cardLogo" class="company-logo ux-draggable" data-layer-id="logo" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%23131b2e%22 stroke=%22%2338bdf8%22 stroke-width=%222%22/><text x=%2250%22 y=%2260%22 font-size=%2232%22 text-anchor=%22middle%22 font-weight=%22bold%22 fill=%22%2338bdf8%22>MT</text></svg>" alt="Logo">
+              <h3 id="cardBackOrg" class="ux-editable" data-layer-id="back_org">Minh Tam Prolab</h3>
+              <p class="slogan ux-editable" id="cardSlogan" data-layer-id="slogan">Professional Digital Laboratory Since 1993</p>
               <a class="address" id="cardAdrLink" href="https://maps.app.goo.gl/o9mcM5eqe9qPH7f1A" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:inherit; display:block; text-align:center; margin-top:4px;" title="Bấm để mở chỉ đường Google Maps">
-                <span id="cardAdr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</span>
+                <span id="cardAdr" class="ux-editable" data-layer-id="adr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</span>
               </a>
             </div>
             <div class="card-bottom" style="justify-content: flex-end;">
@@ -2457,6 +2551,332 @@ const BRAND_ICONS = {
     t.textContent = msg; t.style.display = 'block';
     setTimeout(() => { t.style.display = 'none'; }, 2000);
   }
+
+  // -------------------------------------------------------------
+  // LUXURY SPATIAL STUDIO / VIP UX BUILDER ENGINE
+  // -------------------------------------------------------------
+  let isBuilderMode = false;
+  let activeSelectedElement = null;
+  const btnToggleBuilderMode = document.getElementById('btnToggleBuilderMode');
+  const txtBuilderMode = document.getElementById('txtBuilderMode');
+  const btnResetBuilderLayout = document.getElementById('btnResetBuilderLayout');
+  const safeZoneGuide = document.getElementById('safeZoneGuide');
+  const floatingToolbar = document.getElementById('floatingContextToolbar');
+  const ctxFontSelect = document.getElementById('ctxFontSelect');
+  const btnCtxSizeDown = document.getElementById('btnCtxSizeDown');
+  const btnCtxSizeUp = document.getElementById('btnCtxSizeUp');
+  const lblCtxSize = document.getElementById('lblCtxSize');
+  const ctxColorPicker = document.getElementById('ctxColorPicker');
+
+  if (!profile.customLayout) {
+    profile.customLayout = {};
+  }
+
+  function setBuilderMode(enable) {
+    isBuilderMode = enable;
+    document.body.classList.toggle('builder-active', enable);
+    if (safeZoneGuide) safeZoneGuide.style.display = enable ? 'block' : 'none';
+    if (btnResetBuilderLayout) btnResetBuilderLayout.style.display = enable ? 'inline-flex' : 'none';
+
+    if (enable) {
+      txtBuilderMode.textContent = 'Đang Bật UX Builder (Nhấp sửa / Kéo thả)';
+      btnToggleBuilderMode.style.borderColor = '#38bdf8';
+      btnToggleBuilderMode.style.background = 'linear-gradient(135deg, rgba(56,189,248,0.35), rgba(216,175,98,0.35))';
+      showToast('Đã bật chế độ UX Builder! Kéo thả hoặc nhấp đúp để gõ.');
+    } else {
+      txtBuilderMode.textContent = 'Bật Chế Độ Kéo Thả UX Builder';
+      btnToggleBuilderMode.style.borderColor = '#d8af62';
+      btnToggleBuilderMode.style.background = 'linear-gradient(135deg, rgba(216,175,98,0.25), rgba(56,189,248,0.25))';
+      hideFloatingToolbar();
+      deselectActiveElement();
+      saveBuilderLayoutToStorage();
+    }
+
+    // Enable/Disable contenteditable on text elements
+    document.querySelectorAll('.ux-editable').forEach(el => {
+      el.contentEditable = enable ? 'true' : 'false';
+    });
+  }
+
+  if (btnToggleBuilderMode) {
+    btnToggleBuilderMode.onclick = () => setBuilderMode(!isBuilderMode);
+  }
+
+  if (btnResetBuilderLayout) {
+    btnResetBuilderLayout.onclick = () => {
+      profile.customLayout = {};
+      document.querySelectorAll('.ux-draggable').forEach(el => {
+        el.style.transform = '';
+        el.style.fontFamily = '';
+        el.style.fontSize = '';
+        el.style.color = '';
+        el.classList.remove('vip-fx-gold', 'vip-fx-emboss');
+      });
+      saveBuilderLayoutToStorage();
+      showToast('Đã đặt lại vị trí & định dạng gốc!');
+    };
+  }
+
+  function deselectActiveElement() {
+    if (activeSelectedElement) {
+      activeSelectedElement.classList.remove('active-selected');
+      activeSelectedElement = null;
+    }
+  }
+
+  function hideFloatingToolbar() {
+    if (floatingToolbar) floatingToolbar.style.display = 'none';
+  }
+
+  function showFloatingToolbarFor(el) {
+    if (!floatingToolbar || !isBuilderMode) return;
+    activeSelectedElement = el;
+    document.querySelectorAll('.ux-draggable, .ux-editable').forEach(e => e.classList.remove('active-selected'));
+    el.classList.add('active-selected');
+
+    const rect = el.getBoundingClientRect();
+    const stageRect = document.querySelector('.card-stage').getBoundingClientRect();
+
+    floatingToolbar.style.display = 'flex';
+    const topPos = Math.max(10, rect.top - stageRect.top - 46);
+    const leftPos = Math.max(10, Math.min(stageRect.width - 320, rect.left - stageRect.left));
+
+    floatingToolbar.style.top = `${topPos}px`;
+    floatingToolbar.style.left = `${leftPos}px`;
+
+    // Update Toolbar values from element
+    const compStyle = window.getComputedStyle(el);
+    const curSize = parseInt(compStyle.fontSize, 10);
+    if (lblCtxSize) lblCtxSize.textContent = `${curSize}px`;
+
+    // Update font dropdown if matches
+    if (ctxFontSelect) {
+      const curFont = el.style.fontFamily || compStyle.fontFamily;
+      ctxFontSelect.value = 'inherit';
+      for (const opt of ctxFontSelect.options) {
+        if (curFont.includes(opt.text) || opt.value === curFont) {
+          ctxFontSelect.value = opt.value;
+          break;
+        }
+      }
+    }
+  }
+
+  // Floating Toolbar Handlers
+  if (btnCtxSizeUp) {
+    btnCtxSizeUp.onclick = (e) => {
+      e.stopPropagation();
+      if (!activeSelectedElement) return;
+      const cur = parseInt(window.getComputedStyle(activeSelectedElement).fontSize, 10);
+      const next = Math.min(64, cur + 2);
+      activeSelectedElement.style.fontSize = `${next}px`;
+      if (lblCtxSize) lblCtxSize.textContent = `${next}px`;
+      recordElementStyle(activeSelectedElement);
+    };
+  }
+
+  if (btnCtxSizeDown) {
+    btnCtxSizeDown.onclick = (e) => {
+      e.stopPropagation();
+      if (!activeSelectedElement) return;
+      const cur = parseInt(window.getComputedStyle(activeSelectedElement).fontSize, 10);
+      const next = Math.max(12, cur - 2);
+      activeSelectedElement.style.fontSize = `${next}px`;
+      if (lblCtxSize) lblCtxSize.textContent = `${next}px`;
+      recordElementStyle(activeSelectedElement);
+    };
+  }
+
+  if (ctxFontSelect) {
+    ctxFontSelect.onchange = () => {
+      if (!activeSelectedElement) return;
+      activeSelectedElement.style.fontFamily = ctxFontSelect.value;
+      recordElementStyle(activeSelectedElement);
+    };
+  }
+
+  if (ctxColorPicker) {
+    ctxColorPicker.oninput = (e) => {
+      if (!activeSelectedElement) return;
+      activeSelectedElement.style.color = e.target.value;
+      recordElementStyle(activeSelectedElement);
+    };
+  }
+
+  document.querySelectorAll('.btn-vip-fx').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      if (!activeSelectedElement) return;
+      const fx = btn.getAttribute('data-fx');
+      if (fx === 'gold') {
+        const has = activeSelectedElement.classList.contains('vip-fx-gold');
+        activeSelectedElement.classList.toggle('vip-fx-gold', !has);
+        activeSelectedElement.classList.remove('vip-fx-emboss');
+      } else if (fx === 'emboss') {
+        const has = activeSelectedElement.classList.contains('vip-fx-emboss');
+        activeSelectedElement.classList.toggle('vip-fx-emboss', !has);
+        activeSelectedElement.classList.remove('vip-fx-gold');
+      }
+      recordElementStyle(activeSelectedElement);
+    };
+  });
+
+  // Record style & text changes into profile.customLayout
+  function recordElementStyle(el) {
+    const id = el.getAttribute('data-layer-id');
+    if (!id) return;
+    if (!profile.customLayout[id]) profile.customLayout[id] = {};
+    const item = profile.customLayout[id];
+
+    if (el.style.fontSize) item.fontSize = parseInt(el.style.fontSize, 10);
+    if (el.style.fontFamily) item.fontFamily = el.style.fontFamily;
+    if (el.style.color) item.color = el.style.color;
+    if (el.classList.contains('vip-fx-gold')) item.fx = 'gold';
+    else if (el.classList.contains('vip-fx-emboss')) item.fx = 'emboss';
+    else if (item.fx) delete item.fx;
+
+    // Record custom text with line breaks if edited
+    if (el.classList.contains('ux-editable')) {
+      const textVal = el.innerText.trim();
+      item.content = textVal;
+      // Split by manual line breaks
+      item.lines = textVal.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    }
+
+    saveBuilderLayoutToStorage();
+  }
+
+  function saveBuilderLayoutToStorage() {
+    try {
+      localStorage.setItem('inid_ar_profile', JSON.stringify(profile));
+      const b64 = btoa(encodeURIComponent(JSON.stringify(profile)));
+      const btnArHandsLink = document.getElementById('btnArHandsLink');
+      if (btnArHandsLink) {
+        btnArHandsLink.href = `/ar-hands/#data=${b64}`;
+      }
+    } catch(e) {
+      console.warn('Error saving builder layout:', e);
+    }
+  }
+
+  // -------------------------------------------------------------
+  // PointerEvents Drag & Drop Logic for .ux-draggable
+  // -------------------------------------------------------------
+  document.querySelectorAll('.ux-draggable').forEach(elem => {
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let initialTranslateX = 0, initialTranslateY = 0;
+
+    elem.addEventListener('pointerdown', (e) => {
+      if (!isBuilderMode) return;
+      if (e.target.isContentEditable && e.target === document.activeElement) return;
+
+      isDragging = true;
+      elem.classList.add('dragging');
+      elem.setPointerCapture(e.pointerId);
+
+      startX = e.clientX;
+      startY = e.clientY;
+
+      // Extract existing translate values
+      const layerId = elem.getAttribute('data-layer-id');
+      const layoutData = profile.customLayout?.[layerId] || {};
+      initialTranslateX = layoutData.offsetX || 0;
+      initialTranslateY = layoutData.offsetY || 0;
+
+      showFloatingToolbarFor(elem);
+      e.stopPropagation();
+    });
+
+    elem.addEventListener('pointermove', (e) => {
+      if (!isDragging || !isBuilderMode) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      let newX = Math.round(initialTranslateX + dx);
+      let newY = Math.round(initialTranslateY + dy);
+
+      // Clamp movement within card boundaries (Safe-zone check)
+      const cardRect = elem.closest('.card-face').getBoundingClientRect();
+      const elemRect = elem.getBoundingClientRect();
+
+      elem.style.transform = `translate(${newX}px, ${newY}px)`;
+
+      // Visual warning if touching border (safe zone breach)
+      const isBreaching = (elemRect.left < cardRect.left + 16 || elemRect.right > cardRect.right - 16 || elemRect.top < cardRect.top + 16 || elemRect.bottom > cardRect.bottom - 16);
+      if (safeZoneGuide) {
+        safeZoneGuide.style.borderColor = isBreaching ? 'rgba(239, 68, 68, 0.9)' : 'rgba(56, 189, 248, 0.5)';
+      }
+
+      e.stopPropagation();
+    });
+
+    const finishDrag = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      elem.classList.remove('dragging');
+
+      try { elem.releasePointerCapture(e.pointerId); } catch(err) {}
+
+      // Calculate normalized offset relative to card size
+      const cardEl = elem.closest('.card-face');
+      const cardW = cardEl.offsetWidth || 340;
+      const cardH = cardEl.offsetHeight || 540;
+
+      const layerId = elem.getAttribute('data-layer-id');
+      if (layerId) {
+        if (!profile.customLayout[layerId]) profile.customLayout[layerId] = {};
+        const match = elem.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+        if (match) {
+          const ox = parseFloat(match[1]);
+          const oy = parseFloat(match[2]);
+          profile.customLayout[layerId].offsetX = ox;
+          profile.customLayout[layerId].offsetY = oy;
+          profile.customLayout[layerId].relX = ox / cardW;
+          profile.customLayout[layerId].relY = oy / cardH;
+        }
+      }
+
+      if (safeZoneGuide) safeZoneGuide.style.borderColor = 'rgba(56, 189, 248, 0.5)';
+      saveBuilderLayoutToStorage();
+    };
+
+    elem.addEventListener('pointerup', finishDrag);
+    elem.addEventListener('pointercancel', finishDrag);
+
+    elem.addEventListener('click', (e) => {
+      if (isBuilderMode) {
+        showFloatingToolbarFor(elem);
+        e.stopPropagation();
+      }
+    });
+  });
+
+  // Watch text edits on .ux-editable
+  document.querySelectorAll('.ux-editable').forEach(editableEl => {
+    editableEl.addEventListener('input', () => {
+      if (!isBuilderMode) return;
+      recordElementStyle(editableEl);
+    });
+    editableEl.addEventListener('blur', () => {
+      if (!isBuilderMode) return;
+      recordElementStyle(editableEl);
+    });
+    editableEl.addEventListener('click', (e) => {
+      if (isBuilderMode) {
+        showFloatingToolbarFor(editableEl);
+        e.stopPropagation();
+      }
+    });
+  });
+
+  // Click outside card deselects
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.ux-draggable') && !e.target.closest('#floatingContextToolbar') && !e.target.closest('#builderControlBar')) {
+      hideFloatingToolbar();
+      deselectActiveElement();
+    }
+  });
 
   // Open Edit Sheet if #edit in URL
   if (window.location.hash.includes('edit')) { openSheet(); }

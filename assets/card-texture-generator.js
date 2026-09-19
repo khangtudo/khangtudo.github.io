@@ -24,6 +24,8 @@ export const VIP_MATERIALS = {
  */
 export function fitAndDrawText(ctx, {
   text,
+  customLines = null,
+  fx = null,
   x,
   y,
   maxWidth,
@@ -37,46 +39,60 @@ export function fitAndDrawText(ctx, {
   lineHeightRatio = 1.25,
   maxLines = 2
 }) {
-  if (!text) return { lines: [], finalFontSize: baseFontSize, totalHeight: 0, nextY: y };
+  if (!text && (!customLines || customLines.length === 0)) return { lines: [], finalFontSize: baseFontSize, totalHeight: 0, nextY: y };
 
-  const cleanText = String(text).trim();
   let currentFontSize = Math.round(baseFontSize);
   let bestLines = [];
   let lineH = currentFontSize * lineHeightRatio;
 
-  while (currentFontSize >= minFontSize) {
-    ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
-    lineH = Math.round(currentFontSize * lineHeightRatio);
+  // If user provided manual custom line breaks from WYSIWYG Builder
+  if (Array.isArray(customLines) && customLines.length > 0) {
+    while (currentFontSize >= minFontSize) {
+      ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
+      lineH = Math.round(currentFontSize * lineHeightRatio);
+      const fits = customLines.every(l => ctx.measureText(l).width <= maxWidth);
+      if (fits || currentFontSize === minFontSize) {
+        bestLines = customLines;
+        break;
+      }
+      currentFontSize -= 1;
+    }
+  } else {
+    const cleanText = String(text).trim();
+    while (currentFontSize >= minFontSize) {
+      ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
+      lineH = Math.round(currentFontSize * lineHeightRatio);
 
-    const words = cleanText.split(/\s+/);
-    const lines = [];
-    let curLine = '';
+      const words = cleanText.split(/\s+/);
+      const lines = [];
+      let curLine = '';
 
-    for (let i = 0; i < words.length; i++) {
-      const testLine = curLine ? (curLine + ' ' + words[i]) : words[i];
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width <= maxWidth) {
-        curLine = testLine;
-      } else {
-        if (curLine) {
-          lines.push(curLine);
-          curLine = words[i];
+      for (let i = 0; i < words.length; i++) {
+        const testLine = curLine ? (curLine + ' ' + words[i]) : words[i];
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width <= maxWidth) {
+          curLine = testLine;
         } else {
-          curLine = words[i];
+          if (curLine) {
+            lines.push(curLine);
+            curLine = words[i];
+          } else {
+            curLine = words[i];
+          }
         }
       }
+      if (curLine) lines.push(curLine);
+
+      const totalH = lines.length * lineH;
+      const allLinesWithinWidth = lines.every(l => ctx.measureText(l).width <= maxWidth + 1);
+
+      if (lines.length <= maxLines && totalH <= maxHeight && allLinesWithinWidth) {
+        bestLines = lines;
+        break;
+      }
+
+      currentFontSize -= 1;
     }
-    if (curLine) lines.push(curLine);
-
-    const totalH = lines.length * lineH;
-    const allLinesWithinWidth = lines.every(l => ctx.measureText(l).width <= maxWidth + 1);
-
-    if (lines.length <= maxLines && totalH <= maxHeight && allLinesWithinWidth) {
-      bestLines = lines;
-      break;
-    }
-
-    currentFontSize -= 1;
   }
 
   // Fallback if minFontSize reached
@@ -111,15 +127,44 @@ export function fitAndDrawText(ctx, {
     bestLines = lines;
   }
 
-  // Draw rendered lines
+  // Draw rendered lines with VIP Effects (Gold Foil / Embossed) support
   ctx.save();
-  ctx.fillStyle = color;
-  ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
   ctx.textAlign = textAlign;
 
   let drawY = y;
   for (let i = 0; i < bestLines.length; i++) {
-    ctx.fillText(bestLines[i], x, drawY);
+    const lineText = bestLines[i];
+    if (fx === 'emboss') {
+      // 3D Embossed Chisel effect
+      ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillText(lineText, x - 1, drawY - 1);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillText(lineText, x + 1.5, drawY + 1.5);
+      ctx.fillStyle = color;
+      ctx.fillText(lineText, x, drawY);
+    } else if (fx === 'gold') {
+      // Metallic Gold Foil Hot Stamping with specular gradient
+      const metrics = ctx.measureText(lineText);
+      const textLeft = (textAlign === 'center') ? (x - metrics.width / 2) : (textAlign === 'right' ? x - metrics.width : x);
+      const goldGrad = ctx.createLinearGradient(textLeft, drawY - currentFontSize, textLeft + metrics.width, drawY);
+      goldGrad.addColorStop(0, '#FFF0BE');
+      goldGrad.addColorStop(0.3, '#D8AF62');
+      goldGrad.addColorStop(0.6, '#FFF4D2');
+      goldGrad.addColorStop(1, '#B88935');
+
+      // Soft glow
+      ctx.shadowColor = 'rgba(216, 175, 98, 0.6)';
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = goldGrad;
+      ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
+      ctx.fillText(lineText, x, drawY);
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.fillStyle = color;
+      ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
+      ctx.fillText(lineText, x, drawY);
+    }
     drawY += lineH;
   }
   ctx.restore();
@@ -180,6 +225,23 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
   const NAME_SIZE = clamp(vip.nameSize || 48, 36, 56);
   const TITLE_SIZE = clamp(vip.titleSize || 24, 18, 30);
+
+  // Pro / VIP Customizer Layout Tokens (Offsets & Styling from WYSIWYG Builder)
+  const customLayout = profile.customLayout || {};
+  const getLayerOffset = (id, cardWidth, cardHeight) => {
+    const item = customLayout[id];
+    if (!item) return { dx: 0, dy: 0, fx: null, customLines: null, customFont: null, customSize: null, customColor: null };
+    const dx = (typeof item.relX === 'number') ? Math.round(item.relX * cardWidth) : (item.offsetX || 0);
+    const dy = (typeof item.relY === 'number') ? Math.round(item.relY * cardHeight) : (item.offsetY || 0);
+    return {
+      dx, dy,
+      fx: item.fx || null,
+      customLines: Array.isArray(item.lines) ? item.lines : null,
+      customFont: item.fontFamily || null,
+      customSize: item.fontSize || null,
+      customColor: item.color || null
+    };
+  };
 
   // Safe image loader
   function loadImage(src) {
@@ -344,10 +406,11 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const safeTop = fy + SAFE_INSET_Y + 18; // fy + 40
     const safeBottom = fy + H - SAFE_INSET_Y - 10; // fy + 488
 
-    // Avatar configuration (Right top)
+    // Front Avatar (Right top) with Drag Offset
+    const avOffset = getLayerOffset('avatar', W, H);
     const avW = 86, avH = 86;
-    const avX = safeRight - avW;
-    const avY = safeTop + 6;
+    const avX = safeRight - avW + avOffset.dx;
+    const avY = safeTop + 6 + avOffset.dy;
 
     if (avatarImg) {
       ctx.save();
@@ -376,21 +439,28 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
 
     // Left content area width (bounded to avoid colliding with Avatar)
-    const textStartX = safeLeft + 22;
-    const maxHeaderW = (avX - textStartX - 20); // Width reserved strictly before avatar
+    const pRowOffset = getLayerOffset('person_row', W, H);
+    const nameOffset = getLayerOffset('name', W, H);
+    const titleOffset = getLayerOffset('title', W, H);
+    const orgOffset = getLayerOffset('org', W, H);
+
+    const textStartX = safeLeft + 22 + pRowOffset.dx;
+    const maxHeaderW = Math.max(200, (avX - textStartX - 20));
 
     // Name (Auto-wrap & Auto-scale)
     const nameRes = fitAndDrawText(ctx, {
       text: profile.fn || 'Chưa đặt tên',
-      x: textStartX,
-      y: safeTop + 38,
+      customLines: nameOffset.customLines,
+      fx: nameOffset.fx,
+      x: textStartX + nameOffset.dx,
+      y: safeTop + 38 + pRowOffset.dy + nameOffset.dy,
       maxWidth: maxHeaderW,
       maxHeight: 76,
-      baseFontSize: NAME_SIZE,
+      baseFontSize: nameOffset.customSize || NAME_SIZE,
       minFontSize: 24,
-      fontFamily: FONT_DISPLAY,
+      fontFamily: nameOffset.customFont || FONT_DISPLAY,
       fontWeight: 'bold',
-      color: TEXT_COLOR,
+      color: nameOffset.customColor || TEXT_COLOR,
       maxLines: 2,
       lineHeightRatio: 1.15
     });
@@ -398,15 +468,17 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     // Title (Auto-wrap & Auto-scale)
     const titleRes = fitAndDrawText(ctx, {
       text: profile.title || 'Chuyên viên',
-      x: textStartX,
-      y: nameRes.nextY + 4,
+      customLines: titleOffset.customLines,
+      fx: titleOffset.fx,
+      x: textStartX + titleOffset.dx,
+      y: nameRes.nextY + 4 + titleOffset.dy,
       maxWidth: maxHeaderW,
       maxHeight: 48,
-      baseFontSize: TITLE_SIZE,
+      baseFontSize: titleOffset.customSize || TITLE_SIZE,
       minFontSize: 15,
-      fontFamily: FONT_BODY,
+      fontFamily: titleOffset.customFont || FONT_BODY,
       fontWeight: '600',
-      color: ACCENT_COLOR,
+      color: titleOffset.customColor || ACCENT_COLOR,
       maxLines: 2,
       lineHeightRatio: 1.15
     });
@@ -414,15 +486,17 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     // Org / Company (Auto-wrap & Auto-scale)
     const orgRes = fitAndDrawText(ctx, {
       text: profile.org || 'inid.me Identity',
-      x: textStartX,
-      y: titleRes.nextY + 3,
+      customLines: orgOffset.customLines,
+      fx: orgOffset.fx,
+      x: textStartX + orgOffset.dx,
+      y: titleRes.nextY + 3 + orgOffset.dy,
       maxWidth: maxHeaderW,
       maxHeight: 42,
-      baseFontSize: 19,
+      baseFontSize: orgOffset.customSize || 19,
       minFontSize: 13,
-      fontFamily: FONT_BODY,
+      fontFamily: orgOffset.customFont || FONT_BODY,
       fontWeight: '500',
-      color: TEXT_MUTED,
+      color: orgOffset.customColor || TEXT_MUTED,
       maxLines: 2,
       lineHeightRatio: 1.15
     });
@@ -650,25 +724,33 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const safeBottom = fy + H - SAFE_INSET - 8; // fy + 764
     const maxVTextW = safeRight - safeLeft; // 420px
 
+    // Vertical Offsets from Custom Layout
+    const vPRowOffset = getLayerOffset('person_row', W, H);
+    const vNameOffset = getLayerOffset('name', W, H);
+    const vTitleOffset = getLayerOffset('title', W, H);
+    const vOrgOffset = getLayerOffset('org', W, H);
+    const vAvOffset = getLayerOffset('avatar', W, H);
+
     // Avatar Circle (Centered top)
     const avR = 52;
-    const avY = safeTop + 72;
+    const avY = safeTop + 72 + vAvOffset.dy + vPRowOffset.dy;
+    const avCenterX = cx + vAvOffset.dx + vPRowOffset.dx;
     if (avatarImg) {
       ctx.save();
       ctx.beginPath();
-      ctx.arc(cx, avY, avR, 0, Math.PI * 2);
+      ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(avatarImg, cx - avR, avY - avR, avR * 2, avR * 2);
+      ctx.drawImage(avatarImg, avCenterX - avR, avY - avR, avR * 2, avR * 2);
       ctx.restore();
       ctx.beginPath();
-      ctx.arc(cx, avY, avR, 0, Math.PI * 2);
+      ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
       ctx.strokeStyle = ACCENT_COLOR;
       ctx.lineWidth = 3.5;
       ctx.stroke();
     } else {
       ctx.fillStyle = '#1e293b';
       ctx.beginPath();
-      ctx.arc(cx, avY, avR, 0, Math.PI * 2);
+      ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = ACCENT_COLOR;
       ctx.lineWidth = 3;
@@ -676,21 +758,23 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.fillStyle = ACCENT_COLOR;
       ctx.font = `bold 36px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
-      ctx.fillText(getInitials(profile.fn), cx, avY + 13);
+      ctx.fillText(getInitials(profile.fn), avCenterX, avY + 13);
     }
 
     // Name (Auto-wrap & Auto-scale)
     const vNameRes = fitAndDrawText(ctx, {
       text: profile.fn || 'Chưa đặt tên',
-      x: cx,
-      y: avY + avR + 34,
+      customLines: vNameOffset.customLines,
+      fx: vNameOffset.fx,
+      x: cx + vNameOffset.dx + vPRowOffset.dx,
+      y: avY + avR + 34 + vNameOffset.dy,
       maxWidth: maxVTextW,
       maxHeight: 74,
-      baseFontSize: NAME_SIZE - 4,
+      baseFontSize: vNameOffset.customSize || (NAME_SIZE - 4),
       minFontSize: 20,
-      fontFamily: FONT_DISPLAY,
+      fontFamily: vNameOffset.customFont || FONT_DISPLAY,
       fontWeight: 'bold',
-      color: TEXT_COLOR,
+      color: vNameOffset.customColor || TEXT_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -699,15 +783,17 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     // Title (Auto-wrap & Auto-scale)
     const vTitleRes = fitAndDrawText(ctx, {
       text: profile.title || 'Chuyên viên',
-      x: cx,
-      y: vNameRes.nextY + 6,
+      customLines: vTitleOffset.customLines,
+      fx: vTitleOffset.fx,
+      x: cx + vTitleOffset.dx + vPRowOffset.dx,
+      y: vNameRes.nextY + 6 + vTitleOffset.dy,
       maxWidth: maxVTextW,
       maxHeight: 46,
-      baseFontSize: TITLE_SIZE - 2,
+      baseFontSize: vTitleOffset.customSize || (TITLE_SIZE - 2),
       minFontSize: 14,
-      fontFamily: FONT_BODY,
+      fontFamily: vTitleOffset.customFont || FONT_BODY,
       fontWeight: 'bold',
-      color: ACCENT_COLOR,
+      color: vTitleOffset.customColor || ACCENT_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -716,8 +802,10 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     // Org / Company (Auto-wrap & Auto-scale)
     const vOrgRes = fitAndDrawText(ctx, {
       text: profile.org || 'inid.me Identity',
-      x: cx,
-      y: vTitleRes.nextY + 4,
+      customLines: vOrgOffset.customLines,
+      fx: vOrgOffset.fx,
+      x: cx + vOrgOffset.dx + vPRowOffset.dx,
+      y: vTitleRes.nextY + 4 + vOrgOffset.dy,
       maxWidth: maxVTextW,
       maxHeight: 40,
       baseFontSize: 18,
