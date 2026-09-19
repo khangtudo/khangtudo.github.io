@@ -1,11 +1,14 @@
 // Generator for AR Card Textures in inid.me (Browser-compatible Canvas renderer)
 // Renders dynamic 1024x1024 double-sided texture matching exact UV bounds for ar-hands.html & 3D models
-// Implements 5 Pro/VIP Procedural PBR materials from INID_PRO_VIP_MATERIAL_SPEC.md:
-// - Titanium Dark (M .88 / R .27)
-// - Carbon Fiber (M .36 / R .41)
-// - Gold Foil Brushed (M .96 / R .19)
-// - Frosted Glass (M .08 / R .72)
-// - Royal Leather (M .04 / R .79)
+// Features:
+// - 2mm Bleeding & Safe-Zone Margin across all edges (ISO/IEC 7810 ID-1 compliant)
+// - Smart Word Auto-Wrap & Dynamic Font Auto-Scaling (prevents text overflow on long names/titles/orgs/addresses)
+// - 5 Pro/VIP Procedural PBR materials from INID_PRO_VIP_MATERIAL_SPEC.md:
+//   * Titanium Dark (M .88 / R .27)
+//   * Carbon Fiber (M .36 / R .41)
+//   * Gold Foil Brushed (M .96 / R .19)
+//   * Frosted Glass (M .08 / R .72)
+//   * Royal Leather (M .04 / R .79)
 
 export const VIP_MATERIALS = {
   titanium: { baseColor:'#20252B', shadow:'#0B0E12', highlight:'#69737D', accent:'#B9F2FF', text:'#F4F7FA', metalness:.88, roughness:.27, specularStrength:.72, normalStrength:.10, textureScale:6, fontPair:'precision' },
@@ -14,6 +17,121 @@ export const VIP_MATERIALS = {
   frost:    { baseColor:'#BCD7EA', shadow:'#264254', highlight:'#EAF8FF', accent:'#83E8FF', text:'#F4FCFF', metalness:.08, roughness:.72, specularStrength:.58, normalStrength:.04, textureScale:72, fontPair:'future' },
   leather:  { baseColor:'#32131E', shadow:'#12070B', highlight:'#784052', accent:'#D8AF62', text:'#FFF7EB', metalness:.04, roughness:.79, specularStrength:.28, normalStrength:.46, textureScale:8, fontPair:'regal' },
 };
+
+/**
+ * Smart Word-Wrap & Auto-Scale Text Utility
+ * Fits text strictly within maxWidth & maxHeight by wrapping words and dynamically reducing font size if needed.
+ */
+export function fitAndDrawText(ctx, {
+  text,
+  x,
+  y,
+  maxWidth,
+  maxHeight = 9999,
+  baseFontSize = 24,
+  minFontSize = 13,
+  fontFamily = 'sans-serif',
+  fontWeight = 'normal',
+  color = '#ffffff',
+  textAlign = 'left',
+  lineHeightRatio = 1.25,
+  maxLines = 2
+}) {
+  if (!text) return { lines: [], finalFontSize: baseFontSize, totalHeight: 0, nextY: y };
+
+  const cleanText = String(text).trim();
+  let currentFontSize = Math.round(baseFontSize);
+  let bestLines = [];
+  let lineH = currentFontSize * lineHeightRatio;
+
+  while (currentFontSize >= minFontSize) {
+    ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
+    lineH = Math.round(currentFontSize * lineHeightRatio);
+
+    const words = cleanText.split(/\s+/);
+    const lines = [];
+    let curLine = '';
+
+    for (let i = 0; i < words.length; i++) {
+      const testLine = curLine ? (curLine + ' ' + words[i]) : words[i];
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width <= maxWidth) {
+        curLine = testLine;
+      } else {
+        if (curLine) {
+          lines.push(curLine);
+          curLine = words[i];
+        } else {
+          curLine = words[i];
+        }
+      }
+    }
+    if (curLine) lines.push(curLine);
+
+    const totalH = lines.length * lineH;
+    const allLinesWithinWidth = lines.every(l => ctx.measureText(l).width <= maxWidth + 1);
+
+    if (lines.length <= maxLines && totalH <= maxHeight && allLinesWithinWidth) {
+      bestLines = lines;
+      break;
+    }
+
+    currentFontSize -= 1;
+  }
+
+  // Fallback if minFontSize reached
+  if (bestLines.length === 0) {
+    currentFontSize = minFontSize;
+    ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
+    lineH = Math.round(currentFontSize * lineHeightRatio);
+    const words = cleanText.split(/\s+/);
+    const lines = [];
+    let curLine = '';
+    for (let i = 0; i < words.length; i++) {
+      const testLine = curLine ? (curLine + ' ' + words[i]) : words[i];
+      if (ctx.measureText(testLine).width <= maxWidth) {
+        curLine = testLine;
+      } else {
+        if (curLine) lines.push(curLine);
+        curLine = words[i];
+        if (lines.length === maxLines - 1) break;
+      }
+    }
+    if (curLine) lines.push(curLine);
+    if (lines.length > maxLines) lines.length = maxLines;
+
+    // Truncate last line with ellipsis if needed
+    let last = lines[lines.length - 1];
+    while (ctx.measureText(last + '...').width > maxWidth && last.length > 2) {
+      last = last.slice(0, -1);
+    }
+    if (last !== cleanText && lines.length === maxLines) {
+      lines[lines.length - 1] = last + '...';
+    }
+    bestLines = lines;
+  }
+
+  // Draw rendered lines
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.font = `${fontWeight} ${currentFontSize}px ${fontFamily}`;
+  ctx.textAlign = textAlign;
+
+  let drawY = y;
+  for (let i = 0; i < bestLines.length; i++) {
+    ctx.fillText(bestLines[i], x, drawY);
+    drawY += lineH;
+  }
+  ctx.restore();
+
+  const totalHeight = bestLines.length * lineH;
+  return {
+    lines: bestLines,
+    finalFontSize: currentFontSize,
+    totalHeight,
+    nextY: y + totalHeight
+  };
+}
 
 export async function createDynamicCardTexture(profile, isVertical = false) {
   // Wait for Google Fonts to load if available
@@ -56,12 +174,12 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     FONT_BODY = '"Inter", sans-serif';
   }
 
-  const NAME_SIZE = clamp(vip.nameSize || 48, 36, 56);
-  const TITLE_SIZE = clamp(vip.titleSize || 24, 18, 30);
-
   function clamp(val, min, max) {
     return Math.max(min, Math.min(max, val));
   }
+
+  const NAME_SIZE = clamp(vip.nameSize || 48, 36, 56);
+  const TITLE_SIZE = clamp(vip.titleSize || 24, 18, 30);
 
   // Safe image loader
   function loadImage(src) {
@@ -102,6 +220,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
   }
 
   // Draw procedural pattern for the 5 VIP materials
+  // Full bleeding out to the outer edges (x, y, w, h)
   function drawMaterialSurface(x, y, w, h, r, isBack = false) {
     ctx.save();
     roundRect(x, y, w, h, r);
@@ -116,7 +235,6 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     // 2. Procedural Pattern Layer
     if (matKey === 'carbon') {
-      // 32x32 Woven Ribbons
       const pCvs = document.createElement('canvas');
       pCvs.width = 16; pCvs.height = 16;
       const pCtx = pCvs.getContext('2d');
@@ -133,7 +251,6 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.fill();
       ctx.globalAlpha = 1.0;
     } else if (matKey === 'titanium') {
-      // Brushed vertical alloy streaks
       const pCvs = document.createElement('canvas');
       pCvs.width = 8; pCvs.height = 64;
       const pCtx = pCvs.getContext('2d');
@@ -144,7 +261,6 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.fillStyle = ctx.createPattern(pCvs, 'repeat');
       ctx.fill();
 
-      // Subtle diagonal light sweep
       const sweep = ctx.createLinearGradient(x, y, x + w * 0.7, y + h);
       sweep.addColorStop(0, 'rgba(255,255,255,0)');
       sweep.addColorStop(0.5, 'rgba(255,255,255,0.08)');
@@ -152,7 +268,6 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.fillStyle = sweep;
       ctx.fill();
     } else if (matKey === 'gold') {
-      // Horizontal brushed micro-scratches & metallic sheen
       const pCvs = document.createElement('canvas');
       pCvs.width = 64; pCvs.height = 4;
       const pCtx = pCvs.getContext('2d');
@@ -169,7 +284,6 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.fillStyle = sweep;
       ctx.fill();
     } else if (matKey === 'frost') {
-      // Frosted cyber noise clouds & cyan circuitry glow
       const sweep = ctx.createRadialGradient(x + w * 0.3, y + h * 0.3, 20, x + w * 0.5, y + h * 0.5, w * 0.7);
       sweep.addColorStop(0, 'rgba(131, 232, 255, 0.12)');
       sweep.addColorStop(0.6, 'rgba(38, 66, 84, 0.25)');
@@ -177,7 +291,6 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.fillStyle = sweep;
       ctx.fill();
     } else if (matKey === 'leather') {
-      // Royal organic pebble texture
       const pCvs = document.createElement('canvas');
       pCvs.width = 12; pCvs.height = 12;
       const pCtx = pCvs.getContext('2d');
@@ -194,7 +307,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     ctx.fillStyle = scrim;
     ctx.fill();
 
-    // 4. Accent Border
+    // 4. Accent Border (drawn inset by 2px from bleeding edge)
     ctx.strokeStyle = ACCENT_COLOR;
     ctx.lineWidth = (matKey === 'gold' || matKey === 'frost') ? 4 : 5;
     ctx.stroke();
@@ -213,92 +326,29 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const H = 520;
     const R = 28;
 
+    // 2mm Bleed & Safe Margin calculation:
+    // 860px / 85.6mm = 10.05 px/mm => 2mm = 20.1px
+    const BLEED_PX = 20; // 2mm safe zone from physical cutting edge
+    const SAFE_INSET_X = 24; // > 2mm
+    const SAFE_INSET_Y = 22; // > 2mm
+
     // FRONT FACE (Top half)
     const fx = 82, fy = 0;
     drawMaterialSurface(fx, fy, W, H, R, false);
 
     ctx.save();
-    // Cyan / Gold vertical accent bar
-    ctx.fillStyle = ACCENT_COLOR;
-    ctx.fillRect(fx + 50, fy + 55, 6, 90);
 
-    // Name & Title
-    ctx.fillStyle = TEXT_COLOR;
-    ctx.font = `bold ${NAME_SIZE}px ${FONT_DISPLAY}`;
-    ctx.fillText(profile.fn || 'Chưa đặt tên', fx + 75, fy + 102);
+    // Safe zone coordinates
+    const safeLeft = fx + SAFE_INSET_X + 26; // fx + 50
+    const safeRight = fx + W - SAFE_INSET_X - 16; // fx + 820
+    const safeTop = fy + SAFE_INSET_Y + 18; // fy + 40
+    const safeBottom = fy + H - SAFE_INSET_Y - 10; // fy + 488
 
-    ctx.fillStyle = ACCENT_COLOR;
-    ctx.font = `600 ${TITLE_SIZE}px ${FONT_BODY}`;
-    ctx.fillText(profile.title || 'Chuyên viên', fx + 75, fy + 140);
+    // Avatar configuration (Right top)
+    const avW = 86, avH = 86;
+    const avX = safeRight - avW;
+    const avY = safeTop + 6;
 
-    ctx.fillStyle = TEXT_MUTED;
-    ctx.font = `500 20px ${FONT_BODY}`;
-    ctx.fillText(profile.org || 'inid.me Identity', fx + 75, fy + 174);
-
-    // Thin divider
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(fx + 50, fy + 205);
-    ctx.lineTo(fx + W - 50, fy + 205);
-    ctx.stroke();
-
-    // Contact details
-    const iconX = fx + 60;
-    const textX = fx + 100;
-
-    if (profile.tel) {
-      ctx.fillStyle = '#f43f5e';
-      ctx.beginPath(); ctx.arc(iconX + 10, fy + 245, 14, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '16px system-ui, sans-serif';
-      ctx.fillText('📞', iconX, fy + 251);
-      ctx.fillStyle = TEXT_COLOR;
-      ctx.font = `bold 22px ${FONT_BODY}`;
-      ctx.fillText(profile.tel, textX, fy + 253);
-    }
-
-    if (profile.email) {
-      ctx.fillStyle = ACCENT_COLOR;
-      ctx.beginPath(); ctx.arc(iconX + 10, fy + 295, 14, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#0f172a';
-      ctx.font = '16px system-ui, sans-serif';
-      ctx.fillText('✉️', iconX, fy + 301);
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = `500 21px ${FONT_BODY}`;
-      ctx.fillText(profile.email, textX, fy + 303);
-    }
-
-    const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
-    ctx.fillStyle = '#0ea5e9';
-    ctx.beginPath(); ctx.arc(iconX + 10, fy + 345, 14, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '16px system-ui, sans-serif';
-    ctx.fillText('🌐', iconX, fy + 351);
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = `500 21px ${FONT_BODY}`;
-    ctx.fillText(displayUrl, textX, fy + 353);
-
-    if (profile.adr) {
-      ctx.fillStyle = '#10b981';
-      ctx.beginPath(); ctx.arc(iconX + 10, fy + 395, 14, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '16px system-ui, sans-serif';
-      ctx.fillText('📍', iconX, fy + 401);
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = `500 19px ${FONT_BODY}`;
-      ctx.fillText(profile.adr, textX, fy + 403);
-    }
-
-    // Footer Tagline
-    ctx.fillStyle = ACCENT_COLOR;
-    ctx.font = `bold 16px ${FONT_DISPLAY}`;
-    ctx.letterSpacing = '1px';
-    ctx.fillText(`INID.ME • ${matKey.toUpperCase()} PRO AR CARD`, fx + 60, fy + 465);
-
-    // Front Avatar (Right top)
-    const avW = 90, avH = 90;
-    const avX = fx + W - 150, avY = fy + 55;
     if (avatarImg) {
       ctx.save();
       ctx.beginPath();
@@ -321,9 +371,155 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.fillStyle = ACCENT_COLOR;
       ctx.font = `bold 30px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
-      ctx.fillText(getInitials(profile.fn), avX + avW / 2, avY + 56);
+      ctx.fillText(getInitials(profile.fn), avX + avW / 2, avY + 54);
       ctx.textAlign = 'left';
     }
+
+    // Left content area width (bounded to avoid colliding with Avatar)
+    const textStartX = safeLeft + 22;
+    const maxHeaderW = (avX - textStartX - 20); // Width reserved strictly before avatar
+
+    // Name (Auto-wrap & Auto-scale)
+    const nameRes = fitAndDrawText(ctx, {
+      text: profile.fn || 'Chưa đặt tên',
+      x: textStartX,
+      y: safeTop + 38,
+      maxWidth: maxHeaderW,
+      maxHeight: 76,
+      baseFontSize: NAME_SIZE,
+      minFontSize: 24,
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 'bold',
+      color: TEXT_COLOR,
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
+
+    // Title (Auto-wrap & Auto-scale)
+    const titleRes = fitAndDrawText(ctx, {
+      text: profile.title || 'Chuyên viên',
+      x: textStartX,
+      y: nameRes.nextY + 4,
+      maxWidth: maxHeaderW,
+      maxHeight: 48,
+      baseFontSize: TITLE_SIZE,
+      minFontSize: 15,
+      fontFamily: FONT_BODY,
+      fontWeight: '600',
+      color: ACCENT_COLOR,
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
+
+    // Org / Company (Auto-wrap & Auto-scale)
+    const orgRes = fitAndDrawText(ctx, {
+      text: profile.org || 'inid.me Identity',
+      x: textStartX,
+      y: titleRes.nextY + 3,
+      maxWidth: maxHeaderW,
+      maxHeight: 42,
+      baseFontSize: 19,
+      minFontSize: 13,
+      fontFamily: FONT_BODY,
+      fontWeight: '500',
+      color: TEXT_MUTED,
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
+
+    // Vertical Accent Bar (drawn alongside name/title block)
+    const barTop = safeTop + 8;
+    const barH = Math.max(80, orgRes.nextY - barTop - 4);
+    ctx.fillStyle = ACCENT_COLOR;
+    ctx.fillRect(safeLeft, barTop, 6, barH);
+
+    // Dynamic Divider
+    const divY = Math.max(fy + 200, orgRes.nextY + 12);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(safeLeft, divY);
+    ctx.lineTo(safeRight, divY);
+    ctx.stroke();
+
+    // Contact details with dynamic vertical spacing & auto-wrap on Address
+    const maxContactW = (safeRight - safeLeft - 50);
+    const iconX = safeLeft + 10;
+    const textX = safeLeft + 48;
+    let contactCurY = divY + 32;
+
+    if (profile.tel && contactCurY < safeBottom - 50) {
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '15px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('📞', iconX, contactCurY);
+      ctx.fillStyle = TEXT_COLOR;
+      ctx.font = `bold 21px ${FONT_BODY}`;
+      ctx.fillText(profile.tel, textX, contactCurY);
+      contactCurY += 44;
+    }
+
+    if (profile.email && contactCurY < safeBottom - 50) {
+      ctx.fillStyle = ACCENT_COLOR;
+      ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '15px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('✉️', iconX, contactCurY);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = `500 20px ${FONT_BODY}`;
+      ctx.fillText(profile.email, textX, contactCurY);
+      contactCurY += 44;
+    }
+
+    const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
+    if (displayUrl && contactCurY < safeBottom - 50) {
+      ctx.fillStyle = '#0ea5e9';
+      ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '15px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('🌐', iconX, contactCurY);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = `500 20px ${FONT_BODY}`;
+      ctx.fillText(displayUrl, textX, contactCurY);
+      contactCurY += 44;
+    }
+
+    if (profile.adr && contactCurY < safeBottom - 35) {
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '15px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('📍', iconX, contactCurY);
+
+      // Address auto-wraps up to 2 lines
+      fitAndDrawText(ctx, {
+        text: profile.adr,
+        x: textX,
+        y: contactCurY,
+        maxWidth: maxContactW,
+        maxHeight: 46,
+        baseFontSize: 18,
+        minFontSize: 13,
+        fontFamily: FONT_BODY,
+        fontWeight: '500',
+        color: '#94a3b8',
+        maxLines: 2,
+        lineHeightRatio: 1.2
+      });
+    }
+
+    // Footer Tagline strictly inside safe bottom
+    ctx.fillStyle = ACCENT_COLOR;
+    ctx.font = `bold 15px ${FONT_DISPLAY}`;
+    ctx.textAlign = 'left';
+    ctx.letterSpacing = '1px';
+    ctx.fillText(`INID.ME • ${matKey.toUpperCase()} PRO AR CARD`, safeLeft, safeBottom);
+
     ctx.restore();
 
     // BACK FACE (Bottom half)
@@ -331,9 +527,14 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     drawMaterialSurface(bx, by, W, H, R, true);
 
     ctx.save();
-    const cx = bx + W / 2;
-    const lgW = 110, lgH = 110;
-    const lgX = cx - lgW / 2, lgY = by + 50;
+    const bcx = bx + W / 2;
+    const bSafeTop = by + SAFE_INSET_Y + 16;
+    const bSafeBottom = by + H - SAFE_INSET_Y - 10;
+    const bMaxW = W - (SAFE_INSET_X * 2) - 60; // Safe width
+
+    // Logo / Emblem
+    const lgW = 104, lgH = 104;
+    const lgX = bcx - lgW / 2, lgY = bSafeTop + 6;
 
     if (logoImg) {
       ctx.save();
@@ -357,32 +558,69 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.fillStyle = ACCENT_COLOR;
       ctx.font = `bold 42px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
-      ctx.fillText(getInitials(profile.org || profile.fn), cx, by + 120);
+      ctx.fillText(getInitials(profile.org || profile.fn), bcx, lgY + 68);
     }
 
-    // Company Title
-    ctx.fillStyle = TEXT_COLOR;
-    ctx.font = `bold 40px ${FONT_DISPLAY}`;
-    ctx.textAlign = 'center';
-    ctx.fillText(profile.org || 'inid.me Identity', cx, by + 215);
+    // Company Title (Auto-wrap & Auto-scale)
+    const bOrgRes = fitAndDrawText(ctx, {
+      text: profile.org || 'inid.me Identity',
+      x: bcx,
+      y: lgY + lgH + 42,
+      maxWidth: bMaxW,
+      maxHeight: 74,
+      baseFontSize: 38,
+      minFontSize: 22,
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 'bold',
+      color: TEXT_COLOR,
+      textAlign: 'center',
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
 
-    // Slogan / Tagline
-    ctx.fillStyle = ACCENT_COLOR;
-    ctx.font = `italic bold 23px ${FONT_BODY}`;
-    ctx.fillText(profile.slogan || profile.tagline || 'Smart AR Profile & Business Card', cx, by + 265);
+    // Slogan / Tagline (Auto-wrap & Auto-scale)
+    const bSloganRes = fitAndDrawText(ctx, {
+      text: profile.slogan || profile.tagline || 'Smart AR Profile & Business Card',
+      x: bcx,
+      y: bOrgRes.nextY + 8,
+      maxWidth: bMaxW,
+      maxHeight: 52,
+      baseFontSize: 22,
+      minFontSize: 14,
+      fontFamily: FONT_BODY,
+      fontWeight: '600',
+      color: ACCENT_COLOR,
+      textAlign: 'center',
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
 
-    // Address
+    // Address (Auto-wrap & Auto-scale)
     if (profile.adr) {
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = `500 21px ${FONT_BODY}`;
-      ctx.fillText(profile.adr, cx, by + 325);
+      fitAndDrawText(ctx, {
+        text: profile.adr,
+        x: bcx,
+        y: bSloganRes.nextY + 12,
+        maxWidth: bMaxW,
+        maxHeight: 48,
+        baseFontSize: 20,
+        minFontSize: 13,
+        fontFamily: FONT_BODY,
+        fontWeight: '500',
+        color: '#cbd5e1',
+        textAlign: 'center',
+        maxLines: 2,
+        lineHeightRatio: 1.18
+      });
     }
 
     // Sub-caption
     ctx.fillStyle = TEXT_MUTED;
-    ctx.font = `600 16px ${FONT_DISPLAY}`;
+    ctx.font = `600 15px ${FONT_DISPLAY}`;
+    ctx.textAlign = 'center';
     ctx.letterSpacing = '1px';
-    ctx.fillText('TAP OR SCAN TO CONNECT INSTANTLY', cx, by + 440);
+    ctx.fillText('TAP OR SCAN TO CONNECT INSTANTLY', bcx, bSafeBottom);
+
     ctx.restore();
 
   } else {
@@ -396,16 +634,25 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const H = 794;
     const R = 28;
 
+    // 2mm Bleed & Safe Margin calculation:
+    // 480px / 53.98mm = 8.89 px/mm => 2mm = 17.8px
+    const SAFE_INSET = 22; // > 2mm from card outer edge
+
     // FRONT FACE (Left: X=20, Y=115)
     const fx = 20, fy = 115;
     drawMaterialSurface(fx, fy, W, H, R, false);
 
     ctx.save();
     const cx = fx + W / 2;
+    const safeLeft = fx + SAFE_INSET + 8; // fx + 30
+    const safeRight = fx + W - SAFE_INSET - 8; // fx + 450
+    const safeTop = fy + SAFE_INSET + 8; // fy + 30
+    const safeBottom = fy + H - SAFE_INSET - 8; // fy + 764
+    const maxVTextW = safeRight - safeLeft; // 420px
 
     // Avatar Circle (Centered top)
-    const avR = 55;
-    const avY = fy + 120;
+    const avR = 52;
+    const avY = safeTop + 72;
     if (avatarImg) {
       ctx.save();
       ctx.beginPath();
@@ -432,63 +679,139 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.fillText(getInitials(profile.fn), cx, avY + 13);
     }
 
-    // Name & Title
-    ctx.fillStyle = TEXT_COLOR;
-    ctx.font = `bold ${NAME_SIZE - 4}px ${FONT_DISPLAY}`;
-    ctx.textAlign = 'center';
-    ctx.fillText(profile.fn || 'Chưa đặt tên', cx, fy + 225);
+    // Name (Auto-wrap & Auto-scale)
+    const vNameRes = fitAndDrawText(ctx, {
+      text: profile.fn || 'Chưa đặt tên',
+      x: cx,
+      y: avY + avR + 34,
+      maxWidth: maxVTextW,
+      maxHeight: 74,
+      baseFontSize: NAME_SIZE - 4,
+      minFontSize: 20,
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 'bold',
+      color: TEXT_COLOR,
+      textAlign: 'center',
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
 
-    ctx.fillStyle = ACCENT_COLOR;
-    ctx.font = `bold ${TITLE_SIZE - 2}px ${FONT_BODY}`;
-    ctx.fillText(profile.title || 'Chuyên viên', cx, fy + 265);
+    // Title (Auto-wrap & Auto-scale)
+    const vTitleRes = fitAndDrawText(ctx, {
+      text: profile.title || 'Chuyên viên',
+      x: cx,
+      y: vNameRes.nextY + 6,
+      maxWidth: maxVTextW,
+      maxHeight: 46,
+      baseFontSize: TITLE_SIZE - 2,
+      minFontSize: 14,
+      fontFamily: FONT_BODY,
+      fontWeight: 'bold',
+      color: ACCENT_COLOR,
+      textAlign: 'center',
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
 
-    ctx.fillStyle = TEXT_MUTED;
-    ctx.font = `500 19px ${FONT_BODY}`;
-    ctx.fillText(profile.org || 'inid.me Identity', cx, fy + 300);
+    // Org / Company (Auto-wrap & Auto-scale)
+    const vOrgRes = fitAndDrawText(ctx, {
+      text: profile.org || 'inid.me Identity',
+      x: cx,
+      y: vTitleRes.nextY + 4,
+      maxWidth: maxVTextW,
+      maxHeight: 40,
+      baseFontSize: 18,
+      minFontSize: 13,
+      fontFamily: FONT_BODY,
+      fontWeight: '500',
+      color: TEXT_MUTED,
+      textAlign: 'center',
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
 
     // Divider
+    const vDivY = Math.max(fy + 335, vOrgRes.nextY + 12);
     ctx.strokeStyle = 'rgba(255,255,255,0.15)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(fx + 40, fy + 335);
-    ctx.lineTo(fx + W - 40, fy + 335);
+    ctx.moveTo(safeLeft, vDivY);
+    ctx.lineTo(safeRight, vDivY);
     ctx.stroke();
 
-    const cLeft = fx + 40;
-    ctx.textAlign = 'left';
+    // Contact Details with safe auto-wrapping
+    let vCurY = vDivY + 36;
+    const vContactMaxW = safeRight - safeLeft - 30;
 
-    if (profile.tel) {
+    if (profile.tel && vCurY < safeBottom - 70) {
       ctx.fillStyle = TEXT_COLOR;
-      ctx.font = `bold 20px ${FONT_BODY}`;
-      ctx.fillText(`📞  ${profile.tel}`, cLeft, fy + 385);
+      ctx.font = `bold 19px ${FONT_BODY}`;
+      ctx.textAlign = 'left';
+      ctx.fillText(`📞  ${profile.tel}`, safeLeft, vCurY);
+      vCurY += 40;
     }
-    if (profile.email) {
+    if (profile.email && vCurY < safeBottom - 70) {
       ctx.fillStyle = '#e2e8f0';
       ctx.font = `500 17px ${FONT_BODY}`;
-      ctx.fillText(`✉️  ${profile.email}`, cLeft, fy + 435);
+      ctx.textAlign = 'left';
+      ctx.fillText(`✉️  ${profile.email}`, safeLeft, vCurY);
+      vCurY += 40;
     }
     const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = `500 18px ${FONT_BODY}`;
-    ctx.fillText(`🌐  ${displayUrl}`, cLeft, fy + 485);
-
-    if (profile.adr) {
+    if (displayUrl && vCurY < safeBottom - 70) {
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = `500 17px ${FONT_BODY}`;
+      ctx.textAlign = 'left';
+      ctx.fillText(`🌐  ${displayUrl}`, safeLeft, vCurY);
+      vCurY += 40;
+    }
+    if (profile.adr && vCurY < safeBottom - 50) {
       ctx.fillStyle = '#94a3b8';
       ctx.font = `15px ${FONT_BODY}`;
-      ctx.fillText(`📍  ${profile.adr}`, cLeft, fy + 535);
+      ctx.textAlign = 'left';
+      ctx.fillText(`📍`, safeLeft, vCurY);
+
+      fitAndDrawText(ctx, {
+        text: profile.adr,
+        x: safeLeft + 28,
+        y: vCurY,
+        maxWidth: vContactMaxW - 28,
+        maxHeight: 46,
+        baseFontSize: 15,
+        minFontSize: 12,
+        fontFamily: FONT_BODY,
+        fontWeight: '500',
+        color: '#94a3b8',
+        maxLines: 2,
+        lineHeightRatio: 1.15
+      });
     }
 
     // Slogan
-    ctx.fillStyle = ACCENT_COLOR;
-    ctx.font = `italic 15px ${FONT_BODY}`;
-    ctx.textAlign = 'center';
-    ctx.fillText(profile.slogan || profile.tagline || 'Smart AR Profile & Business Card', cx, fy + 650);
+    if (profile.slogan || profile.tagline) {
+      fitAndDrawText(ctx, {
+        text: profile.slogan || profile.tagline,
+        x: cx,
+        y: safeBottom - 45,
+        maxWidth: maxVTextW,
+        maxHeight: 36,
+        baseFontSize: 15,
+        minFontSize: 12,
+        fontFamily: FONT_BODY,
+        fontWeight: 'italic 500',
+        color: ACCENT_COLOR,
+        textAlign: 'center',
+        maxLines: 2,
+        lineHeightRatio: 1.15
+      });
+    }
 
     // Footer
     ctx.fillStyle = TEXT_MUTED;
-    ctx.font = `bold 14px ${FONT_DISPLAY}`;
+    ctx.font = `bold 13px ${FONT_DISPLAY}`;
+    ctx.textAlign = 'center';
     ctx.letterSpacing = '1px';
-    ctx.fillText(`INID.ME • ${matKey.toUpperCase()} PRO`, cx, fy + 735);
+    ctx.fillText(`INID.ME • ${matKey.toUpperCase()} PRO`, cx, safeBottom);
     ctx.restore();
 
     // BACK FACE (Right: X=524, Y=115)
@@ -497,8 +820,15 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     ctx.save();
     const bcx = bx + W / 2;
-    const bLgW = 120, bLgH = 120;
-    const bLgX = bcx - bLgW / 2, bLgY = by + 120;
+    const bSafeLeft = bx + SAFE_INSET + 8;
+    const bSafeRight = bx + W - SAFE_INSET - 8;
+    const bSafeTop = by + SAFE_INSET + 8;
+    const bSafeBottom = by + H - SAFE_INSET - 8;
+    const bMaxVTextW = bSafeRight - bSafeLeft;
+
+    // Logo
+    const bLgW = 110, bLgH = 110;
+    const bLgX = bcx - bLgW / 2, bLgY = bSafeTop + 65;
 
     if (logoImg) {
       ctx.save();
@@ -520,34 +850,70 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.lineWidth = 3.5;
       ctx.stroke();
       ctx.fillStyle = ACCENT_COLOR;
-      ctx.font = `bold 46px ${FONT_DISPLAY}`;
+      ctx.font = `bold 44px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
-      ctx.fillText(getInitials(profile.org || profile.fn), bcx, by + 195);
+      ctx.fillText(getInitials(profile.org || profile.fn), bcx, bLgY + 70);
     }
 
-    // Title
-    ctx.fillStyle = TEXT_COLOR;
-    ctx.font = `bold 36px ${FONT_DISPLAY}`;
-    ctx.textAlign = 'center';
-    ctx.fillText(profile.org || 'inid.me Identity', bcx, by + 295);
+    // Company Title (Auto-wrap & Auto-scale)
+    const bVOrgRes = fitAndDrawText(ctx, {
+      text: profile.org || 'inid.me Identity',
+      x: bcx,
+      y: bLgY + bLgH + 46,
+      maxWidth: bMaxVTextW,
+      maxHeight: 74,
+      baseFontSize: 34,
+      minFontSize: 19,
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 'bold',
+      color: TEXT_COLOR,
+      textAlign: 'center',
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
 
-    // Slogan
-    ctx.fillStyle = ACCENT_COLOR;
-    ctx.font = `italic bold 18px ${FONT_BODY}`;
-    ctx.fillText(profile.slogan || profile.tagline || 'Smart AR Profile & Business Card', bcx, by + 345);
+    // Slogan (Auto-wrap & Auto-scale)
+    const bVSloganRes = fitAndDrawText(ctx, {
+      text: profile.slogan || profile.tagline || 'Smart AR Profile & Business Card',
+      x: bcx,
+      y: bVOrgRes.nextY + 8,
+      maxWidth: bMaxVTextW,
+      maxHeight: 46,
+      baseFontSize: 18,
+      minFontSize: 13,
+      fontFamily: FONT_BODY,
+      fontWeight: 'bold italic',
+      color: ACCENT_COLOR,
+      textAlign: 'center',
+      maxLines: 2,
+      lineHeightRatio: 1.15
+    });
 
-    // Address
+    // Address (Auto-wrap & Auto-scale)
     if (profile.adr) {
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = `500 18px ${FONT_BODY}`;
-      ctx.fillText(profile.adr, bcx, by + 440);
+      fitAndDrawText(ctx, {
+        text: profile.adr,
+        x: bcx,
+        y: bVSloganRes.nextY + 12,
+        maxWidth: bMaxVTextW,
+        maxHeight: 46,
+        baseFontSize: 17,
+        minFontSize: 12,
+        fontFamily: FONT_BODY,
+        fontWeight: '500',
+        color: '#cbd5e1',
+        textAlign: 'center',
+        maxLines: 2,
+        lineHeightRatio: 1.15
+      });
     }
 
     // Sub-caption
     ctx.fillStyle = TEXT_MUTED;
-    ctx.font = `600 14px ${FONT_DISPLAY}`;
+    ctx.font = `600 13px ${FONT_DISPLAY}`;
+    ctx.textAlign = 'center';
     ctx.letterSpacing = '1px';
-    ctx.fillText('TAP OR SCAN TO CONNECT INSTANTLY', bcx, by + 680);
+    ctx.fillText('TAP OR SCAN TO CONNECT INSTANTLY', bcx, bSafeBottom);
     ctx.restore();
   }
 
