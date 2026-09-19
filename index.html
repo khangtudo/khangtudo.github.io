@@ -619,6 +619,11 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
       user-select: none;
     }
+    /* On flipped back face, mirror the horizontal coordinate so it stays in the bottom-right corner visually */
+    .card-back .card-flip-info-badge {
+      right: auto;
+      left: clamp(10px, 2.5vw, 16px);
+    }
     .card-flip-info-badge:hover {
       background: rgba(56, 189, 248, 0.25);
       border-color: #38bdf8;
@@ -1973,7 +1978,7 @@ const BRAND_ICONS = {
     renderCard();
     const txtOrientHeader = document.getElementById('txtOrientHeader');
     if (txtOrientHeader) {
-      txtOrientHeader.textContent = profile.orientation === 'horizontal' ? 'Đổi Dọc' : 'Đổi Ngang';
+      txtOrientHeader.textContent = profile.orientation === 'horizontal' ? 'Dọc' : 'Ngang';
     }
   }
   const btnToggleOrientationHeader = document.getElementById('btnToggleOrientationHeader');
