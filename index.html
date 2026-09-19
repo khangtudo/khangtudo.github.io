@@ -579,29 +579,55 @@
     .company-stack .slogan { font-size: 0.8rem; color: var(--primary); font-style: italic; }
     .company-stack .address { font-size: 0.76rem; color: var(--muted); max-width: 260px; line-height: 1.4; }
 
-    .flip-hint-wrap {
-      display: flex;
-      justify-content: center;
-      margin-top: 8px;
-      flex-shrink: 0;
-    }
-    .btn-flip-below {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--surface-border);
-      color: var(--muted);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 0.74rem;
-      cursor: pointer;
+    /* Corner Flip Hint Badge (i) */
+    .card-flip-info-badge {
+      position: absolute;
+      bottom: clamp(10px, 2vh, 16px);
+      right: clamp(10px, 2.5vw, 16px);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #38bdf8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: serif;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: all 0.15s;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      user-select: none;
     }
-    .btn-flip-below:hover {
-      background: rgba(56, 189, 248, 0.12);
-      color: var(--primary);
-      border-color: rgba(56, 189, 248, 0.3);
+    .card-flip-info-badge:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: #38bdf8;
+      transform: scale(1.12);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    }
+    .card-flip-info-badge::after {
+      content: "Chạm để lật";
+      position: absolute;
+      right: 32px;
+      white-space: nowrap;
+      background: rgba(15, 23, 42, 0.9);
+      color: #e2e8f0;
+      font-size: 0.65rem;
+      font-family: system-ui, sans-serif;
+      font-weight: 500;
+      padding: 3px 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .card-flip-info-badge:hover::after {
+      opacity: 1;
     }
 
     /* 3. Action Dock: 3 Buttons */
@@ -1167,6 +1193,8 @@
             <div class="card-bottom ux-draggable" id="layerCardBottom" data-layer-id="card_bottom">
               <div class="social-icons-box" id="cardSocials" aria-label="Liên kết mạng xã hội"></div>
             </div>
+            <!-- Info (i) button bottom right to flip card -->
+            <button type="button" class="card-flip-info-badge" aria-label="Chạm để lật thẻ 3D" title="Chạm để lật thẻ 🔄">i</button>
           </div>
 
           <!-- Back Face -->
@@ -1180,15 +1208,11 @@
               </a>
             </div>
             <div class="card-bottom" style="display:none;"></div>
+            <!-- Info (i) button bottom right on back face as well -->
+            <button type="button" class="card-flip-info-badge" aria-label="Chạm để lật thẻ 3D" title="Chạm để lật thẻ 🔄">i</button>
           </div>
 
         </div>
-      </div>
-      <!-- Nút Chạm để lật thẻ nằm ngay bên dưới thẻ -->
-      <div class="flip-hint-wrap">
-        <button type="button" class="btn-flip-below" id="btnFlipBelow" aria-label="Chạm để lật thẻ 3D">
-          <span>🔄</span> <span id="txtFlipBelow">Chạm để lật thẻ 3D</span>
-        </button>
       </div>
     </main>
 
@@ -1772,9 +1796,6 @@ const BRAND_ICONS = {
 
     const elViewQr = document.getElementById('txtViewQr');
     if (elViewQr) elViewQr.textContent = currentLang === 'vi' ? 'Mã QR' : 'QR Offline';
-
-    const elFlipBelow = document.getElementById('txtFlipBelow');
-    if (elFlipBelow) elFlipBelow.textContent = getTranslation(currentLang, 'flipCard') || 'Chạm để lật thẻ 3D';
   }
 
   // Render Card to Stage
@@ -1921,11 +1942,13 @@ const BRAND_ICONS = {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipCard(); }
   });
 
-  // Flip button below card
-  const btnFlipBelow = document.getElementById('btnFlipBelow');
-  if (btnFlipBelow) {
-    btnFlipBelow.onclick = flipCard;
-  }
+  // Flip via corner (i) badges
+  document.querySelectorAll('.card-flip-info-badge').forEach(badge => {
+    badge.addEventListener('click', (e) => {
+      e.stopPropagation();
+      flipCard();
+    });
+  });
 
   // Toggle Orientation (Header & inside buttons)
   function toggleCardOrientation(e) {
