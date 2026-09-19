@@ -269,7 +269,7 @@
 
     /* Horizontal Card Adaptive Layout - Prevents Overflow & Ensures Visible Social Icons */
     .card-perspective.horizontal .card-face {
-      padding: clamp(8px, 1.8vh, 14px) clamp(12px, 2.5vw, 18px);
+      padding: clamp(10px, 2vh, 16px) clamp(12px, 2.5vw, 18px);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -281,8 +281,8 @@
       flex-shrink: 0;
     }
     .card-perspective.horizontal .card-avatar {
-      width: clamp(36px, 8vw, 48px);
-      height: clamp(36px, 8vw, 48px);
+      width: clamp(38px, 8vw, 48px);
+      height: clamp(38px, 8vw, 48px);
     }
     .card-perspective.horizontal .person-text h2 {
       font-size: clamp(0.95rem, 3.2vw, 1.35rem);
@@ -293,19 +293,34 @@
       margin-top: 1px;
     }
     .card-perspective.horizontal .contacts-stack {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       margin: 4px 0;
-      flex-shrink: 0;
+      width: 100%;
+      min-width: 0;
     }
     .card-perspective.horizontal .contact-badge {
-      min-height: 30px;
-      height: 30px;
+      min-height: 26px;
+      height: 26px;
       padding: 0 8px;
-      font-size: clamp(0.65rem, 1.6vw, 0.78rem);
-      gap: 4px;
-      border-radius: 8px;
+      font-size: clamp(0.68rem, 1.8vw, 0.78rem);
+      gap: 6px;
+      border-radius: 6px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .card-perspective.horizontal .contact-badge span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      flex: 1;
     }
     .card-perspective.horizontal .card-bottom {
       margin-top: auto;
