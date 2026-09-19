@@ -223,7 +223,40 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { createDynamicCardTexture } from '/assets/card-texture-generator.js';
+
+    // Parse active profile from Hash or LocalStorage
+    function getActiveProfile() {
+      let p = null;
+      if (window.location.hash.includes('data=')) {
+        try {
+          const raw = window.location.hash.split('data=')[1].split('&')[0];
+          const binStr = atob(raw);
+          const bytes = Uint8Array.from(binStr, m => m.charCodeAt(0));
+          const decodedJson = new TextDecoder('utf-8').decode(bytes);
+          p = JSON.parse(decodedJson);
+        } catch (e) {
+          try {
+            const raw = window.location.hash.split('data=')[1].split('&')[0];
+            p = JSON.parse(decodeURIComponent(atob(raw)));
+          } catch (err2) {
+            console.warn('Failed to parse profile from hash:', e);
+          }
+        }
+      }
+      if (!p) {
+        try {
+          const stored = localStorage.getItem('inid_ar_profile');
+          if (stored) p = JSON.parse(stored);
+        } catch (e) {
+          console.warn('Failed to read from localStorage:', e);
+        }
+      }
+      return p;
+    }
+    const activeProfile = getActiveProfile();
+
     // -------------------------------------------------------------
     // Global Elements & State
     // -------------------------------------------------------------
@@ -303,20 +336,28 @@
     const CARD_H = 0.35;
     const geom = new THREE.BoxGeometry(CARD_W, CARD_H, 0.003);
 
-    // Load extracted card texture from assets
-    const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load('/assets/3d/extracted-texture.png?v=20260914-prod', () => {
-      console.log('3D Card Texture loaded!');
-    });
+    // Create dynamic or fallback card texture
+    let cardTexture;
+    if (activeProfile && (activeProfile.fn || activeProfile.org)) {
+      console.log('Rendering dynamic AR card texture for profile:', activeProfile.fn);
+      const dynamicCanvas = createDynamicCardTexture(activeProfile, false);
+      cardTexture = new THREE.CanvasTexture(dynamicCanvas);
+      cardTexture.needsUpdate = true;
+    } else {
+      const textureLoader = new THREE.TextureLoader();
+      cardTexture = textureLoader.load('/assets/3d/extracted-texture.png?v=20260914-prod', () => {
+        console.log('Default 3D Card Texture loaded!');
+      });
+    }
 
     // Custom UV for Front (Top half) and Back (Bottom half)
     const matFront = new THREE.MeshStandardMaterial({
-      map: texture,
+      map: cardTexture,
       roughness: 0.3,
       metalness: 0.1
     });
     const matBack = new THREE.MeshStandardMaterial({
-      map: texture,
+      map: cardTexture,
       roughness: 0.3,
       metalness: 0.1
     });
@@ -353,6 +394,12 @@
 
     const cardMesh = new THREE.Mesh(geom, materials);
     cardGroup.add(cardMesh);
+
+    // Expose for verification and inspection
+    window._arScene = scene;
+    window._arCardMesh = cardMesh;
+    window._arActiveProfile = activeProfile;
+    window._arCardTexture = cardTexture;
 
     // Target positions for smooth dampening
     const targetPos = new THREE.Vector3(0, -0.05, 0);

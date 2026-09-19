@@ -1860,9 +1860,19 @@ const BRAND_ICONS = {
     closeSheet();
     renderCard();
 
-    // Update URL hash without reload
-    const b64 = btoa(encodeURIComponent(JSON.stringify(profile)));
-    history.replaceState(null, '', `#data=${b64}`);
+    // Update URL hash without reload and sync to localStorage for AR
+    try {
+      const profileJson = JSON.stringify(profile);
+      localStorage.setItem('inid_ar_profile', profileJson);
+      const b64 = btoa(encodeURIComponent(profileJson));
+      history.replaceState(null, '', `#data=${b64}`);
+      const btnArHandsLink = document.getElementById('btnArHandsLink');
+      if (btnArHandsLink) {
+        btnArHandsLink.href = `/ar-hands/#data=${b64}`;
+      }
+    } catch (e) {
+      console.warn('Error saving profile hash:', e);
+    }
     showToast('Đã lưu & đồng bộ!');
   };
 
@@ -1995,6 +2005,18 @@ const BRAND_ICONS = {
   function openArModal() {
     lastFocusedTrigger = document.getElementById('btnLaunchAr') || document.activeElement;
     if (arModal) {
+      // Sync dynamic profile to AR Hands link & localStorage
+      const btnArHandsLink = document.getElementById('btnArHandsLink');
+      if (btnArHandsLink) {
+        try {
+          const profileJson = JSON.stringify(profile);
+          localStorage.setItem('inid_ar_profile', profileJson);
+          const b64 = btoa(encodeURIComponent(profileJson));
+          btnArHandsLink.href = `/ar-hands/#data=${b64}`;
+        } catch (err) {
+          console.warn('Failed to encode profile for AR Hands link:', err);
+        }
+      }
       arModal.classList.add('active');
       mainAppShell.setAttribute('inert', 'true');
       if (btnCloseArModal) btnCloseArModal.focus();
