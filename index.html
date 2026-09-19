@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>inid.me — Smart AR Business Card (1-Page Spatial)</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📇</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <script type="module" src="assets/vendor/model-viewer.min.js"></script>
   <script src="assets/vendor/qrcode.min.js"></script>
   <style>
@@ -311,14 +314,50 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      border: 1px solid var(--surface-border);
+      border: 1px solid var(--card-accent, var(--surface-border));
       box-shadow: 0 15px 35px -10px rgba(0,0,0,0.8);
-      background: linear-gradient(145deg, #131b2e, #090d16);
+      background: var(--card-bg, linear-gradient(145deg, #131b2e, #090d16));
+      color: var(--card-text, #fff);
+      font-family: var(--card-font-body, system-ui, sans-serif);
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
     .card-back {
       transform: rotateY(180deg);
-      background: linear-gradient(145deg, #0f172a, #020617);
+      background: var(--card-bg-back, linear-gradient(145deg, #0f172a, #020617));
       text-align: center;
+    }
+
+    /* Pro / VIP Material Textures for 2D Card */
+    .card-face.mat-titanium {
+      background: linear-gradient(135deg, #20252B 0%, #0B0E12 100%);
+      border-color: #69737D;
+      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .card-face.mat-carbon {
+      background:
+        repeating-linear-gradient(45deg, rgba(42,48,54,0.4) 0px, rgba(42,48,54,0.4) 4px, transparent 4px, transparent 8px),
+        repeating-linear-gradient(-45deg, rgba(7,9,10,0.7) 0px, rgba(7,9,10,0.7) 4px, transparent 4px, transparent 8px),
+        #121417;
+      border-color: #56E6D2;
+      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.95), 0 0 20px rgba(86,230,210,0.15);
+    }
+    .card-face.mat-gold {
+      background: linear-gradient(115deg, #4D3212 0%, #B88935 45%, #F7E5AD 55%, #765019 100%);
+      border-color: #FFF0BE;
+      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.9), 0 0 25px rgba(247,229,173,0.25);
+    }
+    .card-face.mat-frost {
+      background: linear-gradient(145deg, rgba(38,66,84,0.85) 0%, rgba(16,43,58,0.92) 100%);
+      border-color: #83E8FF;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.8), inset 0 0 15px rgba(131,232,255,0.25);
+    }
+    .card-face.mat-leather {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(120,64,82,0.15) 0%, transparent 60%),
+        linear-gradient(145deg, #32131E, #12070B);
+      border-color: #D8AF62;
+      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.9), inset 0 0 0 3px rgba(216,175,98,0.3);
     }
 
     .person-row {
@@ -331,19 +370,21 @@
       height: clamp(48px, 12vw, 64px);
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid var(--primary);
+      border: 2px solid var(--card-accent, var(--primary));
       background: #1e293b;
       flex-shrink: 0;
     }
     .person-text h2 {
-      font-size: clamp(1.2rem, 2.8vw, 1.6rem);
-      color: #fff;
+      font-size: var(--card-name-size, clamp(1.2rem, 2.8vw, 1.6rem));
+      color: var(--card-text, #fff);
+      font-family: var(--card-font-display, inherit);
       font-weight: 700;
       line-height: 1.2;
     }
     .person-text p {
-      font-size: clamp(0.85rem, 2vw, 1.05rem);
-      color: var(--primary);
+      font-size: var(--card-title-size, clamp(0.85rem, 2vw, 1.05rem));
+      color: var(--card-accent, var(--primary));
+      font-family: var(--card-font-body, inherit);
       margin-top: 3px;
     }
 
@@ -1118,6 +1159,81 @@
           </div>
         </div>
       </div>
+
+      <!-- PRO / VIP CUSTOMIZER PANEL -->
+      <div class="field-group" style="border: 1px solid rgba(216, 175, 98, 0.4); border-radius: 12px; padding: 14px; background: rgba(18, 20, 23, 0.6); margin-top: 14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+          <span style="font-weight:700; font-size:0.9rem; color:#f7e5ad; display:flex; align-items:center; gap:6px;">
+            <span>👑</span> Tùy biến Pro / VIP Studio
+          </span>
+          <span style="font-size:0.68rem; background:rgba(216,175,98,0.2); border:1px solid #d8af62; color:#fff0be; padding:2px 6px; border-radius:99px;">PBR Procedural</span>
+        </div>
+
+        <!-- 5 Material Presets -->
+        <label style="font-size:0.75rem; color:#cbd5e1; margin-bottom:6px; display:block;">Chất liệu bề mặt thẻ (5 PBR Presets):</label>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(88px, 1fr)); gap:6px; margin-bottom:12px;" id="vipMaterialSelector">
+          <button type="button" class="btn-vip-mat active" data-mat="titanium" style="padding:8px 4px; border-radius:8px; border:1px solid #69737d; background:#20252b; color:#f4f7fa; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Titanium</b><br><span style="font-size:0.62rem; color:#b9f2ff;">Dark Metal</span>
+          </button>
+          <button type="button" class="btn-vip-mat" data-mat="carbon" style="padding:8px 4px; border-radius:8px; border:1px solid #313941; background:#121417; color:#f6f8fa; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Carbon</b><br><span style="font-size:0.62rem; color:#56e6d2;">Woven Fiber</span>
+          </button>
+          <button type="button" class="btn-vip-mat" data-mat="gold" style="padding:8px 4px; border-radius:8px; border:1px solid #b88935; background:#4d3212; color:#fff0be; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Gold Foil</b><br><span style="font-size:0.62rem; color:#f7e5ad;">Brushed Metal</span>
+          </button>
+          <button type="button" class="btn-vip-mat" data-mat="frost" style="padding:8px 4px; border-radius:8px; border:1px solid #83e8ff; background:#264254; color:#eaf8ff; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Frosted</b><br><span style="font-size:0.62rem; color:#83e8ff;">Cyber Glass</span>
+          </button>
+          <button type="button" class="btn-vip-mat" data-mat="leather" style="padding:8px 4px; border-radius:8px; border:1px solid #784052; background:#32131e; color:#fff7eb; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Leather</b><br><span style="font-size:0.62rem; color:#d8af62;">Royal Grain</span>
+          </button>
+        </div>
+
+        <!-- Color Override -->
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px;">
+          <div>
+            <label for="vipBgColor" style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:3px;">Màu nền</label>
+            <input type="color" id="vipBgColor" value="#20252B" style="width:100%; height:30px; padding:0; border:1px solid #475569; border-radius:6px; cursor:pointer; background:transparent;">
+          </div>
+          <div>
+            <label for="vipTextColor" style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:3px;">Màu chữ</label>
+            <input type="color" id="vipTextColor" value="#F4F7FA" style="width:100%; height:30px; padding:0; border:1px solid #475569; border-radius:6px; cursor:pointer; background:transparent;">
+          </div>
+          <div>
+            <label for="vipAccentColor" style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:3px;">Màu viền/Accent</label>
+            <input type="color" id="vipAccentColor" value="#B9F2FF" style="width:100%; height:30px; padding:0; border:1px solid #475569; border-radius:6px; cursor:pointer; background:transparent;">
+          </div>
+        </div>
+
+        <!-- Font Pair Selection -->
+        <div style="margin-bottom:12px;">
+          <label for="vipFontPair" style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:3px;">Bộ ghép Font chữ (Typography):</label>
+          <select id="vipFontPair" style="width:100%; padding:7px; border-radius:6px; background:#0f172a; color:#fff; border:1px solid #475569; font-size:0.78rem;">
+            <option value="precision">Be Vietnam Pro + Inter (Precision Luxury)</option>
+            <option value="future">Space Grotesk + Be Vietnam Pro (Neo Future / Web3)</option>
+            <option value="editorial">Playfair Display + Be Vietnam Pro (Editorial Prestige)</option>
+            <option value="regal">Cinzel / Playfair + Be Vietnam Pro (Regal Engraving)</option>
+          </select>
+        </div>
+
+        <!-- Typography Size Sliders -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:#cbd5e1; margin-bottom:2px;">
+              <span>Cỡ tên (Name):</span>
+              <b id="lblVipNameSize">48px</b>
+            </div>
+            <input type="range" id="vipNameSize" min="36" max="56" value="48" step="1" style="width:100%;">
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:#cbd5e1; margin-bottom:2px;">
+              <span>Cỡ chức danh:</span>
+              <b id="lblVipTitleSize">24px</b>
+            </div>
+            <input type="range" id="vipTitleSize" min="18" max="30" value="24" step="1" style="width:100%;">
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="sheet-footer">
@@ -1540,6 +1656,48 @@ const BRAND_ICONS = {
       arViewer.setAttribute('ios-src', currentUsdz);
     }
 
+    // Apply Pro / VIP 2D Styles & CSS Variables
+    const vip = profile.vipTheme || { material: 'titanium', fontPair: 'precision', nameSize: 48, titleSize: 24 };
+    const cardFaces = document.querySelectorAll('.card-face');
+    cardFaces.forEach(f => {
+      f.classList.remove('mat-titanium', 'mat-carbon', 'mat-gold', 'mat-frost', 'mat-leather');
+      if (vip.material) f.classList.add(`mat-${vip.material}`);
+    });
+
+    const cardRoot = document.getElementById('cardPerspective');
+    if (cardRoot) {
+      if (vip.bgColor) cardRoot.style.setProperty('--card-bg', vip.bgColor);
+      else cardRoot.style.removeProperty('--card-bg');
+
+      if (vip.textColor) cardRoot.style.setProperty('--card-text', vip.textColor);
+      else cardRoot.style.removeProperty('--card-text');
+
+      if (vip.accentColor) cardRoot.style.setProperty('--card-accent', vip.accentColor);
+      else cardRoot.style.removeProperty('--card-accent');
+
+      if (vip.nameSize) cardRoot.style.setProperty('--card-name-size', `${vip.nameSize}px`);
+      if (vip.titleSize) cardRoot.style.setProperty('--card-title-size', `${vip.titleSize}px`);
+
+      // Font pairings
+      let displayFont = 'inherit';
+      let bodyFont = 'inherit';
+      if (vip.fontPair === 'future') {
+        displayFont = "'Space Grotesk', sans-serif";
+        bodyFont = "'Be Vietnam Pro', sans-serif";
+      } else if (vip.fontPair === 'editorial') {
+        displayFont = "'Playfair Display', serif";
+        bodyFont = "'Be Vietnam Pro', sans-serif";
+      } else if (vip.fontPair === 'regal') {
+        displayFont = "'Cinzel', 'Playfair Display', serif";
+        bodyFont = "'Be Vietnam Pro', sans-serif";
+      } else if (vip.fontPair === 'precision') {
+        displayFont = "'Be Vietnam Pro', sans-serif";
+        bodyFont = "'Inter', sans-serif";
+      }
+      cardRoot.style.setProperty('--card-font-display', displayFont);
+      cardRoot.style.setProperty('--card-font-body', bodyFont);
+    }
+
     updateByteGauge();
   }
 
@@ -1809,6 +1967,41 @@ const BRAND_ICONS = {
     };
   }
 
+  // VIP Customizer event wiring
+  let currentVipMaterial = 'titanium';
+  function setVipMaterial(mat) {
+    currentVipMaterial = mat;
+    document.querySelectorAll('.btn-vip-mat').forEach(b => {
+      const isActive = (b.getAttribute('data-mat') === mat);
+      b.classList.toggle('active', isActive);
+      if (isActive) {
+        b.style.borderColor = '#38bdf8';
+        b.style.boxShadow = '0 0 10px rgba(56, 189, 248, 0.4)';
+      } else {
+        b.style.borderColor = '';
+        b.style.boxShadow = '';
+      }
+    });
+  }
+  document.querySelectorAll('.btn-vip-mat').forEach(b => {
+    b.onclick = () => {
+      setVipMaterial(b.getAttribute('data-mat'));
+    };
+  });
+
+  const vipNameSizeInput = document.getElementById('vipNameSize');
+  if (vipNameSizeInput) {
+    vipNameSizeInput.oninput = (e) => {
+      document.getElementById('lblVipNameSize').textContent = `${e.target.value}px`;
+    };
+  }
+  const vipTitleSizeInput = document.getElementById('vipTitleSize');
+  if (vipTitleSizeInput) {
+    vipTitleSizeInput.oninput = (e) => {
+      document.getElementById('lblVipTitleSize').textContent = `${e.target.value}px`;
+    };
+  }
+
   function openSheet(clearFields = false) {
     lastFocusedTrigger = btnOpenEdit;
     // Bấm "+ Tạo mới" sẽ dọn sạch form để bắt đầu điền thẻ mới từ đầu
@@ -1875,6 +2068,23 @@ const BRAND_ICONS = {
       document.getElementById('inSlogan').value = profile.slogan || '';
 
       renderGravatarSocialList(Array.isArray(profile.socials) ? profile.socials : []);
+
+      // Pre-fill Pro / VIP settings
+      const vip = profile.vipTheme || { material: 'titanium', fontPair: 'precision', nameSize: 48, titleSize: 24, bgColor: '#20252B', textColor: '#F4F7FA', accentColor: '#B9F2FF' };
+      setVipMaterial(vip.material || 'titanium');
+      if (document.getElementById('vipBgColor')) document.getElementById('vipBgColor').value = vip.bgColor || '#20252B';
+      if (document.getElementById('vipTextColor')) document.getElementById('vipTextColor').value = vip.textColor || '#F4F7FA';
+      if (document.getElementById('vipAccentColor')) document.getElementById('vipAccentColor').value = vip.accentColor || '#B9F2FF';
+      if (document.getElementById('vipFontPair')) document.getElementById('vipFontPair').value = vip.fontPair || 'precision';
+      if (document.getElementById('vipNameSize')) {
+        document.getElementById('vipNameSize').value = vip.nameSize || 48;
+        document.getElementById('lblVipNameSize').textContent = `${vip.nameSize || 48}px`;
+      }
+      if (document.getElementById('vipTitleSize')) {
+        document.getElementById('vipTitleSize').value = vip.titleSize || 24;
+        document.getElementById('lblVipTitleSize').textContent = `${vip.titleSize || 24}px`;
+      }
+
       const titleEl = document.getElementById('sheetTitle');
       if (titleEl) titleEl.textContent = 'Chỉnh Sửa Danh Thiếp';
     }
@@ -2012,6 +2222,17 @@ const BRAND_ICONS = {
     });
 
     profile.socials = newSocials;
+
+    // Read Pro / VIP Customizer State
+    profile.vipTheme = {
+      material: currentVipMaterial || 'titanium',
+      bgColor: document.getElementById('vipBgColor')?.value || '#20252B',
+      textColor: document.getElementById('vipTextColor')?.value || '#F4F7FA',
+      accentColor: document.getElementById('vipAccentColor')?.value || '#B9F2FF',
+      fontPair: document.getElementById('vipFontPair')?.value || 'precision',
+      nameSize: parseInt(document.getElementById('vipNameSize')?.value || '48', 10),
+      titleSize: parseInt(document.getElementById('vipTitleSize')?.value || '24', 10)
+    };
 
     closeSheet();
     renderCard();

@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <title>inid.me — MediaPipe Hands AI AR Production (v2.1)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -224,7 +227,7 @@
   </div>
 
   <script type="module">
-    import { createDynamicCardTexture } from '/assets/card-texture-generator.js';
+    import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js';
 
     // Parse active profile from Hash or LocalStorage
     function getActiveProfile() {
@@ -360,18 +363,27 @@
       });
     }
 
+    // PBR Properties from Pro / VIP Preset
+    const vip = activeProfile ? (activeProfile.vipTheme || {}) : {};
+    const matKey = (vip.material && VIP_MATERIALS[vip.material]) ? vip.material : 'titanium';
+    const pbr = VIP_MATERIALS[matKey];
+
+    const roughnessVal = (typeof pbr.roughness === 'number') ? pbr.roughness : 0.3;
+    const metalnessVal = (typeof pbr.metalness === 'number') ? pbr.metalness : 0.1;
+    const accentHex = pbr.accent ? parseInt(pbr.accent.replace('#', '0x'), 16) : 0x38bdf8;
+
     // Custom UV for Front (Top half or Left) and Back (Bottom half or Right)
     const matFront = new THREE.MeshStandardMaterial({
       map: cardTexture,
-      roughness: 0.3,
-      metalness: 0.1
+      roughness: roughnessVal,
+      metalness: metalnessVal
     });
     const matBack = new THREE.MeshStandardMaterial({
       map: cardTexture,
-      roughness: 0.3,
-      metalness: 0.1
+      roughness: roughnessVal,
+      metalness: metalnessVal
     });
-    const matEdge = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.2, metalness: 0.5 });
+    const matEdge = new THREE.MeshStandardMaterial({ color: accentHex, roughness: 0.2, metalness: 0.6 });
 
     // Materials: +X, -X, +Y, -Y, +Z (Front), -Z (Back)
     const materials = [
