@@ -211,62 +211,65 @@
       width: 100%;
       flex: 1;
       min-height: 0;
+      padding: 4px 12px 16px;
+      box-sizing: border-box;
     }
+
+    /* Fixed Aspect Ratio Standard ID-1 Container (54/86 Portrait, 86/54 Landscape) */
     .card-perspective {
       perspective: 1400px;
       width: 100%;
-      max-width: clamp(310px, 86vw, 360px);
-      height: min(52dvh, 460px);
+      max-width: min(88vw, 340px);
+      aspect-ratio: 54 / 86;
+      height: auto;
       margin: 0 auto;
       position: relative;
     }
     .card-perspective.horizontal {
-      max-width: clamp(340px, 94vw, 520px);
-      height: min(42dvh, 320px);
+      max-width: min(94vw, 500px);
+      aspect-ratio: 86 / 54;
+      height: auto;
+    }
+
+    @media (min-width: 768px) {
+      .card-perspective {
+        max-width: 360px;
+      }
+      .card-perspective.horizontal {
+        max-width: 540px;
+      }
     }
     @media (min-width: 1024px) {
       .card-perspective {
-        max-width: 420px;
-        height: min(64dvh, 540px);
+        max-width: 380px;
       }
       .card-perspective.horizontal {
         max-width: 580px;
-        height: min(46dvh, 360px);
       }
     }
 
     /* Horizontal Card Adaptive Layout - Prevents Overflow */
-    .card-perspective.horizontal {
-      max-width: clamp(340px, 94vw, 520px);
-      height: min(42dvh, 320px);
-    }
-    @media (min-width: 1024px) {
-      .card-perspective.horizontal {
-        max-width: 580px;
-        height: min(46dvh, 360px);
-      }
-    }
     .card-perspective.horizontal .card-face {
-      padding: clamp(12px, 2vh, 18px) clamp(16px, 2.5vw, 24px);
+      padding: clamp(10px, 2vh, 16px) clamp(14px, 2.5vw, 20px);
       overflow: hidden;
     }
     .card-perspective.horizontal .person-row {
       gap: 12px;
     }
     .card-perspective.horizontal .card-avatar {
-      width: clamp(44px, 9vw, 54px);
-      height: clamp(44px, 9vw, 54px);
+      width: clamp(40px, 8vw, 52px);
+      height: clamp(40px, 8vw, 52px);
     }
     .card-perspective.horizontal .contact-list {
-      margin: 6px 0;
+      margin: 4px 0;
       gap: 3px;
     }
     .card-perspective.horizontal .contact-item {
-      font-size: clamp(0.75rem, 2vw, 0.84rem);
+      font-size: clamp(0.72rem, 1.8vw, 0.82rem);
     }
     .card-perspective.horizontal .card-bottom {
       margin-top: auto;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
     }
     .card-perspective.horizontal .social-icons-box {
@@ -284,13 +287,13 @@
       display: none;
     }
     .card-perspective.horizontal .soc-circle-btn {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       flex-shrink: 0;
     }
     .card-perspective.horizontal .btn-toggle-orient-card {
-      font-size: 0.72rem;
-      padding: 5px 10px;
+      font-size: 0.7rem;
+      padding: 4px 8px;
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -309,8 +312,8 @@
       position: absolute;
       inset: 0;
       backface-visibility: hidden;
-      border-radius: 22px;
-      padding: clamp(14px, 2vh, 22px) clamp(14px, 2.5vw, 20px);
+      border-radius: clamp(14px, 4vw, 22px);
+      padding: clamp(10px, 2.5vh, 18px) clamp(12px, 3.5vw, 18px);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -320,6 +323,8 @@
       color: var(--card-text, #fff);
       font-family: var(--card-font-body, system-ui, sans-serif);
       transition: background 0.3s ease, border-color 0.3s ease;
+      overflow: hidden;
+      box-sizing: border-box;
     }
     .card-back {
       transform: rotateY(180deg);
@@ -411,52 +416,70 @@
     .person-row {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
     }
     .card-avatar {
-      width: clamp(48px, 12vw, 64px);
-      height: clamp(48px, 12vw, 64px);
+      width: clamp(40px, 10vw, 56px);
+      height: clamp(40px, 10vw, 56px);
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--card-accent, var(--primary));
       background: #1e293b;
       flex-shrink: 0;
     }
+    .person-text {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
     .person-text h2 {
-      font-size: var(--card-name-size, clamp(1.2rem, 2.8vw, 1.6rem));
+      font-size: clamp(1.1rem, 4vw, 1.5rem);
       color: var(--card-text, #fff);
       font-family: var(--card-font-display, inherit);
       font-weight: 700;
-      line-height: 1.2;
+      line-height: 1.15;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
     .person-text p {
-      font-size: var(--card-title-size, clamp(0.85rem, 2vw, 1.05rem));
+      font-size: clamp(0.75rem, 2.2vw, 0.95rem);
       color: var(--card-accent, var(--primary));
       font-family: var(--card-font-body, inherit);
-      margin-top: 3px;
+      margin-top: 2px;
+      line-height: 1.2;
+      word-break: break-word;
     }
 
     .contacts-stack {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin: 10px 0;
+      gap: 5px;
+      margin: 6px 0;
+      width: 100%;
     }
     .contact-badge {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: clamp(0.84rem, 1.8vw, 1rem);
+      gap: 8px;
+      font-size: clamp(0.72rem, 2.2vw, 0.88rem);
       color: var(--text);
       text-decoration: none;
-      padding: 12px 16px;
+      padding: clamp(6px, 1.2vh, 10px) 12px;
       background: rgba(255,255,255,0.03);
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      min-height: 46px;
+      min-height: clamp(34px, 5vh, 42px);
+      box-sizing: border-box;
+    }
+    .contact-badge span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .contact-badge:hover { background: rgba(56, 189, 248, 0.15); border-color: var(--primary); }
 
