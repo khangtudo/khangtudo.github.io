@@ -387,23 +387,24 @@
     }
 
     /* Pro / VIP Material Textures for 2D Card */
+    .card-face.mat-pvc {
+      background: linear-gradient(145deg, #0F172A 0%, #020617 100%);
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.85), inset 0 1px 2px rgba(255,255,255,0.15);
+    }
     .card-face.mat-titanium {
       background: linear-gradient(135deg, #20252B 0%, #0B0E12 100%);
       border-color: #69737D;
       box-shadow: 0 18px 40px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.15);
     }
-    .card-face.mat-carbon {
-      background:
-        repeating-linear-gradient(45deg, rgba(42,48,54,0.4) 0px, rgba(42,48,54,0.4) 4px, transparent 4px, transparent 8px),
-        repeating-linear-gradient(-45deg, rgba(7,9,10,0.7) 0px, rgba(7,9,10,0.7) 4px, transparent 4px, transparent 8px),
-        #121417;
-      border-color: #56E6D2;
-      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.95), 0 0 20px rgba(86,230,210,0.15);
+    .card-face.mat-silver {
+      background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 50%, #CBD5E1 100%);
+      color: #0F172A !important;
+      border-color: #94A3B8;
+      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.25);
     }
-    .card-face.mat-gold {
-      background: linear-gradient(115deg, #4D3212 0%, #B88935 45%, #F7E5AD 55%, #765019 100%);
-      border-color: #FFF0BE;
-      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.9), 0 0 25px rgba(247,229,173,0.25);
+    .card-face.mat-silver * {
+      color: #0F172A !important;
     }
     .card-face.mat-frost {
       background: linear-gradient(145deg, rgba(38,66,84,0.85) 0%, rgba(16,43,58,0.92) 100%);
@@ -411,27 +412,14 @@
       backdrop-filter: blur(20px);
       box-shadow: 0 18px 40px -10px rgba(0,0,0,0.8), inset 0 0 15px rgba(131,232,255,0.25);
     }
-    .card-face.mat-leather {
-      background:
-        radial-gradient(circle at 50% 50%, rgba(120,64,82,0.15) 0%, transparent 60%),
-        linear-gradient(145deg, #32131E, #12070B);
-      border-color: #D8AF62;
-      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.9), inset 0 0 0 3px rgba(216,175,98,0.3);
-    }
-    .card-face.mat-paper {
+    .card-face.mat-art_paper {
       background: #F7F5F0;
       color: #22252A !important;
       border-color: #DCD5C9;
       box-shadow: 0 16px 36px -8px rgba(0,0,0,0.6), inset 0 0 40px rgba(197,168,128,0.15);
     }
-    .card-face.mat-paper * {
+    .card-face.mat-art_paper * {
       color: #22252A !important;
-    }
-    .card-face.mat-acrylic {
-      background: linear-gradient(135deg, rgba(56,189,248,0.22) 0%, rgba(12,25,41,0.65) 40%, rgba(4,11,20,0.8) 100%) !important;
-      border: 1.5px solid rgba(255,255,255,0.45) !important;
-      backdrop-filter: blur(28px) saturate(180%) !important;
-      box-shadow: 0 20px 50px -10px rgba(0,0,0,0.85), inset 0 1px 2px rgba(255,255,255,0.6), 0 0 25px rgba(56,189,248,0.2) !important;
     }
 
     /* VIP Luxury Text Effects */
@@ -644,49 +632,22 @@
       width: 48px;
       height: 48px;
     }
-    .card-flip-info-badge:hover {
-      background: rgba(56, 189, 248, 0.25);
-      border-color: #38bdf8;
-      transform: scale(1.12);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
-    }
-    .card-flip-info-badge::after {
-      content: "Chạm để lật";
-      position: absolute;
-      right: 32px;
-      white-space: nowrap;
-      background: rgba(15, 23, 42, 0.9);
-      color: #e2e8f0;
-      font-size: 0.65rem;
-      font-family: system-ui, sans-serif;
-      font-weight: 500;
-      padding: 3px 7px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-    .card-flip-info-badge:hover::after {
-      opacity: 1;
-    }
-
-    /* Quick Material Button (r / m) */
+    /* Quick Material Button (Góc dưới bên phải - thay thế nút (i)) */
     .card-mat-quick-badge {
       position: absolute;
       bottom: clamp(10px, 2vh, 16px);
-      left: clamp(10px, 2.5vw, 16px);
+      right: clamp(10px, 2.5vw, 16px);
       height: 28px;
       padding: 0 10px;
       border-radius: 99px;
       background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(216, 175, 98, 0.55);
-      color: #fff0be;
+      border: 1px solid rgba(56, 189, 248, 0.55);
+      color: #38bdf8;
       font-size: 0.72rem;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       cursor: pointer;
       z-index: 35;
       backdrop-filter: blur(8px);
@@ -706,20 +667,19 @@
       height: 48px;
     }
     .card-mat-quick-badge:hover {
-      background: rgba(216, 175, 98, 0.25);
-      border-color: #f7e5ad;
+      background: rgba(56, 189, 248, 0.25);
+      border-color: #38bdf8;
       transform: scale(1.08);
-      box-shadow: 0 0 14px rgba(216, 175, 98, 0.6);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.6);
     }
 
     /* Quick Material Floating Bar */
     .quick-mat-drawer {
       position: absolute;
       bottom: calc(clamp(10px, 2vh, 16px) + 34px);
-      left: 50%;
-      transform: translateX(-50%) translateY(10px);
+      right: clamp(10px, 2.5vw, 16px);
       background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(216, 175, 98, 0.4);
+      border: 1px solid rgba(56, 189, 248, 0.4);
       border-radius: 12px;
       padding: 6px;
       display: flex;
@@ -737,7 +697,6 @@
     .quick-mat-drawer.active {
       opacity: 1;
       pointer-events: auto;
-      transform: translateX(-50%) translateY(0);
     }
     .quick-mat-chip {
       padding: 5px 8px;
@@ -1334,23 +1293,18 @@
 
         </div>
 
-        <!-- Single invariant Corner Flip Info Badge (i) - exactly identical position on both front and back -->
-        <button type="button" class="card-flip-info-badge" id="btnCornerFlip" aria-label="Chạm để lật thẻ 3D" title="Chạm để lật thẻ 🔄">i</button>
-
-        <!-- Quick Material Toggle Badge (r / 💎) -->
+        <!-- Quick Material Toggle Badge (Vị trí góc dưới bên phải - thay thế chữ (i)) -->
         <button type="button" class="card-mat-quick-badge" id="btnQuickMatToggle" aria-label="Đổi chất liệu thẻ nhanh" title="Đổi chất liệu bề mặt thẻ">
-          <span>💎</span> <span id="lblCurrentMat">Titanium</span>
+          <span>💎</span> <span id="lblCurrentMat">PVC</span>
         </button>
 
         <!-- Quick Material Floating Bar -->
         <div class="quick-mat-drawer" id="quickMatDrawer" role="toolbar" aria-label="Danh sách chất liệu VIP Pro">
-          <button type="button" class="quick-mat-chip active" data-mat="titanium">Titanium</button>
-          <button type="button" class="quick-mat-chip" data-mat="carbon">Carbon</button>
-          <button type="button" class="quick-mat-chip" data-mat="gold">Gold Foil</button>
+          <button type="button" class="quick-mat-chip active" data-mat="pvc">PVC</button>
+          <button type="button" class="quick-mat-chip" data-mat="titanium">Titanium</button>
+          <button type="button" class="quick-mat-chip" data-mat="silver">Silver</button>
           <button type="button" class="quick-mat-chip" data-mat="frost">Frosted</button>
-          <button type="button" class="quick-mat-chip" data-mat="leather">Leather</button>
-          <button type="button" class="quick-mat-chip" data-mat="paper">Giấy Mỹ Thuật</button>
-          <button type="button" class="quick-mat-chip" data-mat="acrylic">Acrylic Trong</button>
+          <button type="button" class="quick-mat-chip" data-mat="art_paper">Art Paper</button>
         </div>
       </div>
     </main>
@@ -1507,28 +1461,22 @@
         </div>
 
         <!-- 5 Material Presets -->
-        <label style="font-size:0.75rem; color:#cbd5e1; margin-bottom:6px; display:block;">Chất liệu bề mặt thẻ (5 PBR Presets):</label>
+        <label style="font-size:0.75rem; color:#cbd5e1; margin-bottom:6px; display:block;">Chất liệu bề mặt thẻ (5 Presets Chuẩn):</label>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(88px, 1fr)); gap:6px; margin-bottom:12px;" id="vipMaterialSelector">
-          <button type="button" class="btn-vip-mat active" data-mat="titanium" style="padding:8px 4px; border-radius:8px; border:1px solid #69737d; background:#20252b; color:#f4f7fa; font-size:0.72rem; cursor:pointer; text-align:center;">
+          <button type="button" class="btn-vip-mat active" data-mat="pvc" style="padding:8px 4px; border-radius:8px; border:1px solid #38bdf8; background:#0f172a; color:#f8fafc; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>PVC</b><br><span style="font-size:0.62rem; color:#38bdf8;">Mặc Định</span>
+          </button>
+          <button type="button" class="btn-vip-mat" data-mat="titanium" style="padding:8px 4px; border-radius:8px; border:1px solid #69737d; background:#20252b; color:#f4f7fa; font-size:0.72rem; cursor:pointer; text-align:center;">
             <b>Titanium</b><br><span style="font-size:0.62rem; color:#b9f2ff;">Dark Metal</span>
           </button>
-          <button type="button" class="btn-vip-mat" data-mat="carbon" style="padding:8px 4px; border-radius:8px; border:1px solid #313941; background:#121417; color:#f6f8fa; font-size:0.72rem; cursor:pointer; text-align:center;">
-            <b>Carbon</b><br><span style="font-size:0.62rem; color:#56e6d2;">Woven Fiber</span>
-          </button>
-          <button type="button" class="btn-vip-mat" data-mat="gold" style="padding:8px 4px; border-radius:8px; border:1px solid #b88935; background:#4d3212; color:#fff0be; font-size:0.72rem; cursor:pointer; text-align:center;">
-            <b>Gold Foil</b><br><span style="font-size:0.62rem; color:#f7e5ad;">Brushed Metal</span>
+          <button type="button" class="btn-vip-mat" data-mat="silver" style="padding:8px 4px; border-radius:8px; border:1px solid #94a3b8; background:#e2e8f0; color:#0f172a; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Silver</b><br><span style="font-size:0.62rem; color:#475569;">Bạc Ánh Kim</span>
           </button>
           <button type="button" class="btn-vip-mat" data-mat="frost" style="padding:8px 4px; border-radius:8px; border:1px solid #83e8ff; background:#264254; color:#eaf8ff; font-size:0.72rem; cursor:pointer; text-align:center;">
             <b>Frosted</b><br><span style="font-size:0.62rem; color:#83e8ff;">Cyber Glass</span>
           </button>
-          <button type="button" class="btn-vip-mat" data-mat="leather" style="padding:8px 4px; border-radius:8px; border:1px solid #784052; background:#32131e; color:#fff7eb; font-size:0.72rem; cursor:pointer; text-align:center;">
-            <b>Leather</b><br><span style="font-size:0.62rem; color:#d8af62;">Royal Grain</span>
-          </button>
-          <button type="button" class="btn-vip-mat" data-mat="paper" style="padding:8px 4px; border-radius:8px; border:1px solid #dcd5c9; background:#f7f5f0; color:#22252a; font-size:0.72rem; cursor:pointer; text-align:center;">
-            <b>Paper</b><br><span style="font-size:0.62rem; color:#c5a880;">Mỹ Thuật</span>
-          </button>
-          <button type="button" class="btn-vip-mat" data-mat="acrylic" style="padding:8px 4px; border-radius:8px; border:1px solid #38bdf8; background:rgba(56,189,248,0.2); color:#ffffff; font-size:0.72rem; cursor:pointer; text-align:center;">
-            <b>Acrylic</b><br><span style="font-size:0.62rem; color:#38bdf8;">Trong Suốt</span>
+          <button type="button" class="btn-vip-mat" data-mat="art_paper" style="padding:8px 4px; border-radius:8px; border:1px solid #dcd5c9; background:#f7f5f0; color:#22252a; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Art Paper</b><br><span style="font-size:0.62rem; color:#c5a880;">Giấy Mỹ Thuật</span>
           </button>
         </div>
 
@@ -2070,11 +2018,12 @@ const BRAND_ICONS = {
     }
 
     // Apply Pro / VIP 2D Styles & CSS Variables
-    const vip = profile.vipTheme || { material: 'titanium', fontPair: 'precision', nameSize: 48, titleSize: 24 };
+    const vip = profile.vipTheme || { material: 'pvc', fontPair: 'precision', nameSize: 48, titleSize: 24 };
     const cardFaces = document.querySelectorAll('.card-face');
     cardFaces.forEach(f => {
-      f.classList.remove('mat-titanium', 'mat-carbon', 'mat-gold', 'mat-frost', 'mat-leather', 'mat-paper', 'mat-acrylic');
+      f.classList.remove('mat-pvc', 'mat-titanium', 'mat-silver', 'mat-frost', 'mat-art_paper');
       if (vip.material) f.classList.add(`mat-${vip.material}`);
+      else f.classList.add('mat-pvc');
     });
 
     const cardRoot = document.getElementById('cardPerspective');
@@ -2448,15 +2397,13 @@ const BRAND_ICONS = {
   }
 
   // VIP Customizer event wiring
-  let currentVipMaterial = 'titanium';
+  let currentVipMaterial = 'pvc';
   const VIP_MAT_LABELS = {
+    pvc: 'PVC',
     titanium: 'Titanium',
-    carbon: 'Carbon',
-    gold: 'Gold Foil',
+    silver: 'Silver',
     frost: 'Frosted',
-    leather: 'Leather',
-    paper: 'Giấy Mỹ Thuật',
-    acrylic: 'Acrylic Trong'
+    art_paper: 'Art Paper'
   };
 
   function setVipMaterial(mat, syncRender = false) {
@@ -2606,8 +2553,8 @@ const BRAND_ICONS = {
       renderGravatarSocialList(Array.isArray(profile.socials) ? profile.socials : []);
 
       // Pre-fill Pro / VIP settings
-      const vip = profile.vipTheme || { material: 'titanium', fontPair: 'precision', nameSize: 48, titleSize: 24, bgColor: '#20252B', textColor: '#F4F7FA', accentColor: '#B9F2FF' };
-      setVipMaterial(vip.material || 'titanium');
+      const vip = profile.vipTheme || { material: 'pvc', fontPair: 'precision', nameSize: 48, titleSize: 24, bgColor: '#0F172A', textColor: '#FFFFFF', accentColor: '#38BDF8' };
+      setVipMaterial(vip.material || 'pvc');
       if (document.getElementById('vipBgColor')) document.getElementById('vipBgColor').value = vip.bgColor || '#20252B';
       if (document.getElementById('vipTextColor')) document.getElementById('vipTextColor').value = vip.textColor || '#F4F7FA';
       if (document.getElementById('vipAccentColor')) document.getElementById('vipAccentColor').value = vip.accentColor || '#B9F2FF';
@@ -2761,8 +2708,8 @@ const BRAND_ICONS = {
 
     // Read Pro / VIP Customizer State
     profile.vipTheme = {
-      material: currentVipMaterial || 'titanium',
-      bgColor: document.getElementById('vipBgColor')?.value || '#20252B',
+      material: currentVipMaterial || 'pvc',
+      bgColor: document.getElementById('vipBgColor')?.value || '#0F172A',
       textColor: document.getElementById('vipTextColor')?.value || '#F4F7FA',
       accentColor: document.getElementById('vipAccentColor')?.value || '#B9F2FF',
       fontPair: document.getElementById('vipFontPair')?.value || 'precision',

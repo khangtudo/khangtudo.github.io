@@ -404,8 +404,8 @@
 
     // PBR Properties from Pro / VIP Preset
     const vip = activeProfile ? (activeProfile.vipTheme || {}) : {};
-    const matKey = (vip.material && VIP_MATERIALS[vip.material]) ? vip.material : 'titanium';
-    const pbr = VIP_MATERIALS[matKey];
+    const matKey = (vip.material && VIP_MATERIALS[vip.material]) ? vip.material : 'pvc';
+    const pbr = VIP_MATERIALS[matKey] || VIP_MATERIALS.pvc;
 
     const roughnessVal = (typeof pbr.roughness === 'number') ? pbr.roughness : 0.3;
     const metalnessVal = (typeof pbr.metalness === 'number') ? pbr.metalness : 0.1;
