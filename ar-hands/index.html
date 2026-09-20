@@ -450,8 +450,9 @@
     // Create dynamic or fallback card texture
     let cardTexture;
     const textureLoader = new THREE.TextureLoader();
-    if (activeProfile && (activeProfile.fn || activeProfile.org)) {
-      console.log('Rendering dynamic AR card texture for profile:', activeProfile.fn, 'isVertical:', isVertical);
+    const hasDynamicContent = activeProfile && (activeProfile.fn || activeProfile.org || activeProfile.scannedFrontPhoto || activeProfile.vipTheme);
+    if (hasDynamicContent) {
+      console.log('Rendering dynamic AR card texture for profile:', activeProfile.fn || 'Custom Card', 'isVertical:', isVertical);
       // Create initial placeholder canvas texture while async image loading finishes
       const placeholderCanvas = document.createElement('canvas');
       placeholderCanvas.width = 1024; placeholderCanvas.height = 1024;

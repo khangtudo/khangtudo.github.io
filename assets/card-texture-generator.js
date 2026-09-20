@@ -251,14 +251,29 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     };
   };
 
-  // Safe image loader
+  // Safe image loader with timeout
   function loadImage(src) {
     if (!src) return Promise.resolve(null);
     return new Promise((resolve) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => resolve(img);
-      img.onerror = () => resolve(null);
+      // Only set crossOrigin for external http(s) URLs, not data: or blob:
+      if (/^https?:\/\//i.test(src)) {
+        img.crossOrigin = 'anonymous';
+      }
+      let resolved = false;
+      const done = (result) => {
+        if (!resolved) {
+          resolved = true;
+          resolve(result);
+        }
+      };
+      img.onload = () => done(img);
+      img.onerror = () => {
+        console.warn('Failed to load image in card-texture-generator');
+        done(null);
+      };
+      // 2.5s fallback timeout so promise never hangs forever
+      setTimeout(() => done(null), 2500);
       img.src = src;
     });
   }

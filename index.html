@@ -3424,11 +3424,23 @@ const BRAND_ICONS = {
 
   function saveBuilderLayoutToStorage() {
     try {
-      localStorage.setItem('inid_ar_profile', JSON.stringify(profile));
-      const b64 = btoa(encodeURIComponent(JSON.stringify(profile)));
+      const profileJson = JSON.stringify(profile);
+      localStorage.setItem('inid_ar_profile', profileJson);
+      
       const btnArHandsLink = document.getElementById('btnArHandsLink');
       if (btnArHandsLink) {
-        btnArHandsLink.href = `/ar-hands/#data=${b64}`;
+        // Encode profile to base64 if not excessively large (< 800KB)
+        if (profileJson.length < 800000) {
+          try {
+            const b64 = btoa(encodeURIComponent(profileJson));
+            btnArHandsLink.href = `/ar-hands/#data=${b64}`;
+          } catch(err) {
+            btnArHandsLink.href = `/ar-hands/`;
+          }
+        } else {
+          // If photos are large, ar-hands will directly read from localStorage('inid_ar_profile')
+          btnArHandsLink.href = `/ar-hands/`;
+        }
       }
     } catch(e) {
       console.warn('Error saving builder layout:', e);
