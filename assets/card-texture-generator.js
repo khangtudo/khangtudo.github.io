@@ -411,6 +411,10 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const fx = 82, fy = 0;
     drawMaterialSurface(fx, fy, W, H, R, false);
 
+    // NẾU CÓ ẢNH SCAN MẶT TRƯỚC, KHÔNG ĐÈ TEXT PROFILE CŨ LÊN MẶT CARD
+    if (scannedFrontImg) {
+      // Đã vẽ ảnh quét xong, bỏ qua render text để ảnh danh thiếp thật hiển thị nguyên bản 100%
+    } else {
     ctx.save();
 
     // Safe zone coordinates
@@ -608,11 +612,15 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     ctx.fillText(`INID.ME • ${matKey.toUpperCase()} PRO AR CARD`, safeLeft, safeBottom);
 
     ctx.restore();
+    } // End if (!scannedFrontImg)
 
     // BACK FACE (Bottom half)
     const bx = 82, by = 504;
     drawMaterialSurface(bx, by, W, H, R, true);
 
+    if (scannedBackImg) {
+      // Đã vẽ ảnh quét mặt sau, bỏ qua render text đè lên
+    } else {
     ctx.save();
     const bcx = bx + W / 2;
     const bSafeTop = by + SAFE_INSET_Y + 16;
@@ -709,6 +717,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     ctx.fillText('TAP OR SCAN TO CONNECT INSTANTLY', bcx, bSafeBottom);
 
     ctx.restore();
+    } // End if (!scannedBackImg)
 
   } else {
     // -------------------------------------------------------------
@@ -729,6 +738,9 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const fx = 20, fy = 115;
     drawMaterialSurface(fx, fy, W, H, R, false);
 
+    if (scannedFrontImg) {
+      // Đã vẽ ảnh quét mặt trước, bỏ qua render text
+    } else {
     ctx.save();
     const cx = fx + W / 2;
     const safeLeft = fx + SAFE_INSET + 8; // fx + 30
@@ -914,11 +926,15 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     ctx.letterSpacing = '1px';
     ctx.fillText(`INID.ME • ${matKey.toUpperCase()} PRO`, cx, safeBottom);
     ctx.restore();
+    } // End if (!scannedFrontImg)
 
     // BACK FACE (Right: X=524, Y=115)
     const bx = 524, by = 115;
     drawMaterialSurface(bx, by, W, H, R, true);
 
+    if (scannedBackImg) {
+      // Đã vẽ ảnh quét mặt sau, bỏ qua render text
+    } else {
     ctx.save();
     const bcx = bx + W / 2;
     const bSafeLeft = bx + SAFE_INSET + 8;
@@ -1016,6 +1032,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     ctx.letterSpacing = '1px';
     ctx.fillText('TAP OR SCAN TO CONNECT INSTANTLY', bcx, bSafeBottom);
     ctx.restore();
+    } // End if (!scannedBackImg)
   }
 
   return cvs;
