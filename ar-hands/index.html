@@ -500,213 +500,197 @@
     }
 
     function onResults(results) {
-      const latency = Math.round(performance.now() - lastInferenceStart);
-      txtLatency.textContent = latency + 'ms';
+      try {
+        const latency = Math.round(performance.now() - lastInferenceStart);
+        txtLatency.textContent = latency + 'ms';
 
-      // Resize skeleton canvas
-      skeletonCanvas.width = window.innerWidth;
-      skeletonCanvas.height = window.innerHeight;
-      skelCtx.clearRect(0, 0, skeletonCanvas.width, skeletonCanvas.height);
+        // Resize skeleton canvas
+        skeletonCanvas.width = window.innerWidth;
+        skeletonCanvas.height = window.innerHeight;
+        skelCtx.clearRect(0, 0, skeletonCanvas.width, skeletonCanvas.height);
 
-      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        const lm = results.multiHandLandmarks[0];
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+          const lm = results.multiHandLandmarks[0];
 
-        // Draw Skeleton if enabled
-        if (showSkeleton) {
-          drawHandSkeleton(lm, skelCtx, skeletonCanvas.width, skeletonCanvas.height);
-        }
+          // Draw Skeleton if enabled
+          if (showSkeleton) {
+            drawHandSkeleton(lm, skelCtx, skeletonCanvas.width, skeletonCanvas.height);
+          }
 
-        // 1. PINCH DETECTION (Thumb tip 4 to Index tip 8)
-        const pinchDist = dist(lm[4], lm[8]);
-        const isPinching = pinchDist < 0.07;
+          // Key landmark points
+          const wrist = lm[0];
+          const thumbTip = lm[4];
+          const indexMcp = lm[5];
+          const indexTip = lm[8];
+          const middleMcp = lm[9];
+          const middleTip = lm[12];
+          const pinkyMcp = lm[17];
+          const pinkyTip = lm[20];
 
-        // 2. PALM OPEN DETECTION (Fingers extended from wrist 0)
-        const isIndexOpen = lm[8].y < lm[6].y;
-        const isMiddleOpen = lm[12].y < lm[10].y;
-        const isRingOpen = lm[16].y < lm[14].y;
-        const isPinkyOpen = lm[20].y < lm[18].y;
-        const isOpenPalm = isIndexOpen && isMiddleOpen && isRingOpen && isPinkyOpen && !isPinching;
+          // 1. PINCH DETECTION (Thumb tip 4 to Index tip 8)
+          const pinchDist = dist(thumbTip, indexTip);
+          const isPinching = pinchDist < 0.07;
 
-        // Coordinates mapping to Three.js space
-        // Mirror X because camera is mirrored
-        const handX = (0.5 - lm[9].x) * 2.2;
-        const handY = (0.5 - lm[9].y) * 1.5;
-        const pinchX = (0.5 - (lm[4].x + lm[8].x) / 2) * 2.2;
-        const pinchY = (0.5 - (lm[4].y + lm[8].y) / 2) * 1.5;
+          // 2. PALM OPEN DETECTION (Fingers extended from wrist 0)
+          const isIndexOpen = lm[8].y < lm[6].y;
+          const isMiddleOpen = lm[12].y < lm[10].y;
+          const isRingOpen = lm[16].y < lm[14].y;
+          const isPinkyOpen = lm[20].y < lm[18].y;
+          const isOpenPalm = isIndexOpen && isMiddleOpen && isRingOpen && isPinkyOpen && !isPinching;
 
-        // 3. DYNAMIC DISTANCE & ZOOM CALCULATION (Hand Distance & Spread)
-        // Measure span between Wrist (0) and Middle Tip (12)
-        const currentHandSpan = dist(lm[0], lm[12]);
-        // Also measure 5-finger spread (Thumb tip 4 to Pinky tip 20)
-        const fingerSpread = dist(lm[4], lm[20]);
+          // 3. DYNAMIC DISTANCE & ZOOM CALCULATION (Hand Distance & Spread)
+          const currentHandSpan = dist(wrist, middleTip);
+          const rawZoomRatio = Math.max(0.70, Math.min(1.50, (currentHandSpan / baseHandSpan)));
+          const dynamicCardScale = rawZoomRatio;
 
-        // Hand closer to camera (larger span) -> zoom in (scale up to 1.5x / 150% max)
-        // Hand further away -> zoom out (scale down to 0.7x / 70% min) smoothly
-        const rawZoomRatio = Math.max(0.70, Math.min(1.50, (currentHandSpan / baseHandSpan)));
-        const dynamicCardScale = rawZoomRatio;
+          // 4. KIỂM TRA ĐỘNG TÁC NẮM TAY (CURL) ĐỂ LẬT THẺ TIẾP TỤC 180° CÙNG CHIỀU VỀ MẶT TRƯỚC/MẶT SAU
+          const now = performance.now();
+          const fourFingers = analyzeFourFingers(lm);
 
-        // 4. KIỂM TRA ĐỘNG TÁC NẮM TAY (CURL) ĐỂ LẬT THẺ TIẾP TỤC 180° CÙNG CHIỀU VỀ MẶT TRƯỚC/MẶT SAU
-        const now = performance.now();
-        const fourFingers = analyzeFourFingers(lm);
-
-        // Mỗi lần nắm 4 ngón tay (CURLED), lật tiếp 180° (Math.PI) theo đúng chiều vừa xoay
-        if (fourFingers.isCurled) {
-          if (lastFingerPose === 'EXTENDED' && (now - lastPoseFlipTime > POSE_COOLDOWN_MS)) {
-            consecutivePoseFrames++;
-            if (consecutivePoseFrames >= 3) {
-              targetRotationY += Math.PI; // Tiếp tục quay thêm 180° cùng chiều
-              cardFlipped = !cardFlipped;
-              lastPoseFlipTime = now;
+          if (fourFingers.isCurled) {
+            if (lastFingerPose === 'EXTENDED' && (now - lastPoseFlipTime > POSE_COOLDOWN_MS)) {
+              consecutivePoseFrames++;
+              if (consecutivePoseFrames >= 3) {
+                targetRotationY += Math.PI; // Tiếp tục quay thêm 180° cùng chiều
+                cardFlipped = !cardFlipped;
+                lastPoseFlipTime = now;
+                lastFingerPose = 'CURLED';
+                consecutivePoseFrames = 0;
+                btnFlipCard.textContent = cardFlipped ? '🔄 Mặt Sau' : '🔄 Mặt Trước';
+              }
+            } else {
               lastFingerPose = 'CURLED';
-              consecutivePoseFrames = 0;
+            }
+          }
+          else if (fourFingers.isExtended) {
+            lastFingerPose = 'EXTENDED';
+          }
+
+          // 5. CỬ CHỈ PINCH DỰ PHÒNG (Kẹp ngón trỏ & cái)
+          const isPinchCandidate = (pinchDist < PINCH_ON_DIST);
+          if (isPinchCandidate) {
+            pinchConsecutiveFrames++;
+            if (pinchConsecutiveFrames >= 3 && (now - lastFlipTime > FLIP_COOLDOWN_MS)) {
+              targetRotationY += Math.PI;
+              cardFlipped = !cardFlipped;
+              lastFlipTime = now;
               btnFlipCard.textContent = cardFlipped ? '🔄 Mặt Sau' : '🔄 Mặt Trước';
             }
+          } else if (pinchDist > PINCH_OFF_DIST) {
+            pinchConsecutiveFrames = 0;
+          }
+
+          // ---------------------------------------------------------
+          // 3D PALM POSE & ADAPTIVE ORIENTATION MATRIX
+          // ---------------------------------------------------------
+          const isFront = (currentFacingMode === 'user');
+          const to3D = (pt) => {
+            const px = isFront ? (0.5 - pt.x) : (pt.x - 0.5);
+            return new THREE.Vector3(px * 2.3, (0.5 - pt.y) * 1.6, -pt.z * 1.5);
+          };
+
+          const currentWrist = to3D(wrist);
+          const currentIndex = to3D(indexMcp);
+          const currentPinky = to3D(pinkyMcp);
+          const currentPalmPos = new THREE.Vector3()
+            .addVectors(currentWrist, currentIndex)
+            .add(currentPinky)
+            .divideScalar(3);
+
+          if (!hasInitialPose) {
+            filteredHandPos.copy(currentPalmPos);
+            filteredWristPos.copy(currentWrist);
+            filteredIndexMcp.copy(currentIndex);
+            filteredPinkyMcp.copy(currentPinky);
+            hasInitialPose = true;
           } else {
-            lastFingerPose = 'CURLED';
+            // Adaptive Smoothing: Giảm lag khi di chuyển nhanh, triệt tiêu rung (jitter) khi giữ yên
+            const deltaPos = currentPalmPos.distanceTo(filteredHandPos);
+            const filterAlpha = THREE.MathUtils.clamp(0.25 + deltaPos * 1.8, 0.20, 0.75);
+            filteredHandPos.lerp(currentPalmPos, filterAlpha);
+            filteredWristPos.lerp(currentWrist, filterAlpha);
+            filteredIndexMcp.lerp(currentIndex, filterAlpha);
+            filteredPinkyMcp.lerp(currentPinky, filterAlpha);
           }
-        }
-        else if (fourFingers.isExtended) {
-          lastFingerPose = 'EXTENDED';
-        }
 
-        // 5. CỬ CHỈ PINCH DỰ PHÒNG (Kẹp ngón trỏ & cái)
-        const isPinchCandidate = (pinchDist < PINCH_ON_DIST);
-        if (isPinchCandidate) {
-          pinchConsecutiveFrames++;
-          if (pinchConsecutiveFrames >= 3 && (now - lastFlipTime > FLIP_COOLDOWN_MS)) {
-            targetRotationY += Math.PI;
-            cardFlipped = !cardFlipped;
-            lastFlipTime = now;
-            btnFlipCard.textContent = cardFlipped ? '🔄 Mặt Sau' : '🔄 Mặt Trước';
+          // Xây dựng hệ trục chuẩn Orthonormal 3D Basis của lòng bàn tay
+          const vUp = new THREE.Vector3()
+            .addVectors(filteredIndexMcp, filteredPinkyMcp)
+            .multiplyScalar(0.5)
+            .sub(filteredWristPos)
+            .normalize();
+          
+          let vRight = new THREE.Vector3().subVectors(filteredIndexMcp, filteredPinkyMcp).normalize();
+          let vNormal = new THREE.Vector3().crossVectors(vRight, vUp).normalize();
+          vRight.crossVectors(vUp, vNormal).normalize();
+
+          if (vNormal.lengthSq() > 0.001) {
+            const palmRotMatrix = new THREE.Matrix4().makeBasis(vRight, vUp, vNormal);
+            const palmQuat = new THREE.Quaternion().setFromRotationMatrix(palmRotMatrix);
+            const flipQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
+            targetQuaternion.copy(palmQuat).multiply(flipQuat);
+            isHandTrackingActive = true;
           }
-        } else if (pinchDist > PINCH_OFF_DIST) {
-          pinchConsecutiveFrames = 0;
-        }
 
-        // ---------------------------------------------------------
-        // 3D PALM POSE & ADAPTIVE ORIENTATION MATRIX
-        // ---------------------------------------------------------
-        // Palm Center: interpolated between Wrist(0), IndexMCP(5), PinkyMCP(17)
-        const rawPalmX = (wrist.x + indexMcp.x + pinkyMcp.x) / 3;
-        const rawPalmY = (wrist.y + indexMcp.y + pinkyMcp.y) / 3;
-        const rawPalmZ = (wrist.z + indexMcp.z + pinkyMcp.z) / 3;
+          if (fourFingers.isCurled) {
+            // --- GESTURE: NẮM 4 NGÓN (FIST / GRIP) ---
+            currentGesture = 'FIST_FLIP';
+            txtGestureIcon.textContent = '✊';
+            txtGestureTitle.textContent = 'Nắm 4 Ngón: Lật Trái ➔ Phải';
+            txtGestureDesc.textContent = cardFlipped ? 'Đã lật sang Mặt Sau | Mở 4 ngón để lật ngược lại' : 'Đã lật sang Mặt Trước | Mở 4 ngón để lật ngược lại';
+            txtCardState.textContent = 'NẮM 4 NGÓN';
+            txtCardState.style.color = '#f43f5e';
 
-        // Map to 3D Space (Three.js camera coordinates)
-        const currentPalmPos = new THREE.Vector3(
-          (rawPalmX - 0.5) * 2.2,
-          -(rawPalmY - 0.5) * 1.6,
-          -rawPalmZ * 1.5
-        );
-        const currentWrist = new THREE.Vector3(
-          (wrist.x - 0.5) * 2.2,
-          -(wrist.y - 0.5) * 1.6,
-          -wrist.z * 1.5
-        );
-        const currentIndex = new THREE.Vector3(
-          (indexMcp.x - 0.5) * 2.2,
-          -(indexMcp.y - 0.5) * 1.6,
-          -indexMcp.z * 1.5
-        );
-        const currentPinky = new THREE.Vector3(
-          (pinkyMcp.x - 0.5) * 2.2,
-          -(pinkyMcp.y - 0.5) * 1.6,
-          -pinkyMcp.z * 1.5
-        );
+            targetPos.copy(filteredHandPos);
+            targetScale = dynamicCardScale * 0.95;
 
-        if (!hasInitialPose) {
-          filteredHandPos.copy(currentPalmPos);
-          filteredWristPos.copy(currentWrist);
-          filteredIndexMcp.copy(currentIndex);
-          filteredPinkyMcp.copy(currentPinky);
-          hasInitialPose = true;
-        } else {
-          // Adaptive Smoothing: Giảm lag khi di chuyển nhanh, triệt tiêu rung (jitter) khi giữ yên
-          const deltaPos = currentPalmPos.distanceTo(filteredHandPos);
-          const filterAlpha = THREE.MathUtils.clamp(0.25 + deltaPos * 1.8, 0.20, 0.75);
-          filteredHandPos.lerp(currentPalmPos, filterAlpha);
-          filteredWristPos.lerp(currentWrist, filterAlpha);
-          filteredIndexMcp.lerp(currentIndex, filterAlpha);
-          filteredPinkyMcp.lerp(currentPinky, filterAlpha);
-        }
+          } else if (isOpenPalm) {
+            // --- GESTURE: XÒE LÒNG BÀN TAY (OPEN PALM ANCHOR & ZOOM) ---
+            currentGesture = 'PALM';
+            txtGestureIcon.textContent = '🖐️';
+            txtGestureTitle.textContent = 'Xòe Lòng Bàn Tay: Thẻ Nổi 3D';
+            txtGestureDesc.textContent = 'Đưa tay lại gần/xa để thu phóng (Zoom: ' + Math.min(150, Math.round(dynamicCardScale * 100)) + '%) | Nắm 4 ngón để lật thẻ';
+            txtCardState.textContent = 'THU PHÓNG TAY';
+            txtCardState.style.color = '#10b981';
 
-        // Xây dựng hệ trục chuẩn Orthonormal 3D Basis của lòng bàn tay
-        // V_Up: Từ Cổ tay (Wrist) hướng lên gốc ngón tay (Index MCP & Pinky MCP)
-        const vUp = new THREE.Vector3().addVectors(filteredIndexMcp, filteredPinkyMcp).multiplyScalar(0.5).sub(filteredWristPos).normalize();
-        
-        // V_Right: Từ gốc ngón út (Pinky) sang gốc ngón trỏ (Index)
-        const vRight = new THREE.Vector3().subVectors(filteredIndexMcp, filteredPinkyMcp).normalize();
-        
-        // V_Normal: Pháp tuyến vuông góc lòng bàn tay = V_Right x V_Up
-        const vNormal = new THREE.Vector3().crossVectors(vRight, vUp).normalize();
-        
-        // Đảm bảo tính trực giao hoàn hảo (Orthonormal)
-        vRight.crossVectors(vUp, vNormal).normalize();
+            // Đặt thẻ bám khít và nổi nhẹ 2cm ngay trên lòng bàn tay
+            const hoverOffset = vNormal.clone().multiplyScalar(0.04);
+            targetPos.copy(filteredHandPos).add(hoverOffset);
+            targetScale = Math.min(1.50, dynamicCardScale * 1.05);
 
-        // Ma trận xoay của lòng bàn tay
-        const palmRotMatrix = new THREE.Matrix4().makeBasis(vRight, vUp, vNormal);
-        const palmQuat = new THREE.Quaternion().setFromRotationMatrix(palmRotMatrix);
+          } else {
+            // Neutral hand position
+            currentGesture = 'HOVER';
+            txtGestureIcon.textContent = '👋';
+            txtGestureTitle.textContent = 'Bàn Tay Tương Tác';
+            txtGestureDesc.textContent = 'Nắm/Mở 4 ngón để lật thẻ Trái ⇄ Phải | Tiến/Lùi để thu phóng 70%-150%';
+            txtCardState.textContent = 'SẴN SÀNG';
+            txtCardState.style.color = '#38bdf8';
 
-        // Áp dụng góc lật 180 độ (Card Flip) lên trục Y cục bộ của thẻ
-        const flipQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
-        targetQuaternion.copy(palmQuat).multiply(flipQuat);
-        isHandTrackingActive = true;
-
-        if (fourFingers.isCurled) {
-          // --- GESTURE: NẮM 4 NGÓN (FIST / GRIP) ---
-          currentGesture = 'FIST_FLIP';
-          txtGestureIcon.textContent = '✊';
-          txtGestureTitle.textContent = 'Nắm 4 Ngón: Lật Trái ➔ Phải';
-          txtGestureDesc.textContent = cardFlipped ? 'Đã lật sang Mặt Sau | Mở 4 ngón để lật ngược lại' : 'Đã lật sang Mặt Trước | Mở 4 ngón để lật ngược lại';
-          txtCardState.textContent = 'NẮM 4 NGÓN';
-          txtCardState.style.color = '#f43f5e';
-
-          targetPos.copy(filteredHandPos);
-          targetScale = dynamicCardScale * 0.95;
-
-        } else if (isOpenPalm) {
-          // --- GESTURE: XÒE LÒNG BÀN TAY (OPEN PALM ANCHOR & ZOOM) ---
-          currentGesture = 'PALM';
-          txtGestureIcon.textContent = '🖐️';
-          txtGestureTitle.textContent = 'Xòe Lòng Bàn Tay: Thẻ Nổi 3D';
-          txtGestureDesc.textContent = 'Đưa tay lại gần/xa để thu phóng (Zoom: ' + Math.min(150, Math.round(dynamicCardScale * 100)) + '%) | Nắm 4 ngón để lật thẻ';
-          txtCardState.textContent = 'THU PHÓNG TAY';
-          txtCardState.style.color = '#10b981';
-
-          // Đặt thẻ bám khít và nổi nhẹ 2cm ngay trên lòng bàn tay
-          const hoverOffset = vNormal.clone().multiplyScalar(0.04);
-          targetPos.copy(filteredHandPos).add(hoverOffset);
-          targetScale = Math.min(1.50, dynamicCardScale * 1.05);
+            targetPos.copy(filteredHandPos);
+            targetScale = dynamicCardScale;
+          }
 
         } else {
-          // Neutral hand position
-          currentGesture = 'HOVER';
-          txtGestureIcon.textContent = '👋';
-          txtGestureTitle.textContent = 'Bàn Tay Tương Tác';
-          txtGestureDesc.textContent = 'Nắm/Mở 4 ngón để lật thẻ Trái ⇄ Phải | Tiến/Lùi để thu phóng 70%-150%';
-          txtCardState.textContent = 'SẴN SÀNG';
-          txtCardState.style.color = '#38bdf8';
+          // No hand visible -> idle float
+          currentGesture = 'NONE';
+          isHandTrackingActive = false;
+          hasInitialPose = false;
+          txtGestureIcon.textContent = '✋';
+          txtGestureTitle.textContent = 'Chờ Đưa Bàn Tay Vào...';
+          txtGestureDesc.textContent = 'Đưa bàn tay vào trước camera để AI kích hoạt tương tác';
+          txtCardState.textContent = 'CHỜ BÀN TAY';
+          txtCardState.style.color = '#94a3b8';
 
-          targetPos.copy(filteredHandPos);
-          targetScale = dynamicCardScale;
+          // Gentle idle floating animation
+          const time = performance.now() * 0.0015;
+          targetPos.set(0, Math.sin(time) * 0.04, 0);
+          targetRotationX = Math.sin(time * 0.8) * 0.06;
+          targetRotationZ = Math.cos(time * 0.7) * 0.04;
+          targetScale = 1.0;
         }
-
-      } else {
-        // No hand visible -> idle float
-        currentGesture = 'NONE';
-        isHandTrackingActive = false;
-        hasInitialPose = false;
-        txtGestureIcon.textContent = '✋';
-        txtGestureTitle.textContent = 'Chờ Đưa Bàn Tay Vào...';
-        txtGestureDesc.textContent = 'Đưa bàn tay vào trước camera để AI kích hoạt tương tác';
-        txtCardState.textContent = 'CHỜ BÀN TAY';
-        txtCardState.style.color = '#94a3b8';
-
-        // Gentle idle floating animation
-        const time = performance.now() * 0.0015;
-        targetPos.set(0, Math.sin(time) * 0.04, 0);
-        targetRotationX = Math.sin(time * 0.8) * 0.06;
-        targetRotationZ = Math.cos(time * 0.7) * 0.04;
-        targetScale = 1.0;
+      } catch (err) {
+        console.error("onResults tracking exception:", err);
       }
     }
 
@@ -818,8 +802,12 @@
 
       cameraFeed = new Camera(videoElement, {
         onFrame: async () => {
-          lastInferenceStart = performance.now();
-          await hands.send({ image: videoElement });
+          try {
+            lastInferenceStart = performance.now();
+            await hands.send({ image: videoElement });
+          } catch(err) {
+            console.warn("Hands inference error:", err);
+          }
         },
         facingMode: { ideal: currentFacingMode },
         width: 1280,
