@@ -221,6 +221,7 @@
     <div class="hud-controls">
       <button class="btn-ar-ctrl" id="btnSwitchCam">📷 Đổi Cam</button>
       <button class="btn-ar-ctrl" id="btnToggleMesh">🦴 Khớp Xương: BẬT</button>
+      <button class="btn-ar-ctrl" id="btnRotateCard">📐 Xoay 90°</button>
       <button class="btn-ar-ctrl" id="btnFlipCard">🔄 Lật Thẻ</button>
       <a href="/" class="btn-ar-ctrl" style="text-decoration:none; max-width: 75px;">✕ Thoát</a>
     </div>
@@ -285,6 +286,9 @@
     let targetRotationY = 0; // Cumulative radians: 0, Math.PI, 2*Math.PI, etc.
     let targetRotationX = 0;
     let targetRotationZ = 0;
+
+    // Angle offset: Xoay thẻ thẳng hàng với cổ tay (mặc định xoay -90° / -Math.PI/2 quanh trục Z để chiều đọc thuận mắt theo trục cổ tay)
+    let cardOrientationOffsetZ = -Math.PI / 2;
 
     // Advanced 3D Palm Pose & Orientation Matrix
     const targetQuaternion = new THREE.Quaternion();
@@ -627,8 +631,14 @@
           if (vNormal.lengthSq() > 0.001) {
             const palmRotMatrix = new THREE.Matrix4().makeBasis(vRight, vUp, vNormal);
             const palmQuat = new THREE.Quaternion().setFromRotationMatrix(palmRotMatrix);
+            
+            // 1. Áp dụng góc xoay để thẻ thẳng hàng theo trục cổ tay (Z-axis offset)
+            const alignQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), cardOrientationOffsetZ);
+            
+            // 2. Áp dụng góc lật 180 độ (Card Flip) lên trục Y cục bộ của thẻ
             const flipQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
-            targetQuaternion.copy(palmQuat).multiply(flipQuat);
+            
+            targetQuaternion.copy(palmQuat).multiply(alignQuat).multiply(flipQuat);
             isHandTrackingActive = true;
           }
 
@@ -934,6 +944,20 @@
       btnToggleMesh.textContent = `🦴 Khớp Xương: ${showSkeleton ? 'BẬT' : 'TẮT'}`;
       btnToggleMesh.classList.toggle('active', showSkeleton);
     };
+
+    const btnRotateCard = document.getElementById('btnRotateCard');
+    if (btnRotateCard) {
+      btnRotateCard.onclick = () => {
+        // Toggle giữa xoay thẳng hàng cổ tay (-90° / 90°) và ngang bàn tay (0°)
+        if (Math.abs(cardOrientationOffsetZ) > 0.1) {
+          cardOrientationOffsetZ = 0;
+          btnRotateCard.textContent = '📐 Ngang Tay';
+        } else {
+          cardOrientationOffsetZ = -Math.PI / 2;
+          btnRotateCard.textContent = '📐 Dọc Cổ Tay';
+        }
+      };
+    }
 
     btnFlipCard.onclick = () => {
       cardFlipped = !cardFlipped;
