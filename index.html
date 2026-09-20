@@ -1599,6 +1599,55 @@
     </div>
   </div>
 
+  <!-- Support Project / Soft-Paywall Modal (Ko-fi, Momo, MB Bank VietQR) -->
+  <div class="qr-modal" id="donateModal" role="dialog" aria-modal="true" aria-label="Ủng hộ dự án">
+    <div class="qr-card" style="max-width: 580px; width: 95%; max-height: 92vh; overflow-y: auto; text-align: left; background: #ffffff; color: #1e293b; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.5); padding: 22px 20px; box-sizing: border-box; border: 1px solid #e2e8f0;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+        <div>
+          <h3 id="donateTitle" style="font-size:1.25rem; font-weight:800; color:#0f172a; margin:0;">Ủng hộ dự án</h3>
+          <p id="donateSubtitle" style="font-size:0.8rem; color:#64748b; margin:4px 0 0 0;">Nếu công cụ này hữu ích, vui lòng cân nhắc ủng hộ để phát triển. Xin cảm ơn!</p>
+        </div>
+        <button class="qr-close" id="btnCloseDonateModal" aria-label="Đóng bảng ủng hộ" style="position:static; color:#64748b; font-size:1.4rem; cursor:pointer; background:none; border:none; padding:4px;">✕</button>
+      </div>
+
+      <!-- 3 QR Payment Cards Grid -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin:20px 0 16px 0;">
+        <!-- Ko-fi -->
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="width:100%; max-width:145px; aspect-ratio:1; background:#fff; border-radius:8px; padding:6px; box-shadow:0 1px 4px rgba(0,0,0,0.06); display:flex; align-items:center; justify-content:center;">
+            <img src="/assets/donate/kofi-qr.png" alt="Ko-fi QR" style="width:100%; height:100%; object-fit:contain;">
+          </div>
+          <div style="margin-top:10px; font-weight:800; font-size:0.95rem; color:#b45309;">Ko-fi</div>
+        </div>
+
+        <!-- Momo -->
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="width:100%; max-width:145px; aspect-ratio:1; background:#fff; border-radius:8px; padding:6px; box-shadow:0 1px 4px rgba(0,0,0,0.06); display:flex; align-items:center; justify-content:center;">
+            <img src="/assets/donate/momo-qr.png" alt="Momo QR" style="width:100%; height:100%; object-fit:contain;">
+          </div>
+          <div style="margin-top:10px; font-weight:800; font-size:0.95rem; color:#d946ef;">Momo</div>
+        </div>
+
+        <!-- MB Bank VietQR -->
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="width:100%; max-width:145px; aspect-ratio:1; background:#fff; border-radius:8px; padding:4px; box-shadow:0 1px 4px rgba(0,0,0,0.06); display:flex; align-items:center; justify-content:center;">
+            <img src="/assets/donate/mbbank-vietqr.png" alt="MB Bank VietQR" style="width:100%; height:100%; object-fit:contain;">
+          </div>
+          <div style="margin-top:8px; font-weight:800; font-size:0.92rem; color:#2563eb;">MB Bank (VietQR)</div>
+          <div style="font-size:0.75rem; font-family:monospace; font-weight:700; color:#334155; margin-top:2px;">1020199999989</div>
+          <div style="font-size:0.7rem; color:#64748b;">Phan Manh Khang</div>
+        </div>
+      </div>
+
+      <!-- Footer: Bấm để tiếp tục sử dụng miễn phí -->
+      <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; padding-top:10px; border-top:1px solid #f1f5f9;">
+        <button type="button" id="btnContinueFree" style="background:#0f172a; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer;">
+          Tiếp tục vào tính năng VIP ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- AR Selection Modal -->
   <!-- 2-Sided Card Scanner & AI OCR Modal (VIP Pro) -->
   <div class="qr-modal" id="cardScanModal" role="dialog" aria-modal="true" aria-label="Quét Card Visit 2 Mặt">
@@ -2241,10 +2290,50 @@ const BRAND_ICONS = {
     };
   }
 
+  // -------------------------------------------------------------
+  // SUPPORT PROJECT / SOFT-PAYWALL MODAL CONTROLS
+  // -------------------------------------------------------------
+  const donateModal = document.getElementById('donateModal');
+  const btnCloseDonateModal = document.getElementById('btnCloseDonateModal');
+  const btnContinueFree = document.getElementById('btnContinueFree');
+  let pendingVipAction = null;
+
+  function triggerVipWithSupportPrompt(actionCallback) {
+    pendingVipAction = actionCallback;
+    if (donateModal) {
+      donateModal.classList.add('active');
+      mainAppShell.setAttribute('inert', 'true');
+    } else if (typeof actionCallback === 'function') {
+      actionCallback();
+    }
+  }
+
+  function dismissDonateModal() {
+    if (donateModal) {
+      donateModal.classList.remove('active');
+      mainAppShell.removeAttribute('inert');
+    }
+    if (typeof pendingVipAction === 'function') {
+      const fn = pendingVipAction;
+      pendingVipAction = null;
+      fn();
+    }
+  }
+
+  if (btnCloseDonateModal) btnCloseDonateModal.onclick = dismissDonateModal;
+  if (btnContinueFree) btnContinueFree.onclick = dismissDonateModal;
+  if (donateModal) {
+    donateModal.addEventListener('click', (e) => {
+      if (e.target === donateModal) dismissDonateModal();
+    });
+  }
+
   if (btnChoiceOpenBuilder) {
     btnChoiceOpenBuilder.onclick = () => {
       closeCreateChoiceModal();
-      setBuilderMode(true);
+      triggerVipWithSupportPrompt(() => {
+        setBuilderMode(true);
+      });
     };
   }
 
@@ -2552,9 +2641,18 @@ const BRAND_ICONS = {
       chip.onclick = (e) => {
         e.stopPropagation();
         const chosenMat = chip.getAttribute('data-mat');
-        setVipMaterial(chosenMat, true);
-        showToast(`Đã đổi chất liệu: ${VIP_MAT_LABELS[chosenMat] || chosenMat}`);
         quickMatDrawer.classList.remove('active');
+        
+        // Nếu chọn chất liệu VIP Pro cao cấp (Titanium, Silver, Frosted, Art Paper), hiện popup ủng hộ nhẹ nhàng
+        if (chosenMat !== 'pvc') {
+          triggerVipWithSupportPrompt(() => {
+            setVipMaterial(chosenMat, true);
+            showToast(`Đã đổi chất liệu: ${VIP_MAT_LABELS[chosenMat] || chosenMat}`);
+          });
+        } else {
+          setVipMaterial(chosenMat, true);
+          showToast(`Đã đổi chất liệu: ${VIP_MAT_LABELS[chosenMat] || chosenMat}`);
+        }
       };
     });
 
@@ -3409,7 +3507,14 @@ const BRAND_ICONS = {
     }
   }
 
-  if (btnChoiceOpenScanner) btnChoiceOpenScanner.onclick = openCardScanModal;
+  if (btnChoiceOpenScanner) {
+    btnChoiceOpenScanner.onclick = () => {
+      closeCreateChoiceModal();
+      triggerVipWithSupportPrompt(() => {
+        openCardScanModal();
+      });
+    };
+  }
   if (btnCloseCardScanModal) btnCloseCardScanModal.onclick = closeCardScanModal;
 
   if (btnSelectFront && scanFrontInput) {
