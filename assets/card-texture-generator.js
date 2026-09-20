@@ -255,9 +255,11 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     });
   }
 
-  const [avatarImg, logoImg] = await Promise.all([
+  const [avatarImg, logoImg, scannedFrontImg, scannedBackImg] = await Promise.all([
     loadImage(profile.avatar),
-    loadImage(profile.logo)
+    loadImage(profile.logo),
+    loadImage(profile.scannedFrontPhoto),
+    loadImage(profile.scannedBackPhoto)
   ]);
 
   function roundRect(x, y, w, h, r) {
@@ -287,6 +289,14 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     ctx.save();
     roundRect(x, y, w, h, r);
     ctx.clip();
+
+    // Nếu có ảnh chụp thật quét từ danh thiếp, dán trực tiếp lên làm bề mặt 3D
+    const scannedPhoto = isBack ? scannedBackImg : scannedFrontImg;
+    if (scannedPhoto) {
+      ctx.drawImage(scannedPhoto, x, y, w, h);
+      ctx.restore();
+      return;
+    }
 
     // 1. Base Gradient
     const baseGrad = ctx.createLinearGradient(x, y, x + w, y + h);
