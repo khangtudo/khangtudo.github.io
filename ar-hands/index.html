@@ -200,6 +200,7 @@
       <div class="hud-badge" style="background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.5); color:#34d399;">PRODUCTION • AI HAND AR</div>
     </div>
     <div class="hud-metrics">
+      <button id="btnAdjustKnucklePos" style="background:rgba(56,189,248,0.2); border:1px solid rgba(56,189,248,0.5); color:#38bdf8; border-radius:6px; padding:2px 8px; font-size:0.75rem; font-weight:700; cursor:pointer;" title="Bấm để đổi khoảng cách so với gốc ngón tay">📍 Gốc ngón: 1.8cm</button>
       <span>FPS: <span class="hud-fps" id="txtFps">0</span></span>
       <span>Độ trễ: <span style="color:#38bdf8;" id="txtLatency">0ms</span></span>
     </div>
@@ -297,6 +298,7 @@
     // OneEuro / Low-pass smoothed coordinates for jitter suppression & responsive tracking
     let filteredHandPos = new THREE.Vector3(0, 0, 0);
     let filteredWristPos = new THREE.Vector3(0, 0, 0);
+    let filteredKnuckles = new THREE.Vector3(0, 0, 0);
     let filteredIndexMcp = new THREE.Vector3(0, 0, 0);
     let filteredPinkyMcp = new THREE.Vector3(0, 0, 0);
     let hasInitialPose = false;
@@ -316,7 +318,17 @@
     const FLIP_COOLDOWN_MS = 750;
 
     // Hand zoom baseline
-    let baseHandSpan = 0.28;
+    let baseHandSpan = 0.33;
+
+    // Khoảng cách định vị thẻ so với Điểm Gốc Hội Tụ Các Ngón Tay (Knuckles / lm[9])
+    // 1cm ≈ 0.0677 Three.js units (dựa trên chuẩn thẻ 8.56cm = 0.58 unit)
+    const KNUCKLE_PRESETS = [
+      { label: '📍 Cách gốc ngón: 1.5cm', offset: 0.10 },
+      { label: '📍 Cách gốc ngón: 2.0cm', offset: 0.135 },
+      { label: '📍 Ngay gốc ngón tay', offset: 0.0 },
+      { label: '📍 Lên phía ngón: 1.5cm', offset: -0.10 }
+    ];
+    let currentKnucklePresetIndex = 0; // Mặc định: Cách gốc ngón tay 1.5cm
 
     // FPS Tracker
     let frameCount = 0;
@@ -596,32 +608,30 @@
           const currentWrist = to3D(wrist);
           const currentIndex = to3D(indexMcp);
           const currentPinky = to3D(pinkyMcp);
-          const currentPalmPos = new THREE.Vector3()
-            .addVectors(currentWrist, currentIndex)
-            .add(currentPinky)
-            .divideScalar(3);
+          const currentMiddleMcp = to3D(lm[9]); // Điểm gốc hội tụ các ngón tay (Knuckles center)
 
           if (!hasInitialPose) {
-            filteredHandPos.copy(currentPalmPos);
+            filteredHandPos.copy(currentMiddleMcp);
             filteredWristPos.copy(currentWrist);
+            filteredKnuckles.copy(currentMiddleMcp);
             filteredIndexMcp.copy(currentIndex);
             filteredPinkyMcp.copy(currentPinky);
             hasInitialPose = true;
           } else {
             // Adaptive Smoothing: Giảm lag khi di chuyển nhanh, triệt tiêu rung (jitter) khi giữ yên
-            const deltaPos = currentPalmPos.distanceTo(filteredHandPos);
+            const deltaPos = currentMiddleMcp.distanceTo(filteredKnuckles);
             const filterAlpha = THREE.MathUtils.clamp(0.25 + deltaPos * 1.8, 0.20, 0.75);
-            filteredHandPos.lerp(currentPalmPos, filterAlpha);
+            filteredKnuckles.lerp(currentMiddleMcp, filterAlpha);
             filteredWristPos.lerp(currentWrist, filterAlpha);
             filteredIndexMcp.lerp(currentIndex, filterAlpha);
             filteredPinkyMcp.lerp(currentPinky, filterAlpha);
+            filteredHandPos.copy(filteredKnuckles);
           }
 
           // Xây dựng hệ trục chuẩn Orthonormal 3D Basis của lòng bàn tay
+          // vUp: Trục hướng từ Cổ tay (Wrist) lên Điểm Gốc Hội Tụ Các Ngón Tay (Knuckles)
           const vUp = new THREE.Vector3()
-            .addVectors(filteredIndexMcp, filteredPinkyMcp)
-            .multiplyScalar(0.5)
-            .sub(filteredWristPos)
+            .subVectors(filteredKnuckles, filteredWristPos)
             .normalize();
           
           let vRight = new THREE.Vector3().subVectors(filteredIndexMcp, filteredPinkyMcp).normalize();
@@ -642,19 +652,11 @@
             isHandTrackingActive = true;
           }
 
-          // Tính toán vị trí tâm thẻ tự nhiên trên lòng bàn tay (Palm Anchor):
-          // Knuckles center (khớp gốc 4 ngón tay) và chiều dài lòng bàn tay
-          const mcpCenter = new THREE.Vector3().addVectors(filteredIndexMcp, filteredPinkyMcp).multiplyScalar(0.5);
-          const palmLength = filteredWristPos.distanceTo(mcpCenter);
-
-          // Bán kính thẻ dọc theo trục vUp (0.29 khi xoay 90° dọc cổ tay, 0.175 khi nằm ngang)
-          const isAlignedWithWrist = Math.abs(cardOrientationOffsetZ) > 0.1;
-          const cardHalfSpanAlongVUp = (isAlignedWithWrist ? CARD_W : CARD_H) * 0.5 * dynamicCardScale;
-
-          // Căn chỉnh đáy thẻ nằm cách cổ tay 1.5cm - 2cm (khoảng 15-20% palmLength),
-          // toàn bộ thân thẻ nằm trọn vẹn từ lòng bàn tay vươn lên các ngón tay, không che cổ tay/cẳng tay
-          const forwardDistance = cardHalfSpanAlongVUp + Math.max(0.045, palmLength * 0.18);
-          const naturalPalmPos = filteredWristPos.clone().add(vUp.clone().multiplyScalar(forwardDistance));
+          // ĐỊNH VỊ TÂM THẺ TRỰC TIẾP TỪ ĐIỂM GỐC HỘI TỤ CÁC NGÓN TAY (Knuckles):
+          // Neo trực tiếp từ filteredKnuckles (gốc ngón tay lm[9]), cách 1.5cm - 2.0cm (offset ~ 0.12 units)
+          // Tuyệt đối không neo từ cổ tay để cổ tay và cẳng tay luôn hoàn toàn thông thoáng!
+          const knuckleOffsetDist = KNUCKLE_PRESETS[currentKnucklePresetIndex].offset;
+          const naturalPalmPos = filteredKnuckles.clone().sub(vUp.clone().multiplyScalar(knuckleOffsetDist));
 
           if (fourFingers.isCurled) {
             // --- GESTURE: NẮM 4 NGÓN (FIST / GRIP) ---
@@ -958,6 +960,14 @@
       btnToggleMesh.textContent = `🦴 Khớp Xương: ${showSkeleton ? 'BẬT' : 'TẮT'}`;
       btnToggleMesh.classList.toggle('active', showSkeleton);
     };
+
+    const btnAdjustKnucklePos = document.getElementById('btnAdjustKnucklePos');
+    if (btnAdjustKnucklePos) {
+      btnAdjustKnucklePos.onclick = () => {
+        currentKnucklePresetIndex = (currentKnucklePresetIndex + 1) % KNUCKLE_PRESETS.length;
+        btnAdjustKnucklePos.textContent = KNUCKLE_PRESETS[currentKnucklePresetIndex].label;
+      };
+    }
 
     const btnRotateCard = document.getElementById('btnRotateCard');
     if (btnRotateCard) {
