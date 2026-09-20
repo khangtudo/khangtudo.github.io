@@ -286,6 +286,17 @@
     let targetRotationX = 0;
     let targetRotationZ = 0;
 
+    // Advanced 3D Palm Pose & Orientation Matrix
+    const targetQuaternion = new THREE.Quaternion();
+    let isHandTrackingActive = false;
+
+    // OneEuro / Low-pass smoothed coordinates for jitter suppression & responsive tracking
+    let filteredHandPos = new THREE.Vector3(0, 0, 0);
+    let filteredWristPos = new THREE.Vector3(0, 0, 0);
+    let filteredIndexMcp = new THREE.Vector3(0, 0, 0);
+    let filteredPinkyMcp = new THREE.Vector3(0, 0, 0);
+    let hasInitialPose = false;
+
     // 4-Finger Grip/Release Flip State Tracking
     // 'EXTENDED' (xòe 4 ngón) vs 'CURLED' (nắm 4 ngón)
     let lastFingerPose = 'UNKNOWN'; // 'EXTENDED' | 'CURLED'
@@ -322,11 +333,23 @@
     document.getElementById('threeCanvas').appendChild(renderer.domElement);
 
     // Lighting
-    const ambLight = new THREE.AmbientLight(0xffffff, 1.2);
+    const ambLight = new THREE.AmbientLight(0xffffff, 0.9);
     scene.add(ambLight);
-    const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.0);
-    dirLight.position.set(2, 4, 3);
-    scene.add(dirLight);
+
+    // Key Light (Ánh sáng chính tạo specular bóng bẩy khi nghiêng thẻ)
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    keyLight.position.set(1.8, 3.5, 3.0);
+    scene.add(keyLight);
+
+    // Fill Light (Ánh sáng xanh cyan công nghệ từ phía đối diện)
+    const fillLight = new THREE.DirectionalLight(0x7dd3fc, 0.8);
+    fillLight.position.set(-2.5, -1.0, 2.0);
+    scene.add(fillLight);
+
+    // Rim / Glint Light (Ánh sáng quét xiên góc từ trên cao, kích hoạt dải phản quang khi xoay 30-60 độ)
+    const glintLight = new THREE.DirectionalLight(0xffecd2, 1.2);
+    glintLight.position.set(0.2, 4.0, 1.8);
+    scene.add(glintLight);
 
     // -------------------------------------------------------------
     // 3D CARD CREATION (Dual-sided Texture)
@@ -560,9 +583,73 @@
           pinchConsecutiveFrames = 0;
         }
 
-        // Compute palm normal/tilt from wrist 0 to middle mcp 9 & index 5
-        const roll = (lm[17].y - lm[5].y) * 2.0;
-        const pitch = (lm[9].z - lm[0].z) * 1.8;
+        // ---------------------------------------------------------
+        // 3D PALM POSE & ADAPTIVE ORIENTATION MATRIX
+        // ---------------------------------------------------------
+        // Palm Center: interpolated between Wrist(0), IndexMCP(5), PinkyMCP(17)
+        const rawPalmX = (wrist.x + indexMcp.x + pinkyMcp.x) / 3;
+        const rawPalmY = (wrist.y + indexMcp.y + pinkyMcp.y) / 3;
+        const rawPalmZ = (wrist.z + indexMcp.z + pinkyMcp.z) / 3;
+
+        // Map to 3D Space (Three.js camera coordinates)
+        const currentPalmPos = new THREE.Vector3(
+          (rawPalmX - 0.5) * 2.2,
+          -(rawPalmY - 0.5) * 1.6,
+          -rawPalmZ * 1.5
+        );
+        const currentWrist = new THREE.Vector3(
+          (wrist.x - 0.5) * 2.2,
+          -(wrist.y - 0.5) * 1.6,
+          -wrist.z * 1.5
+        );
+        const currentIndex = new THREE.Vector3(
+          (indexMcp.x - 0.5) * 2.2,
+          -(indexMcp.y - 0.5) * 1.6,
+          -indexMcp.z * 1.5
+        );
+        const currentPinky = new THREE.Vector3(
+          (pinkyMcp.x - 0.5) * 2.2,
+          -(pinkyMcp.y - 0.5) * 1.6,
+          -pinkyMcp.z * 1.5
+        );
+
+        if (!hasInitialPose) {
+          filteredHandPos.copy(currentPalmPos);
+          filteredWristPos.copy(currentWrist);
+          filteredIndexMcp.copy(currentIndex);
+          filteredPinkyMcp.copy(currentPinky);
+          hasInitialPose = true;
+        } else {
+          // Adaptive Smoothing: Giảm lag khi di chuyển nhanh, triệt tiêu rung (jitter) khi giữ yên
+          const deltaPos = currentPalmPos.distanceTo(filteredHandPos);
+          const filterAlpha = THREE.MathUtils.clamp(0.25 + deltaPos * 1.8, 0.20, 0.75);
+          filteredHandPos.lerp(currentPalmPos, filterAlpha);
+          filteredWristPos.lerp(currentWrist, filterAlpha);
+          filteredIndexMcp.lerp(currentIndex, filterAlpha);
+          filteredPinkyMcp.lerp(currentPinky, filterAlpha);
+        }
+
+        // Xây dựng hệ trục chuẩn Orthonormal 3D Basis của lòng bàn tay
+        // V_Up: Từ Cổ tay (Wrist) hướng lên gốc ngón tay (Index MCP & Pinky MCP)
+        const vUp = new THREE.Vector3().addVectors(filteredIndexMcp, filteredPinkyMcp).multiplyScalar(0.5).sub(filteredWristPos).normalize();
+        
+        // V_Right: Từ gốc ngón út (Pinky) sang gốc ngón trỏ (Index)
+        const vRight = new THREE.Vector3().subVectors(filteredIndexMcp, filteredPinkyMcp).normalize();
+        
+        // V_Normal: Pháp tuyến vuông góc lòng bàn tay = V_Right x V_Up
+        const vNormal = new THREE.Vector3().crossVectors(vRight, vUp).normalize();
+        
+        // Đảm bảo tính trực giao hoàn hảo (Orthonormal)
+        vRight.crossVectors(vUp, vNormal).normalize();
+
+        // Ma trận xoay của lòng bàn tay
+        const palmRotMatrix = new THREE.Matrix4().makeBasis(vRight, vUp, vNormal);
+        const palmQuat = new THREE.Quaternion().setFromRotationMatrix(palmRotMatrix);
+
+        // Áp dụng góc lật 180 độ (Card Flip) lên trục Y cục bộ của thẻ
+        const flipQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
+        targetQuaternion.copy(palmQuat).multiply(flipQuat);
+        isHandTrackingActive = true;
 
         if (fourFingers.isCurled) {
           // --- GESTURE: NẮM 4 NGÓN (FIST / GRIP) ---
@@ -573,10 +660,8 @@
           txtCardState.textContent = 'NẮM 4 NGÓN';
           txtCardState.style.color = '#f43f5e';
 
-          targetPos.set(handX, handY, 0.05);
+          targetPos.copy(filteredHandPos);
           targetScale = dynamicCardScale * 0.95;
-          targetRotationX = pitch * 0.5;
-          targetRotationZ = -roll * 0.5;
 
         } else if (isOpenPalm) {
           // --- GESTURE: XÒE LÒNG BÀN TAY (OPEN PALM ANCHOR & ZOOM) ---
@@ -587,10 +672,10 @@
           txtCardState.textContent = 'THU PHÓNG TAY';
           txtCardState.style.color = '#10b981';
 
-          targetPos.set(handX, handY + 0.14, 0.1);
+          // Đặt thẻ bám khít và nổi nhẹ 2cm ngay trên lòng bàn tay
+          const hoverOffset = vNormal.clone().multiplyScalar(0.04);
+          targetPos.copy(filteredHandPos).add(hoverOffset);
           targetScale = Math.min(1.50, dynamicCardScale * 1.05);
-          targetRotationX = pitch;
-          targetRotationZ = -roll;
 
         } else {
           // Neutral hand position
@@ -601,15 +686,15 @@
           txtCardState.textContent = 'SẴN SÀNG';
           txtCardState.style.color = '#38bdf8';
 
-          targetPos.set(handX, handY, 0);
+          targetPos.copy(filteredHandPos);
           targetScale = dynamicCardScale;
-          targetRotationX = 0;
-          targetRotationZ = 0;
         }
 
       } else {
         // No hand visible -> idle float
         currentGesture = 'NONE';
+        isHandTrackingActive = false;
+        hasInitialPose = false;
         txtGestureIcon.textContent = '✋';
         txtGestureTitle.textContent = 'Chờ Đưa Bàn Tay Vào...';
         txtGestureDesc.textContent = 'Đưa bàn tay vào trước camera để AI kích hoạt tương tác';
@@ -663,20 +748,25 @@
     function animate() {
       requestAnimationFrame(animate);
 
-      // Smooth exponential dampening (Frame-rate independent: tau = 0.12s)
+      // Smooth exponential dampening (Frame-rate independent: tau = 0.10s)
       const nowMs = performance.now();
       const dt = Math.min(0.05, (nowMs - lastFrameTime) * 0.001);
       lastFrameTime = nowMs;
-      const smoothFactor = 1 - Math.exp(-dt / 0.12);
+      const smoothFactor = 1 - Math.exp(-dt / 0.09);
+      const rotSmoothFactor = 1 - Math.exp(-dt / 0.07);
 
       cardGroup.position.lerp(targetPos, smoothFactor);
       cardGroup.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), smoothFactor);
-      
-      // Tốc độ xoay lật êm ái chống giật (flipRotationSpeed = 1 - Math.exp(-dt / 0.18))
-      const flipSmoothFactor = 1 - Math.exp(-dt / 0.18);
-      cardGroup.rotation.x += (targetRotationX - cardGroup.rotation.x) * smoothFactor;
-      cardGroup.rotation.y += (targetRotationY - cardGroup.rotation.y) * flipSmoothFactor;
-      cardGroup.rotation.z += (targetRotationZ - cardGroup.rotation.z) * smoothFactor;
+
+      if (isHandTrackingActive) {
+        // Slerp Quaternion 3D: khử hoàn toàn rung giật (jitter), phản hồi mượt mà theo chuyển động cổ tay 0 - 60 độ
+        cardGroup.quaternion.slerp(targetQuaternion, rotSmoothFactor);
+      } else {
+        const flipSmoothFactor = 1 - Math.exp(-dt / 0.18);
+        cardGroup.rotation.x += (targetRotationX - cardGroup.rotation.x) * smoothFactor;
+        cardGroup.rotation.y += (targetRotationY - cardGroup.rotation.y) * flipSmoothFactor;
+        cardGroup.rotation.z += (targetRotationZ - cardGroup.rotation.z) * smoothFactor;
+      }
 
       renderer.render(scene, camera);
 
