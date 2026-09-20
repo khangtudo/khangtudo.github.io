@@ -1469,14 +1469,14 @@
   </div>
 
   <!-- Create Card / Edit Mode Choice Modal -->
-  <div class="qr-modal" id="createChoiceModal" role="dialog" aria-modal="true" aria-label="Tạo danh thiếp hoặc Chỉnh sửa">
+  <div class="qr-modal" id="createChoiceModal" role="dialog" aria-modal="true" aria-label="Tùy chọn chỉnh sửa hoặc tạo mới">
     <div class="qr-card" style="max-width: 350px; width: 92%; max-height: min(85vh, 440px); overflow-y: auto; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(216, 175, 98, 0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.95); padding: 18px 16px; border-radius: 18px; box-sizing: border-box;">
       <button class="qr-close" id="btnCloseCreateChoiceModal" aria-label="Đóng bảng tùy chọn" style="color: #94a3b8; top: 12px; right: 12px;">✕</button>
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-        <span style="font-size:1.3rem; line-height:1;">👑</span>
-        <h3 style="font-size:1rem; font-weight:700; color:#fff0be; margin:0;">Tạo & Chỉnh Sửa Thẻ</h3>
+        <span style="font-size:1.3rem; line-height:1;" id="choiceModalIcon">👑</span>
+        <h3 style="font-size:1rem; font-weight:700; color:#fff0be; margin:0;" id="choiceModalTitle">Chỉnh Sửa Thẻ Của Bạn</h3>
       </div>
-      <p style="font-size:0.72rem; color:#94a3b8; margin: 0 0 14px 0;">Chọn phương thức tạo mẫu danh thiếp phù hợp với bạn</p>
+      <p style="font-size:0.72rem; color:#94a3b8; margin: 0 0 14px 0;" id="choiceModalDesc">Chọn phương thức cập nhật danh thiếp của bạn</p>
       
       <!-- Option 1: Nhập liệu form đơn -->
       <button type="button" id="btnChoiceOpenForm" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.35); text-align:left; cursor:pointer; margin-bottom:8px; transition:background 0.15s ease; box-sizing: border-box;">
@@ -1500,6 +1500,11 @@
         </div>
         <span style="color:#d8af62; font-size:1.1rem; font-weight:700;">→</span>
       </button>
+
+      <!-- Footer: Sub-link tinh tế cho người dùng muốn tạo thêm thẻ khác -->
+      <div id="choiceModalFooter" style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); text-align:center; font-size:0.72rem; color:#94a3b8;">
+        Cần tạo một thẻ mới hoàn toàn? <button type="button" id="btnCreateAnotherCard" style="background:none; border:none; color:#38bdf8; font-weight:600; text-decoration:underline; cursor:pointer; padding:0; font-size:0.72rem;">Tạo mới tại đây</button>
+      </div>
     </div>
   </div>
 
@@ -1798,7 +1803,20 @@ const BRAND_ICONS = {
   };
   document.addEventListener('click', closeFlagMenu);
 
+  // Helper: Kiểm tra người dùng có đang sở hữu/lưu thẻ trong máy không
+  function isSavedCardOwner() {
+    try {
+      const saved = localStorage.getItem('inid_ar_profile');
+      if (!saved) return false;
+      const parsed = JSON.parse(saved);
+      return !!(parsed && (parsed.fn || parsed.org || parsed.tel));
+    } catch(e) {
+      return false;
+    }
+  }
+
   function updateI18n() {
+    const isOwner = isSavedCardOwner();
     const createNewTxt = getTranslation(currentLang, 'createNew') || '+ Tạo mới';
     const elCreateNew = document.getElementById('txtCreateNew');
     if (elCreateNew) elCreateNew.textContent = createNewTxt;
@@ -1811,6 +1829,26 @@ const BRAND_ICONS = {
 
     const elViewQr = document.getElementById('txtViewQr');
     if (elViewQr) elViewQr.textContent = currentLang === 'vi' ? 'Mã QR' : 'QR Offline';
+
+    const elCreateDock = document.getElementById('txtCreateDock');
+    if (elCreateDock) {
+      elCreateDock.textContent = isOwner ? (currentLang === 'vi' ? 'Chỉnh Sửa' : 'Edit') : (currentLang === 'vi' ? 'Tạo Mới' : 'Create');
+    }
+
+    const choiceModalTitle = document.getElementById('choiceModalTitle');
+    const choiceModalDesc = document.getElementById('choiceModalDesc');
+    const choiceModalIcon = document.getElementById('choiceModalIcon');
+    if (choiceModalTitle && choiceModalDesc) {
+      if (isOwner) {
+        choiceModalIcon.textContent = '✏️';
+        choiceModalTitle.textContent = currentLang === 'vi' ? 'Chỉnh Sửa Thẻ Của Bạn' : 'Edit Your Card';
+        choiceModalDesc.textContent = currentLang === 'vi' ? 'Chọn phương thức cập nhật danh thiếp của bạn' : 'Select your preferred editing mode';
+      } else {
+        choiceModalIcon.textContent = '👑';
+        choiceModalTitle.textContent = currentLang === 'vi' ? 'Tạo & Thiết Kế Thẻ' : 'Create & Design Card';
+        choiceModalDesc.textContent = currentLang === 'vi' ? 'Chọn phương thức tạo mẫu danh thiếp phù hợp với bạn' : 'Choose how you want to build your smart card';
+      }
+    }
   }
 
   // Render Card to Stage
@@ -2020,7 +2058,7 @@ const BRAND_ICONS = {
   if (btnChoiceOpenForm) {
     btnChoiceOpenForm.onclick = () => {
       closeCreateChoiceModal();
-      openSheet(true);
+      openSheet(!isSavedCardOwner());
     };
   }
 
@@ -2028,6 +2066,16 @@ const BRAND_ICONS = {
     btnChoiceOpenBuilder.onclick = () => {
       closeCreateChoiceModal();
       setBuilderMode(true);
+    };
+  }
+
+  // Nút tạo mới thẻ hoàn toàn từ dòng footer trong modal
+  const btnCreateAnotherCard = document.getElementById('btnCreateAnotherCard');
+  if (btnCreateAnotherCard) {
+    btnCreateAnotherCard.onclick = () => {
+      closeCreateChoiceModal();
+      // Mở form sạch để điền thẻ mới từ đầu
+      openSheet(true);
     };
   }
 
