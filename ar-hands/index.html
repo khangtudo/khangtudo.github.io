@@ -642,9 +642,19 @@
             isHandTrackingActive = true;
           }
 
-          // Đẩy tâm thẻ tiến lên khoảng 1.5cm (~0.055 unit) về phía các ngón tay dọc theo trục vUp
-          const palmCenterForwardOffset = vUp.clone().multiplyScalar(0.055);
-          const naturalPalmPos = filteredHandPos.clone().add(palmCenterForwardOffset);
+          // Tính toán vị trí tâm thẻ tự nhiên trên lòng bàn tay (Palm Anchor):
+          // Knuckles center (khớp gốc 4 ngón tay) và chiều dài lòng bàn tay
+          const mcpCenter = new THREE.Vector3().addVectors(filteredIndexMcp, filteredPinkyMcp).multiplyScalar(0.5);
+          const palmLength = filteredWristPos.distanceTo(mcpCenter);
+
+          // Bán kính thẻ dọc theo trục vUp (0.29 khi xoay 90° dọc cổ tay, 0.175 khi nằm ngang)
+          const isAlignedWithWrist = Math.abs(cardOrientationOffsetZ) > 0.1;
+          const cardHalfSpanAlongVUp = (isAlignedWithWrist ? CARD_W : CARD_H) * 0.5 * dynamicCardScale;
+
+          // Căn chỉnh đáy thẻ nằm cách cổ tay 1.5cm - 2cm (khoảng 15-20% palmLength),
+          // toàn bộ thân thẻ nằm trọn vẹn từ lòng bàn tay vươn lên các ngón tay, không che cổ tay/cẳng tay
+          const forwardDistance = cardHalfSpanAlongVUp + Math.max(0.045, palmLength * 0.18);
+          const naturalPalmPos = filteredWristPos.clone().add(vUp.clone().multiplyScalar(forwardDistance));
 
           if (fourFingers.isCurled) {
             // --- GESTURE: NẮM 4 NGÓN (FIST / GRIP) ---
