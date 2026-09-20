@@ -642,6 +642,10 @@
             isHandTrackingActive = true;
           }
 
+          // Đẩy tâm thẻ tiến lên khoảng 1.5cm (~0.055 unit) về phía các ngón tay dọc theo trục vUp
+          const palmCenterForwardOffset = vUp.clone().multiplyScalar(0.055);
+          const naturalPalmPos = filteredHandPos.clone().add(palmCenterForwardOffset);
+
           if (fourFingers.isCurled) {
             // --- GESTURE: NẮM 4 NGÓN (FIST / GRIP) ---
             currentGesture = 'FIST_FLIP';
@@ -651,7 +655,7 @@
             txtCardState.textContent = 'NẮM 4 NGÓN';
             txtCardState.style.color = '#f43f5e';
 
-            targetPos.copy(filteredHandPos);
+            targetPos.copy(naturalPalmPos);
             targetScale = dynamicCardScale * 0.95;
 
           } else if (isOpenPalm) {
@@ -663,9 +667,9 @@
             txtCardState.textContent = 'THU PHÓNG TAY';
             txtCardState.style.color = '#10b981';
 
-            // Đặt thẻ bám khít và nổi nhẹ 2cm ngay trên lòng bàn tay
+            // Đặt thẻ bám khít và nổi nhẹ 2-3cm ngay trên lòng bàn tay
             const hoverOffset = vNormal.clone().multiplyScalar(0.04);
-            targetPos.copy(filteredHandPos).add(hoverOffset);
+            targetPos.copy(naturalPalmPos).add(hoverOffset);
             targetScale = Math.min(1.50, dynamicCardScale * 1.05);
 
           } else {
@@ -677,7 +681,7 @@
             txtCardState.textContent = 'SẴN SÀNG';
             txtCardState.style.color = '#38bdf8';
 
-            targetPos.copy(filteredHandPos);
+            targetPos.copy(naturalPalmPos);
             targetScale = dynamicCardScale;
           }
 
