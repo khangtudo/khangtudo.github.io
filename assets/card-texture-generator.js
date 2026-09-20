@@ -11,11 +11,19 @@
 //   * Royal Leather (M .04 / R .79)
 
 export const VIP_MATERIALS = {
-  pvc:       { baseColor:'#0F172A', shadow:'#020617', highlight:'#38BDF8', accent:'#38BDF8', text:'#FFFFFF', metalness:.10, roughness:.22, specularStrength:.85, normalStrength:.05, textureScale:4, fontPair:'precision', name:'PVC' },
-  titanium:  { baseColor:'#20252B', shadow:'#0B0E12', highlight:'#69737D', accent:'#B9F2FF', text:'#F4F7FA', metalness:.88, roughness:.27, specularStrength:.72, normalStrength:.10, textureScale:6, fontPair:'precision', name:'Titanium' },
-  silver:    { baseColor:'#E2E8F0', shadow:'#94A3B8', highlight:'#FFFFFF', accent:'#38BDF8', text:'#0F172A', metalness:.92, roughness:.18, specularStrength:.92, normalStrength:.08, textureScale:4, fontPair:'precision', name:'Silver' },
-  frost:     { baseColor:'#BCD7EA', shadow:'#264254', highlight:'#EAF8FF', accent:'#83E8FF', text:'#F4FCFF', metalness:.08, roughness:.72, specularStrength:.58, normalStrength:.04, textureScale:72, fontPair:'future', name:'Frosted' },
-  art_paper: { baseColor:'#F7F5F0', shadow:'#DCD5C9', highlight:'#FFFFFF', accent:'#C5A880', text:'#22252A', metalness:.02, roughness:.88, specularStrength:.18, normalStrength:.55, textureScale:12, fontPair:'editorial', name:'Art Paper' },
+  pvc:           { baseColor:'#0F172A', shadow:'#020617', highlight:'#38BDF8', accent:'#38BDF8', text:'#FFFFFF', metalness:.10, roughness:.22, specularStrength:.85, normalStrength:.05, textureScale:4, fontPair:'precision', name:'PVC' },
+  titanium:      { baseColor:'#20252B', shadow:'#0B0E12', highlight:'#69737D', accent:'#B9F2FF', text:'#F4F7FA', metalness:.88, roughness:.27, specularStrength:.72, normalStrength:.10, textureScale:6, fontPair:'precision', name:'Titanium' },
+  brushed_steel: { baseColor:'#E2E8F0', shadow:'#64748B', highlight:'#FFFFFF', accent:'#38BDF8', text:'#0F172A', metalness:.95, roughness:.24, specularStrength:.92, normalStrength:.28, textureScale:6, fontPair:'precision', name:'Brushed Steel' },
+  acrylic:       { baseColor:'#0C1929', shadow:'#040B14', highlight:'#38BDF8', accent:'#38BDF8', text:'#FFFFFF', metalness:.15, roughness:.10, specularStrength:.92, normalStrength:.02, textureScale:4, fontPair:'future', name:'Acrylic', opacity: 0.82, transparent: true },
+  art_paper:     { baseColor:'#F7F5F0', shadow:'#DCD5C9', highlight:'#FFFFFF', accent:'#C5A880', text:'#22252A', metalness:.02, roughness:.88, specularStrength:.18, normalStrength:.55, textureScale:12, fontPair:'editorial', name:'Art Paper' },
+  
+  // Backward-compatible aliases để đảm bảo thẻ cũ không bao giờ bị crash
+  silver:        { baseColor:'#E2E8F0', shadow:'#64748B', highlight:'#FFFFFF', accent:'#38BDF8', text:'#0F172A', metalness:.95, roughness:.24, specularStrength:.92, normalStrength:.28, textureScale:6, fontPair:'precision', name:'Brushed Steel' },
+  frost:         { baseColor:'#0C1929', shadow:'#040B14', highlight:'#38BDF8', accent:'#38BDF8', text:'#FFFFFF', metalness:.15, roughness:.10, specularStrength:.92, normalStrength:.02, textureScale:4, fontPair:'future', name:'Acrylic', opacity: 0.82, transparent: true },
+  carbon:        { baseColor:'#121417', shadow:'#050607', highlight:'#313941', accent:'#56E6D2', text:'#F6F8FA', metalness:.36, roughness:.41, specularStrength:.46, normalStrength:.34, textureScale:32, fontPair:'future', name:'Carbon' },
+  gold:          { baseColor:'#B88935', shadow:'#4D3212', highlight:'#F7E5AD', accent:'#FFF0BE', text:'#FFF4D2', metalness:.96, roughness:.19, specularStrength:.80, normalStrength:.08, textureScale:3, fontPair:'editorial', name:'Gold Foil' },
+  leather:       { baseColor:'#32131E', shadow:'#12070B', highlight:'#784052', accent:'#D8AF62', text:'#FFF7EB', metalness:.04, roughness:.79, specularStrength:.28, normalStrength:.46, textureScale:8, fontPair:'regal', name:'Leather' },
+  paper:         { baseColor:'#F7F5F0', shadow:'#DCD5C9', highlight:'#FFFFFF', accent:'#C5A880', text:'#22252A', metalness:.02, roughness:.88, specularStrength:.18, normalStrength:.55, textureScale:12, fontPair:'editorial', name:'Art Paper' },
 };
 
 /**
@@ -193,8 +201,8 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
   ctx.fillRect(0, 0, 1024, 1024);
 
   const vip = profile.vipTheme || {};
-  const matKey = (vip.material && VIP_MATERIALS[vip.material]) ? vip.material : 'titanium';
-  const matPreset = VIP_MATERIALS[matKey];
+  const matKey = (vip.material && VIP_MATERIALS[vip.material]) ? vip.material : 'pvc';
+  const matPreset = VIP_MATERIALS[matKey] || VIP_MATERIALS.pvc;
 
   const BG_COLOR = vip.bgColor || matPreset.baseColor;
   const TEXT_COLOR = vip.textColor || matPreset.text;
@@ -332,30 +340,42 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       sweep.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = sweep;
       ctx.fill();
-    } else if (matKey === 'silver') {
-      // Silver: Phản xạ kim loại ánh bạc chải xước mịn (Fine Brushed Chrome)
+    } else if (matKey === 'brushed_steel' || matKey === 'silver') {
+      // Brushed Steel / Inox Vân Xước (Stainless Steel Brushed Metal)
       const pCvs = document.createElement('canvas');
-      pCvs.width = 128; pCvs.height = 2;
+      pCvs.width = 128; pCvs.height = 4;
       const pCtx = pCvs.getContext('2d');
-      pCtx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      // Đường vân xước kim loại ngang
+      pCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
       pCtx.fillRect(0, 0, 128, 1);
+      pCtx.fillStyle = 'rgba(100, 116, 139, 0.25)';
+      pCtx.fillRect(10, 2, 70, 1);
+      pCtx.fillStyle = 'rgba(71, 85, 105, 0.2)';
+      pCtx.fillRect(50, 3, 60, 1);
       ctx.fillStyle = ctx.createPattern(pCvs, 'repeat');
       ctx.fill();
 
+      // Dải specular lướt sáng kim loại vát xiên
       const sweep = ctx.createLinearGradient(x, y, x + w, y + h);
-      sweep.addColorStop(0, 'rgba(255,255,255,0.35)');
+      sweep.addColorStop(0, 'rgba(255,255,255,0.4)');
       sweep.addColorStop(0.3, 'rgba(203,213,225,0.15)');
-      sweep.addColorStop(0.6, 'rgba(255,255,255,0.45)');
-      sweep.addColorStop(1, 'rgba(148,163,184,0.2)');
+      sweep.addColorStop(0.6, 'rgba(255,255,255,0.5)');
+      sweep.addColorStop(1, 'rgba(148,163,184,0.25)');
       ctx.fillStyle = sweep;
       ctx.fill();
-    } else if (matKey === 'frost') {
-      const sweep = ctx.createRadialGradient(x + w * 0.3, y + h * 0.3, 20, x + w * 0.5, y + h * 0.5, w * 0.7);
-      sweep.addColorStop(0, 'rgba(131, 232, 255, 0.12)');
-      sweep.addColorStop(0.6, 'rgba(38, 66, 84, 0.25)');
-      sweep.addColorStop(1, 'rgba(0,0,0,0.3)');
-      ctx.fillStyle = sweep;
+    } else if (matKey === 'acrylic' || matKey === 'frost') {
+      // Acrylic Trong Suốt: Kính hữu cơ xuyên thấu với viền khúc xạ Fresnel bevel gloss
+      const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+      grad.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
+      grad.addColorStop(0.3, 'rgba(12, 25, 41, 0.7)');
+      grad.addColorStop(0.7, 'rgba(4, 11, 20, 0.85)');
+      grad.addColorStop(1, 'rgba(56, 189, 248, 0.35)');
+      ctx.fillStyle = grad;
       ctx.fill();
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
     } else if (matKey === 'art_paper') {
       // Art Paper: Giấy Mỹ Thuật vân sợi bông cotton & kết cấu dập nổi cao cấp
       const pCvs = document.createElement('canvas');

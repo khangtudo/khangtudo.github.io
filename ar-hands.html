@@ -950,6 +950,16 @@
       simulateHand(window.innerWidth / 2, window.innerHeight / 2, false);
     }
 
+    // Safety timeout: Sau tối đa 3.5s, nếu Camera feed chưa gọi được thì tự động ẩn loadingOverlay để người dùng không bị kẹt
+    setTimeout(() => {
+      if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+        console.warn('Camera load timeout reached, revealing interactive stage');
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => loadingOverlay.style.display = 'none', 400);
+        animate();
+      }
+    }, 3500);
+
     initCamera(currentFacingMode).then(() => {
       console.log('Camera started successfully with facingMode:', currentFacingMode);
       loadingOverlay.style.opacity = '0';

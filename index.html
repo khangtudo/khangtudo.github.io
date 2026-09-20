@@ -397,20 +397,22 @@
       border-color: #69737D;
       box-shadow: 0 18px 40px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.15);
     }
-    .card-face.mat-silver {
-      background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 50%, #CBD5E1 100%);
+    .card-face.mat-brushed_steel {
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 4px),
+        linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 45%, #CBD5E1 55%, #94A3B8 100%);
       color: #0F172A !important;
       border-color: #94A3B8;
-      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.25);
+      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.9), 0 0 20px rgba(255,255,255,0.3);
     }
-    .card-face.mat-silver * {
+    .card-face.mat-brushed_steel * {
       color: #0F172A !important;
     }
-    .card-face.mat-frost {
-      background: linear-gradient(145deg, rgba(38,66,84,0.85) 0%, rgba(16,43,58,0.92) 100%);
-      border-color: #83E8FF;
-      backdrop-filter: blur(20px);
-      box-shadow: 0 18px 40px -10px rgba(0,0,0,0.8), inset 0 0 15px rgba(131,232,255,0.25);
+    .card-face.mat-acrylic {
+      background: linear-gradient(135deg, rgba(56,189,248,0.22) 0%, rgba(12,25,41,0.65) 40%, rgba(4,11,20,0.8) 100%) !important;
+      border: 1.5px solid rgba(255,255,255,0.45) !important;
+      backdrop-filter: blur(28px) saturate(180%) !important;
+      box-shadow: 0 20px 50px -10px rgba(0,0,0,0.85), inset 0 1px 2px rgba(255,255,255,0.6), 0 0 25px rgba(56,189,248,0.2) !important;
     }
     .card-face.mat-art_paper {
       background: #F7F5F0;
@@ -1314,8 +1316,8 @@
         <div class="quick-mat-drawer" id="quickMatDrawer" role="toolbar" aria-label="Danh sách chất liệu VIP Pro">
           <button type="button" class="quick-mat-chip active" data-mat="pvc">PVC</button>
           <button type="button" class="quick-mat-chip" data-mat="titanium">Titanium</button>
-          <button type="button" class="quick-mat-chip" data-mat="silver">Silver</button>
-          <button type="button" class="quick-mat-chip" data-mat="frost">Frosted</button>
+          <button type="button" class="quick-mat-chip" data-mat="brushed_steel">Inox Xước</button>
+          <button type="button" class="quick-mat-chip" data-mat="acrylic">Acrylic</button>
           <button type="button" class="quick-mat-chip" data-mat="art_paper">Art Paper</button>
         </div>
       </div>
@@ -1481,11 +1483,11 @@
           <button type="button" class="btn-vip-mat" data-mat="titanium" style="padding:8px 4px; border-radius:8px; border:1px solid #69737d; background:#20252b; color:#f4f7fa; font-size:0.72rem; cursor:pointer; text-align:center;">
             <b>Titanium</b><br><span style="font-size:0.62rem; color:#b9f2ff;">Dark Metal</span>
           </button>
-          <button type="button" class="btn-vip-mat" data-mat="silver" style="padding:8px 4px; border-radius:8px; border:1px solid #94a3b8; background:#e2e8f0; color:#0f172a; font-size:0.72rem; cursor:pointer; text-align:center;">
-            <b>Silver</b><br><span style="font-size:0.62rem; color:#475569;">Bạc Ánh Kim</span>
+          <button type="button" class="btn-vip-mat" data-mat="brushed_steel" style="padding:8px 4px; border-radius:8px; border:1px solid #94a3b8; background:#e2e8f0; color:#0f172a; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Inox Xước</b><br><span style="font-size:0.62rem; color:#475569;">Brushed Steel</span>
           </button>
-          <button type="button" class="btn-vip-mat" data-mat="frost" style="padding:8px 4px; border-radius:8px; border:1px solid #83e8ff; background:#264254; color:#eaf8ff; font-size:0.72rem; cursor:pointer; text-align:center;">
-            <b>Frosted</b><br><span style="font-size:0.62rem; color:#83e8ff;">Cyber Glass</span>
+          <button type="button" class="btn-vip-mat" data-mat="acrylic" style="padding:8px 4px; border-radius:8px; border:1px solid #38bdf8; background:rgba(56,189,248,0.2); color:#ffffff; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Acrylic</b><br><span style="font-size:0.62rem; color:#38bdf8;">Trong Suốt</span>
           </button>
           <button type="button" class="btn-vip-mat" data-mat="art_paper" style="padding:8px 4px; border-radius:8px; border:1px solid #dcd5c9; background:#f7f5f0; color:#22252a; font-size:0.72rem; cursor:pointer; text-align:center;">
             <b>Art Paper</b><br><span style="font-size:0.62rem; color:#c5a880;">Giấy Mỹ Thuật</span>
@@ -2226,7 +2228,7 @@ const BRAND_ICONS = {
     const vip = profile.vipTheme || { material: 'pvc', fontPair: 'precision', nameSize: 48, titleSize: 24 };
     const cardFaces = document.querySelectorAll('.card-face');
     cardFaces.forEach(f => {
-      f.classList.remove('mat-pvc', 'mat-titanium', 'mat-silver', 'mat-frost', 'mat-art_paper');
+      f.classList.remove('mat-pvc', 'mat-titanium', 'mat-brushed_steel', 'mat-acrylic', 'mat-art_paper');
       if (vip.material) f.classList.add(`mat-${vip.material}`);
       else f.classList.add('mat-pvc');
     });
@@ -2706,8 +2708,8 @@ const BRAND_ICONS = {
   const VIP_MAT_LABELS = {
     pvc: 'PVC',
     titanium: 'Titanium',
-    silver: 'Silver',
-    frost: 'Frosted',
+    brushed_steel: 'Inox Xước',
+    acrylic: 'Acrylic',
     art_paper: 'Art Paper'
   };
 
