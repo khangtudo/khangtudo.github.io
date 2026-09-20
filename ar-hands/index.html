@@ -377,7 +377,75 @@
     const isVertical = activeProfile ? (activeProfile.orientation === 'vertical') : false;
     const CARD_W = isVertical ? 0.35 : 0.58;
     const CARD_H = isVertical ? 0.58 : 0.35;
-    const geom = new THREE.BoxGeometry(CARD_W, CARD_H, 0.003);
+    const CARD_RADIUS = 0.024; // Bo cong góc 3.5mm chuẩn thẻ tín dụng ISO/IEC 7810 ID-1
+
+    // Tạo hình khối thẻ 3D bo góc tròn hoàn hảo (Rounded Card Geometry)
+    const cardShape = new THREE.Shape();
+    const sx = -CARD_W / 2;
+    const sy = -CARD_H / 2;
+    const sr = CARD_RADIUS;
+
+    cardShape.moveTo(sx + sr, sy);
+    cardShape.lineTo(sx + CARD_W - sr, sy);
+    cardShape.quadraticCurveTo(sx + CARD_W, sy, sx + CARD_W, sy + sr);
+    cardShape.lineTo(sx + CARD_W, sy + CARD_H - sr);
+    cardShape.quadraticCurveTo(sx + CARD_W, sy + CARD_H, sx + CARD_W - sr, sy + CARD_H);
+    cardShape.lineTo(sx + sr, sy + CARD_H);
+    cardShape.quadraticCurveTo(sx, sy + CARD_H, sx, sy + CARD_H - sr);
+    cardShape.lineTo(sx, sy + sr);
+    cardShape.quadraticCurveTo(sx, sy, sx + sr, sy);
+
+    const geom = new THREE.ExtrudeGeometry(cardShape, {
+      depth: 0.003,
+      bevelEnabled: true,
+      bevelSegments: 2,
+      steps: 1,
+      bevelSize: 0.0006,
+      bevelThickness: 0.0006,
+      curveSegments: 16
+    });
+    geom.center(); // Căn giữa tâm tọa độ
+
+    // Căn chỉnh UV chuẩn xác cho mặt trước & mặt sau của ExtrudeGeometry bo tròn
+    const posAttr = geom.attributes.position;
+    const uvAttr = geom.attributes.uv;
+
+    // UV bounds từ texture generator
+    const uMin = isVertical ? (20 / 1024) : (82 / 1024);
+    const uMax = isVertical ? (500 / 1024) : (942 / 1024);
+    const vFrontTop = isVertical ? ((1024 - 115) / 1024) : 1.0;
+    const vFrontBottom = isVertical ? ((1024 - 909) / 1024) : (504 / 1024);
+
+    const uBackMin = isVertical ? (524 / 1024) : (82 / 1024);
+    const uBackMax = isVertical ? (1004 / 1024) : (942 / 1024);
+    const vBackTop = isVertical ? ((1024 - 115) / 1024) : (520 / 1024);
+    const vBackBottom = isVertical ? ((1024 - 909) / 1024) : 0.0;
+
+    for (let i = 0; i < posAttr.count; i++) {
+      const px = posAttr.getX(i);
+      const py = posAttr.getY(i);
+      const pz = posAttr.getZ(i);
+
+      // Chuẩn hóa vị trí X và Y về dải 0.0 .. 1.0
+      const normX = (px + CARD_W / 2) / CARD_W;
+      const normY = (py + CARD_H / 2) / CARD_H;
+
+      if (pz > 0.0005) {
+        // Mặt trước (Front +Z): Ánh xạ vào nửa trên (hoặc bên trái)
+        const u = uMin + normX * (uMax - uMin);
+        const v = vFrontBottom + normY * (vFrontTop - vFrontBottom);
+        uvAttr.setXY(i, u, v);
+      } else if (pz < -0.0005) {
+        // Mặt sau (Back -Z): Ánh xạ vào nửa dưới (hoặc bên phải), lật ngược X để đọc xuôi
+        const u = uBackMin + (1 - normX) * (uBackMax - uBackMin);
+        const v = vBackBottom + normY * (vBackTop - vBackBottom);
+        uvAttr.setXY(i, u, v);
+      } else {
+        // Cạnh viền bo tròn: dùng màu accent edge
+        uvAttr.setXY(i, 0.5, 0.5);
+      }
+    }
+    uvAttr.needsUpdate = true;
 
     // Create dynamic or fallback card texture
     let cardTexture;
@@ -413,77 +481,16 @@
     const isTransparentMat = Boolean(pbr.transparent);
     const opacityVal = pbr.opacity || 1.0;
 
-    // Custom UV for Front (Top half or Left) and Back (Bottom half or Right)
-    const matFront = new THREE.MeshStandardMaterial({
+    // Material cho hình học thẻ 3D bo góc tròn (ExtrudeGeometry sử dụng material đơn hoặc MeshStandardMaterial)
+    const cardMaterial = new THREE.MeshStandardMaterial({
       map: cardTexture,
       roughness: roughnessVal,
       metalness: metalnessVal,
       transparent: isTransparentMat,
       opacity: opacityVal
     });
-    const matBack = new THREE.MeshStandardMaterial({
-      map: cardTexture,
-      roughness: roughnessVal,
-      metalness: metalnessVal,
-      transparent: isTransparentMat,
-      opacity: opacityVal
-    });
-    const matEdge = new THREE.MeshStandardMaterial({
-      color: accentHex,
-      roughness: isTransparentMat ? 0.05 : 0.2,
-      metalness: isTransparentMat ? 0.1 : 0.6,
-      transparent: isTransparentMat,
-      opacity: opacityVal
-    });
 
-    // Materials: +X, -X, +Y, -Y, +Z (Front), -Z (Back)
-    const materials = [
-      matEdge, matEdge, matEdge, matEdge,
-      matFront, matBack
-    ];
-
-    // Adjust UV coordinates for BoxGeometry face 4 (front) & face 5 (back)
-    const uvAttr = geom.attributes.uv;
-    if (!isVertical) {
-      // Horizontal UV: X: 82..942, Front Y: 0..520, Back Y: 504..1024
-      const uMin = 82 / 1024;
-      const uMax = 942 / 1024;
-      const vFrontTop = 1.0;
-      const vFrontBottom = 504 / 1024;
-
-      uvAttr.setXY(16, uMin, vFrontTop);
-      uvAttr.setXY(17, uMax, vFrontTop);
-      uvAttr.setXY(18, uMin, vFrontBottom);
-      uvAttr.setXY(19, uMax, vFrontBottom);
-
-      const vBackTop = 520 / 1024;
-      const vBackBottom = 0.0;
-      uvAttr.setXY(20, uMin, vBackTop);
-      uvAttr.setXY(21, uMax, vBackTop);
-      uvAttr.setXY(22, uMin, vBackBottom);
-      uvAttr.setXY(23, uMax, vBackBottom);
-    } else {
-      // Vertical UV:
-      // Front (Left):  X: 20..500, Y: 115..909
-      // Back (Right):  X: 524..1004, Y: 115..909
-      const uFrontMin = 20 / 1024, uFrontMax = 500 / 1024;
-      const uBackMin = 524 / 1024, uBackMax = 1004 / 1024;
-      const vTop = (1024 - 115) / 1024;    // 0.8877
-      const vBottom = (1024 - 909) / 1024; // 0.1123
-
-      uvAttr.setXY(16, uFrontMin, vTop);
-      uvAttr.setXY(17, uFrontMax, vTop);
-      uvAttr.setXY(18, uFrontMin, vBottom);
-      uvAttr.setXY(19, uFrontMax, vBottom);
-
-      uvAttr.setXY(20, uBackMin, vTop);
-      uvAttr.setXY(21, uBackMax, vTop);
-      uvAttr.setXY(22, uBackMin, vBottom);
-      uvAttr.setXY(23, uBackMax, vBottom);
-    }
-    uvAttr.needsUpdate = true;
-
-    const cardMesh = new THREE.Mesh(geom, materials);
+    const cardMesh = new THREE.Mesh(geom, cardMaterial);
     cardGroup.add(cardMesh);
 
     // Expose for verification and inspection
