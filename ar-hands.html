@@ -710,6 +710,11 @@
     let cameraFeed = null;
 
     function initCamera(facing) {
+      // Check Secure Context & MediaDevices support (required for Camera on iOS/Android)
+      if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        return Promise.reject(new Error('Yêu cầu HTTPS để truy cập Camera. Vui lòng mở trang qua https://'));
+      }
+
       if (cameraFeed) {
         try { cameraFeed.stop(); } catch(e){}
       }
@@ -742,11 +747,18 @@
       loadingOverlay.style.opacity = '0';
       setTimeout(() => loadingOverlay.style.display = 'none', 400);
 
-      // Start Three.js animation loop
-      animate();
+      if (!isSimulating) {
+        animate();
+      }
 
-      txtGestureTitle.textContent = 'Chế Độ Thử Nghiệm Chuột / Cảm Ứng';
-      txtGestureDesc.textContent = 'Rê chuột = Bàn tay di chuyển | Nhấn giữ chuột = Kẹp ngón tay (Pinch) | Thả chuột = Xòe bàn tay';
+      const isHttps = window.location.protocol === 'https:';
+      if (!isHttps && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        txtGestureTitle.textContent = 'Cần mở bằng HTTPS để bật Camera';
+        txtGestureDesc.textContent = 'Trình duyệt chặn Camera khi dùng http:// (IP). Vui lòng mở qua HTTPS (ví dụ https://inid.me hoặc Tunnel HTTPS).';
+      } else {
+        txtGestureTitle.textContent = 'Chế Độ Thử Nghiệm Chuột / Cảm Ứng';
+        txtGestureDesc.textContent = 'Rê chuột/chạm = Di chuyển | Nhấn giữ/chạm = Kẹp ngón tay | Thả = Xòe bàn tay';
+      }
       txtCardState.textContent = 'MÔ PHỎNG TAY';
       txtCardState.style.color = '#38bdf8';
 
