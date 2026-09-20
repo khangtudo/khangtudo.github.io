@@ -1624,21 +1624,43 @@
 
       <!-- Mobile Segmented Tabs (< 640px) -->
       <div class="donate-mobile-tabs" style="display:none; margin-bottom:14px; background:#f1f5f9; padding:3px; border-radius:10px; gap:4px;">
-        <button type="button" class="btn-donate-tab active" data-tab="mbbank" style="flex:1; padding:8px 4px; border:none; border-radius:8px; background:#2563eb; color:#fff; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s;">
-          🏦 MB Bank
+        <button type="button" class="btn-donate-tab active" data-tab="kofi" style="flex:1; padding:8px 4px; border:none; border-radius:8px; background:#b45309; color:#fff; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s;">
+          ☕ Ko-fi
         </button>
         <button type="button" class="btn-donate-tab" data-tab="momo" style="flex:1; padding:8px 4px; border:none; border-radius:8px; background:transparent; color:#64748b; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s;">
           📱 Momo
         </button>
-        <button type="button" class="btn-donate-tab" data-tab="kofi" style="flex:1; padding:8px 4px; border:none; border-radius:8px; background:transparent; color:#64748b; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s;">
-          ☕ Ko-fi
+        <button type="button" class="btn-donate-tab" data-tab="mbbank" style="flex:1; padding:8px 4px; border:none; border-radius:8px; background:transparent; color:#64748b; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s;">
+          🏦 MB Bank
         </button>
       </div>
 
       <!-- Mobile Active QR View (< 640px) -->
       <div class="donate-mobile-content" style="display:none; margin-bottom:16px;">
-        <!-- Mobile MB Bank Tab -->
-        <div id="mobTabMbBank" class="mob-donate-pane active" style="text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px 12px;">
+        <!-- 1. Mobile Ko-fi Tab -->
+        <div id="mobTabKofi" class="mob-donate-pane active" style="text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px 12px;">
+          <div style="background:#fff; border-radius:10px; padding:12px; display:inline-block; box-shadow:0 2px 8px rgba(0,0,0,0.06); max-width:240px; width:100%;">
+            <img src="/assets/donate/kofi-qr.png" alt="Ko-fi QR" style="width:100%; height:auto; display:block; margin:0 auto; border-radius:6px;">
+          </div>
+          <div style="margin-top:10px;">
+            <div style="font-weight:800; font-size:1.05rem; color:#b45309;">Ko-fi</div>
+            <div style="font-size:0.75rem; color:#64748b; margin-top:3px;">Ủng hộ quốc tế / Thẻ tín dụng</div>
+          </div>
+        </div>
+
+        <!-- 2. Mobile Momo Tab -->
+        <div id="mobTabMomo" class="mob-donate-pane" style="display:none; text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px 12px;">
+          <div style="background:#fff; border-radius:10px; padding:12px; display:inline-block; box-shadow:0 2px 8px rgba(0,0,0,0.06); max-width:240px; width:100%;">
+            <img src="/assets/donate/momo-qr.png" alt="Momo QR" style="width:100%; height:auto; display:block; margin:0 auto; border-radius:6px;">
+          </div>
+          <div style="margin-top:10px;">
+            <div style="font-weight:800; font-size:1.05rem; color:#d946ef;">Momo</div>
+            <div style="font-size:0.75rem; color:#64748b; margin-top:3px;">Ví điện tử Momo</div>
+          </div>
+        </div>
+
+        <!-- 3. Mobile MB Bank Tab -->
+        <div id="mobTabMbBank" class="mob-donate-pane" style="display:none; text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px 12px;">
           <div style="background:#fff; border-radius:10px; padding:8px; display:inline-block; box-shadow:0 2px 8px rgba(0,0,0,0.06); max-width:260px; width:100%;">
             <img src="/assets/donate/mbbank-vietqr.png" alt="MB Bank VietQR" style="width:100%; height:auto; display:block; margin:0 auto; border-radius:6px;">
           </div>
@@ -1651,47 +1673,29 @@
             <div style="font-size:0.75rem; font-weight:600; color:#64748b; margin-top:4px;">Phan Manh Khang</div>
           </div>
         </div>
-
-        <!-- Mobile Momo Tab -->
-        <div id="mobTabMomo" class="mob-donate-pane" style="display:none; text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px 12px;">
-          <div style="background:#fff; border-radius:10px; padding:12px; display:inline-block; box-shadow:0 2px 8px rgba(0,0,0,0.06); max-width:240px; width:100%;">
-            <img src="/assets/donate/momo-qr.png" alt="Momo QR" style="width:100%; height:auto; display:block; margin:0 auto; border-radius:6px;">
-          </div>
-          <div style="margin-top:10px;">
-            <div style="font-weight:800; font-size:1.05rem; color:#d946ef;">Momo</div>
-          </div>
-        </div>
-
-        <!-- Mobile Ko-fi Tab -->
-        <div id="mobTabKofi" class="mob-donate-pane" style="display:none; text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px 12px;">
-          <div style="background:#fff; border-radius:10px; padding:12px; display:inline-block; box-shadow:0 2px 8px rgba(0,0,0,0.06); max-width:240px; width:100%;">
-            <img src="/assets/donate/kofi-qr.png" alt="Ko-fi QR" style="width:100%; height:auto; display:block; margin:0 auto; border-radius:6px;">
-          </div>
-          <div style="margin-top:10px;">
-            <div style="font-weight:800; font-size:1.05rem; color:#b45309;">Ko-fi</div>
-          </div>
-        </div>
       </div>
 
       <!-- Desktop 3-Column Grid (>= 640px) -->
       <div class="donate-desktop-grid" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin:16px 0;">
-        <!-- Ko-fi Card -->
+        <!-- 1. Ko-fi Card -->
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:14px 10px; text-align:center; display:flex; flex-direction:column; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
           <div style="width:100%; max-width:160px; background:#fff; border-radius:8px; padding:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); box-sizing:border-box;">
             <img src="/assets/donate/kofi-qr.png" alt="Ko-fi QR" style="width:100%; height:auto; display:block; border-radius:4px;">
           </div>
           <div style="margin-top:12px; font-weight:800; font-size:0.95rem; color:#b45309;">Ko-fi</div>
+          <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">Ủng hộ quốc tế</div>
         </div>
 
-        <!-- Momo Card -->
+        <!-- 2. Momo Card -->
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:14px 10px; text-align:center; display:flex; flex-direction:column; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
           <div style="width:100%; max-width:160px; background:#fff; border-radius:8px; padding:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); box-sizing:border-box;">
             <img src="/assets/donate/momo-qr.png" alt="Momo QR" style="width:100%; height:auto; display:block; border-radius:4px;">
           </div>
           <div style="margin-top:12px; font-weight:800; font-size:0.95rem; color:#d946ef;">Momo</div>
+          <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">Ví điện tử Momo</div>
         </div>
 
-        <!-- MB Bank VietQR Card -->
+        <!-- 3. MB Bank VietQR Card -->
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:14px 10px; text-align:center; display:flex; flex-direction:column; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
           <div style="width:100%; max-width:160px; background:#fff; border-radius:8px; padding:6px; box-shadow:0 1px 4px rgba(0,0,0,0.06); box-sizing:border-box;">
             <img src="/assets/donate/mbbank-vietqr.png" alt="MB Bank VietQR" style="width:100%; height:auto; display:block; border-radius:4px;">
@@ -2408,7 +2412,7 @@ const BRAND_ICONS = {
         const isCurrent = (t === tab);
         t.classList.toggle('active', isCurrent);
         if (isCurrent) {
-          t.style.background = (target === 'mbbank') ? '#2563eb' : (target === 'momo' ? '#d946ef' : '#b45309');
+          t.style.background = (target === 'kofi') ? '#b45309' : (target === 'momo' ? '#d946ef' : '#2563eb');
           t.style.color = '#fff';
         } else {
           t.style.background = 'transparent';
