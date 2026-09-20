@@ -410,19 +410,31 @@
     const roughnessVal = (typeof pbr.roughness === 'number') ? pbr.roughness : 0.3;
     const metalnessVal = (typeof pbr.metalness === 'number') ? pbr.metalness : 0.1;
     const accentHex = pbr.accent ? parseInt(pbr.accent.replace('#', '0x'), 16) : 0x38bdf8;
+    const isTransparentMat = Boolean(pbr.transparent);
+    const opacityVal = pbr.opacity || 1.0;
 
     // Custom UV for Front (Top half or Left) and Back (Bottom half or Right)
     const matFront = new THREE.MeshStandardMaterial({
       map: cardTexture,
       roughness: roughnessVal,
-      metalness: metalnessVal
+      metalness: metalnessVal,
+      transparent: isTransparentMat,
+      opacity: opacityVal
     });
     const matBack = new THREE.MeshStandardMaterial({
       map: cardTexture,
       roughness: roughnessVal,
-      metalness: metalnessVal
+      metalness: metalnessVal,
+      transparent: isTransparentMat,
+      opacity: opacityVal
     });
-    const matEdge = new THREE.MeshStandardMaterial({ color: accentHex, roughness: 0.2, metalness: 0.6 });
+    const matEdge = new THREE.MeshStandardMaterial({
+      color: accentHex,
+      roughness: isTransparentMat ? 0.05 : 0.2,
+      metalness: isTransparentMat ? 0.1 : 0.6,
+      transparent: isTransparentMat,
+      opacity: opacityVal
+    });
 
     // Materials: +X, -X, +Y, -Y, +Z (Front), -Z (Back)
     const materials = [

@@ -11,11 +11,13 @@
 //   * Royal Leather (M .04 / R .79)
 
 export const VIP_MATERIALS = {
-  titanium: { baseColor:'#20252B', shadow:'#0B0E12', highlight:'#69737D', accent:'#B9F2FF', text:'#F4F7FA', metalness:.88, roughness:.27, specularStrength:.72, normalStrength:.10, textureScale:6, fontPair:'precision' },
-  carbon:   { baseColor:'#121417', shadow:'#050607', highlight:'#313941', accent:'#56E6D2', text:'#F6F8FA', metalness:.36, roughness:.41, specularStrength:.46, normalStrength:.34, textureScale:32, fontPair:'future' },
-  gold:     { baseColor:'#B88935', shadow:'#4D3212', highlight:'#F7E5AD', accent:'#FFF0BE', text:'#FFF4D2', metalness:.96, roughness:.19, specularStrength:.80, normalStrength:.08, textureScale:3, fontPair:'editorial' },
-  frost:    { baseColor:'#BCD7EA', shadow:'#264254', highlight:'#EAF8FF', accent:'#83E8FF', text:'#F4FCFF', metalness:.08, roughness:.72, specularStrength:.58, normalStrength:.04, textureScale:72, fontPair:'future' },
-  leather:  { baseColor:'#32131E', shadow:'#12070B', highlight:'#784052', accent:'#D8AF62', text:'#FFF7EB', metalness:.04, roughness:.79, specularStrength:.28, normalStrength:.46, textureScale:8, fontPair:'regal' },
+  titanium: { baseColor:'#20252B', shadow:'#0B0E12', highlight:'#69737D', accent:'#B9F2FF', text:'#F4F7FA', metalness:.88, roughness:.27, specularStrength:.72, normalStrength:.10, textureScale:6, fontPair:'precision', name:'Titanium' },
+  carbon:   { baseColor:'#121417', shadow:'#050607', highlight:'#313941', accent:'#56E6D2', text:'#F6F8FA', metalness:.36, roughness:.41, specularStrength:.46, normalStrength:.34, textureScale:32, fontPair:'future', name:'Carbon' },
+  gold:     { baseColor:'#B88935', shadow:'#4D3212', highlight:'#F7E5AD', accent:'#FFF0BE', text:'#FFF4D2', metalness:.96, roughness:.19, specularStrength:.80, normalStrength:.08, textureScale:3, fontPair:'editorial', name:'Gold Foil' },
+  frost:    { baseColor:'#BCD7EA', shadow:'#264254', highlight:'#EAF8FF', accent:'#83E8FF', text:'#F4FCFF', metalness:.08, roughness:.72, specularStrength:.58, normalStrength:.04, textureScale:72, fontPair:'future', name:'Frosted' },
+  leather:  { baseColor:'#32131E', shadow:'#12070B', highlight:'#784052', accent:'#D8AF62', text:'#FFF7EB', metalness:.04, roughness:.79, specularStrength:.28, normalStrength:.46, textureScale:8, fontPair:'regal', name:'Leather' },
+  paper:    { baseColor:'#F7F5F0', shadow:'#DCD5C9', highlight:'#FFFFFF', accent:'#C5A880', text:'#22252A', metalness:.02, roughness:.88, specularStrength:.18, normalStrength:.55, textureScale:12, fontPair:'editorial', name:'Giấy Mỹ Thuật' },
+  acrylic:  { baseColor:'#0C1929', shadow:'#040B14', highlight:'#38BDF8', accent:'#38BDF8', text:'#FFFFFF', metalness:.15, roughness:.12, specularStrength:.90, normalStrength:.02, textureScale:4, fontPair:'future', name:'Acrylic Trong', opacity: 0.82, transparent: true },
 };
 
 /**
@@ -360,6 +362,38 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       pCtx.beginPath(); pCtx.arc(6, 6, 4, 0, Math.PI * 2); pCtx.fill();
       ctx.fillStyle = ctx.createPattern(pCvs, 'repeat');
       ctx.fill();
+    } else if (matKey === 'paper') {
+      // Giấy Mỹ Thuật: Vân sợi bông cotton & kết cấu hạt sần dập nổi tinh tế
+      const pCvs = document.createElement('canvas');
+      pCvs.width = 16; pCvs.height = 16;
+      const pCtx = pCvs.getContext('2d');
+      pCtx.fillStyle = '#F7F5F0';
+      pCtx.fillRect(0, 0, 16, 16);
+      // Hạt sợi vi mô ngẫu nhiên
+      pCtx.fillStyle = 'rgba(180, 165, 145, 0.18)';
+      pCtx.fillRect(2, 3, 2, 1);
+      pCtx.fillRect(9, 7, 3, 1);
+      pCtx.fillRect(5, 12, 2, 1);
+      pCtx.fillRect(13, 2, 1, 2);
+      pCtx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      pCtx.fillRect(4, 5, 2, 2);
+      pCtx.fillRect(11, 11, 2, 2);
+      ctx.fillStyle = ctx.createPattern(pCvs, 'repeat');
+      ctx.fill();
+    } else if (matKey === 'acrylic') {
+      // Acrylic / PVC trong suốt: Dải viền khúc xạ ánh sáng (Fresnel bevel gloss)
+      const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+      grad.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
+      grad.addColorStop(0.3, 'rgba(12, 25, 41, 0.7)');
+      grad.addColorStop(0.7, 'rgba(4, 11, 20, 0.85)');
+      grad.addColorStop(1, 'rgba(56, 189, 248, 0.35)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Hiệu ứng viền kính vát cạnh khúc xạ ánh sáng
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
 
     // 3. Contrast Scrim behind text region for accessibility

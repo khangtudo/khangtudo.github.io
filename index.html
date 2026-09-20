@@ -418,6 +418,21 @@
       border-color: #D8AF62;
       box-shadow: 0 18px 40px -10px rgba(0,0,0,0.9), inset 0 0 0 3px rgba(216,175,98,0.3);
     }
+    .card-face.mat-paper {
+      background: #F7F5F0;
+      color: #22252A !important;
+      border-color: #DCD5C9;
+      box-shadow: 0 16px 36px -8px rgba(0,0,0,0.6), inset 0 0 40px rgba(197,168,128,0.15);
+    }
+    .card-face.mat-paper * {
+      color: #22252A !important;
+    }
+    .card-face.mat-acrylic {
+      background: linear-gradient(135deg, rgba(56,189,248,0.22) 0%, rgba(12,25,41,0.65) 40%, rgba(4,11,20,0.8) 100%) !important;
+      border: 1.5px solid rgba(255,255,255,0.45) !important;
+      backdrop-filter: blur(28px) saturate(180%) !important;
+      box-shadow: 0 20px 50px -10px rgba(0,0,0,0.85), inset 0 1px 2px rgba(255,255,255,0.6), 0 0 25px rgba(56,189,248,0.2) !important;
+    }
 
     /* VIP Luxury Text Effects */
     .vip-fx-gold {
@@ -595,7 +610,7 @@
     .company-stack .slogan { font-size: 0.8rem; color: var(--primary); font-style: italic; }
     .company-stack .address { font-size: 0.76rem; color: var(--muted); max-width: 260px; line-height: 1.4; }
 
-    /* Corner Flip Hint Badge (i) - Single fixed badge at visual bottom-right corner */
+    /* Corner Flip Hint Badge (i) & Quick Material Badge (m) */
     .card-flip-info-badge {
       position: absolute;
       bottom: clamp(10px, 2vh, 16px);
@@ -644,6 +659,82 @@
     }
     .card-flip-info-badge:hover::after {
       opacity: 1;
+    }
+
+    /* Quick Material Button (r / m) */
+    .card-mat-quick-badge {
+      position: absolute;
+      bottom: clamp(10px, 2vh, 16px);
+      left: clamp(10px, 2.5vw, 16px);
+      height: 26px;
+      padding: 0 8px;
+      border-radius: 99px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(216, 175, 98, 0.55);
+      color: #fff0be;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      z-index: 35;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      user-select: none;
+    }
+    .card-mat-quick-badge:hover {
+      background: rgba(216, 175, 98, 0.25);
+      border-color: #f7e5ad;
+      transform: scale(1.08);
+      box-shadow: 0 0 14px rgba(216, 175, 98, 0.6);
+    }
+
+    /* Quick Material Floating Bar */
+    .quick-mat-drawer {
+      position: absolute;
+      bottom: calc(clamp(10px, 2vh, 16px) + 34px);
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(216, 175, 98, 0.4);
+      border-radius: 12px;
+      padding: 6px;
+      display: flex;
+      gap: 6px;
+      z-index: 40;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 16px 36px rgba(0,0,0,0.85);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      max-width: 92vw;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .quick-mat-drawer.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .quick-mat-chip {
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(30, 41, 59, 0.8);
+      color: #e2e8f0;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .quick-mat-chip:hover, .quick-mat-chip.active {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
     }
 
     /* 3. Action Dock: 3 Buttons */
@@ -1224,6 +1315,22 @@
 
         <!-- Single invariant Corner Flip Info Badge (i) - exactly identical position on both front and back -->
         <button type="button" class="card-flip-info-badge" id="btnCornerFlip" aria-label="Chạm để lật thẻ 3D" title="Chạm để lật thẻ 🔄">i</button>
+
+        <!-- Quick Material Toggle Badge (r / 💎) -->
+        <button type="button" class="card-mat-quick-badge" id="btnQuickMatToggle" aria-label="Đổi chất liệu thẻ nhanh" title="Đổi chất liệu bề mặt thẻ">
+          <span>💎</span> <span id="lblCurrentMat">Titanium</span>
+        </button>
+
+        <!-- Quick Material Floating Bar -->
+        <div class="quick-mat-drawer" id="quickMatDrawer" role="toolbar" aria-label="Danh sách chất liệu VIP Pro">
+          <button type="button" class="quick-mat-chip active" data-mat="titanium">Titanium</button>
+          <button type="button" class="quick-mat-chip" data-mat="carbon">Carbon</button>
+          <button type="button" class="quick-mat-chip" data-mat="gold">Gold Foil</button>
+          <button type="button" class="quick-mat-chip" data-mat="frost">Frosted</button>
+          <button type="button" class="quick-mat-chip" data-mat="leather">Leather</button>
+          <button type="button" class="quick-mat-chip" data-mat="paper">Giấy Mỹ Thuật</button>
+          <button type="button" class="quick-mat-chip" data-mat="acrylic">Acrylic Trong</button>
+        </div>
       </div>
     </main>
 
@@ -1395,6 +1502,12 @@
           </button>
           <button type="button" class="btn-vip-mat" data-mat="leather" style="padding:8px 4px; border-radius:8px; border:1px solid #784052; background:#32131e; color:#fff7eb; font-size:0.72rem; cursor:pointer; text-align:center;">
             <b>Leather</b><br><span style="font-size:0.62rem; color:#d8af62;">Royal Grain</span>
+          </button>
+          <button type="button" class="btn-vip-mat" data-mat="paper" style="padding:8px 4px; border-radius:8px; border:1px solid #dcd5c9; background:#f7f5f0; color:#22252a; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Paper</b><br><span style="font-size:0.62rem; color:#c5a880;">Mỹ Thuật</span>
+          </button>
+          <button type="button" class="btn-vip-mat" data-mat="acrylic" style="padding:8px 4px; border-radius:8px; border:1px solid #38bdf8; background:rgba(56,189,248,0.2); color:#ffffff; font-size:0.72rem; cursor:pointer; text-align:center;">
+            <b>Acrylic</b><br><span style="font-size:0.62rem; color:#38bdf8;">Trong Suốt</span>
           </button>
         </div>
 
@@ -1939,7 +2052,7 @@ const BRAND_ICONS = {
     const vip = profile.vipTheme || { material: 'titanium', fontPair: 'precision', nameSize: 48, titleSize: 24 };
     const cardFaces = document.querySelectorAll('.card-face');
     cardFaces.forEach(f => {
-      f.classList.remove('mat-titanium', 'mat-carbon', 'mat-gold', 'mat-frost', 'mat-leather');
+      f.classList.remove('mat-titanium', 'mat-carbon', 'mat-gold', 'mat-frost', 'mat-leather', 'mat-paper', 'mat-acrylic');
       if (vip.material) f.classList.add(`mat-${vip.material}`);
     });
 
@@ -2315,8 +2428,26 @@ const BRAND_ICONS = {
 
   // VIP Customizer event wiring
   let currentVipMaterial = 'titanium';
-  function setVipMaterial(mat) {
+  const VIP_MAT_LABELS = {
+    titanium: 'Titanium',
+    carbon: 'Carbon',
+    gold: 'Gold Foil',
+    frost: 'Frosted',
+    leather: 'Leather',
+    paper: 'Giấy Mỹ Thuật',
+    acrylic: 'Acrylic Trong'
+  };
+
+  function setVipMaterial(mat, syncRender = false) {
     currentVipMaterial = mat;
+    if (!profile.vipTheme) profile.vipTheme = {};
+    profile.vipTheme.material = mat;
+
+    // Cập nhật nhãn nút quick badge
+    const lblCurrentMat = document.getElementById('lblCurrentMat');
+    if (lblCurrentMat) lblCurrentMat.textContent = VIP_MAT_LABELS[mat] || mat;
+
+    // Cập nhật các nút trong bảng form
     document.querySelectorAll('.btn-vip-mat').forEach(b => {
       const isActive = (b.getAttribute('data-mat') === mat);
       b.classList.toggle('active', isActive);
@@ -2328,7 +2459,45 @@ const BRAND_ICONS = {
         b.style.boxShadow = '';
       }
     });
+
+    // Cập nhật các nút trong Quick Material Drawer
+    document.querySelectorAll('.quick-mat-chip').forEach(chip => {
+      chip.classList.toggle('active', chip.getAttribute('data-mat') === mat);
+    });
+
+    if (syncRender) {
+      renderCard();
+      saveBuilderLayoutToStorage();
+    }
   }
+
+  // Quick Material Badge & Floating Drawer Logic
+  const btnQuickMatToggle = document.getElementById('btnQuickMatToggle');
+  const quickMatDrawer = document.getElementById('quickMatDrawer');
+  if (btnQuickMatToggle && quickMatDrawer) {
+    btnQuickMatToggle.onclick = (e) => {
+      e.stopPropagation();
+      quickMatDrawer.classList.toggle('active');
+    };
+
+    document.querySelectorAll('.quick-mat-chip').forEach(chip => {
+      chip.onclick = (e) => {
+        e.stopPropagation();
+        const chosenMat = chip.getAttribute('data-mat');
+        setVipMaterial(chosenMat, true);
+        showToast(`Đã đổi chất liệu: ${VIP_MAT_LABELS[chosenMat] || chosenMat}`);
+        quickMatDrawer.classList.remove('active');
+      };
+    });
+
+    // Đóng drawer khi click ra ngoài
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#quickMatDrawer') && !e.target.closest('#btnQuickMatToggle')) {
+        quickMatDrawer.classList.remove('active');
+      }
+    });
+  }
+
   document.querySelectorAll('.btn-vip-mat').forEach(b => {
     b.onclick = () => {
       setVipMaterial(b.getAttribute('data-mat'));
