@@ -229,7 +229,7 @@
   </div>
 
   <script type="module">
-    import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js?v=1789999147390';
+    import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js?v=1790002749514';
 
     // Parse active profile from Hash or LocalStorage
     function getActiveProfile() {
@@ -357,13 +357,16 @@
     keyLight.position.set(1.8, 3.5, 3.0);
     scene.add(keyLight);
 
-    // Fill Light (Ánh sáng xanh cyan công nghệ từ phía đối diện)
-    const fillLight = new THREE.DirectionalLight(0x7dd3fc, 0.8);
+    // Fill Light (Ánh sáng bổ trợ: trung tính cho chất liệu giấy ngà / nền sáng để không bị ám xanh phản quang)
+    const fillLightColor = (matKey === 'art_paper' || matKey === 'paper') ? 0xfffbf5 : 0x7dd3fc;
+    const fillLightIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.4 : 0.8;
+    const fillLight = new THREE.DirectionalLight(fillLightColor, fillLightIntensity);
     fillLight.position.set(-2.5, -1.0, 2.0);
     scene.add(fillLight);
 
-    // Rim / Glint Light (Ánh sáng quét xiên góc từ trên cao, kích hoạt dải phản quang khi xoay 30-60 độ)
-    const glintLight = new THREE.DirectionalLight(0xffecd2, 1.2);
+    // Rim / Glint Light (Ánh sáng quét xiên góc từ trên cao)
+    const glintIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.6 : 1.2;
+    const glintLight = new THREE.DirectionalLight(0xffecd2, glintIntensity);
     glintLight.position.set(0.2, 4.0, 1.8);
     scene.add(glintLight);
 

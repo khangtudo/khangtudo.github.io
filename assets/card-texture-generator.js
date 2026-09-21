@@ -263,12 +263,12 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     NAME_COLOR = '#DC2626'; // Đỏ thương hiệu sang trọng, tương phản tuyệt đối trên giấy ngà
     TITLE_COLOR = '#0F172A'; // Đen than sắc nét
     ORG_COLOR = '#DC2626'; // Tên công ty màu đỏ đồng bộ
-    BORDER_COLOR = '#94A3B8'; // Viền xám thanh lịch, bỏ hoàn toàn màu xanh neon/cyan
-    TEXT_MUTED = '#475569'; // Thông tin phụ màu xám thanh lịch
-    CONTACT_TEXT_COLOR = '#475569'; // Toàn bộ thông tin liên hệ (Điện thoại, Email, Web, Địa chỉ) CÙNG MỘT MÀU XÁM ĐỒNG NHẤT
-    DIVIDER_COLOR = 'rgba(100, 116, 139, 0.35)'; // Đường kẻ xám
+    BORDER_COLOR = '#64748B'; // Viền xám trung tính, bỏ hoàn toàn màu xanh neon/cyan
+    TEXT_MUTED = '#1E293B'; // Thông tin phụ màu đen xám đậm rõ nét
+    CONTACT_TEXT_COLOR = '#0F172A'; // Toàn bộ thông tin liên hệ (Điện thoại, Email, Web, Địa chỉ) dùng màu ĐEN THAN #0F172A tương phản cực cao, tuyệt đối không bị mờ nhạt hay ám xanh
+    DIVIDER_COLOR = 'rgba(15, 23, 42, 0.25)'; // Đường kẻ đen mờ
     AVATAR_BG = '#F1F5F9'; // Nền avatar xám sáng sang trọng
-    AVATAR_BORDER = '#94A3B8'; // Viền avatar xám
+    AVATAR_BORDER = '#64748B'; // Viền avatar xám đậm
     AVATAR_TEXT = '#DC2626'; // Chữ cái viết tắt màu đỏ đồng bộ thương hiệu
     SLOGAN_COLOR = '#0F172A'; // Slogan màu đen than sắc nét, không còn màu xanh
   } else if (isLightBg) {
