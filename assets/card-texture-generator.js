@@ -13,9 +13,9 @@
 export const VIP_MATERIALS = {
   pvc:           { baseColor:'#0F172A', shadow:'#020617', highlight:'#38BDF8', accent:'#38BDF8', text:'#FFFFFF', metalness:.10, roughness:.22, specularStrength:.85, normalStrength:.05, textureScale:4, fontPair:'precision', name:'PVC' },
   titanium:      { baseColor:'#20252B', shadow:'#0B0E12', highlight:'#69737D', accent:'#B9F2FF', text:'#F4F7FA', metalness:.88, roughness:.27, specularStrength:.72, normalStrength:.10, textureScale:6, fontPair:'precision', name:'Titanium' },
-  brushed_steel: { baseColor:'#E2E8F0', shadow:'#64748B', highlight:'#FFFFFF', accent:'#38BDF8', text:'#0F172A', metalness:.95, roughness:.24, specularStrength:.92, normalStrength:.28, textureScale:6, fontPair:'precision', name:'Brushed Steel' },
+  brushed_steel: { baseColor:'#E2E8F0', shadow:'#64748B', highlight:'#FFFFFF', accent:'#0369A1', text:'#0F172A', metalness:.95, roughness:.24, specularStrength:.92, normalStrength:.28, textureScale:6, fontPair:'precision', name:'Brushed Steel' },
   acrylic:       { baseColor:'#0C1929', shadow:'#040B14', highlight:'#38BDF8', accent:'#38BDF8', text:'#FFFFFF', metalness:.15, roughness:.10, specularStrength:.92, normalStrength:.02, textureScale:4, fontPair:'future', name:'Acrylic', opacity: 0.82, transparent: true },
-  art_paper:     { baseColor:'#F7F5F0', shadow:'#DCD5C9', highlight:'#FFFFFF', accent:'#C5A880', text:'#22252A', metalness:.02, roughness:.88, specularStrength:.18, normalStrength:.55, textureScale:12, fontPair:'editorial', name:'Art Paper' },
+  art_paper:     { baseColor:'#F7F5F0', shadow:'#DCD5C9', highlight:'#FFFFFF', accent:'#0369A1', text:'#0F172A', metalness:.02, roughness:.88, specularStrength:.18, normalStrength:.55, textureScale:12, fontPair:'editorial', name:'Art Paper' },
   
   // Backward-compatible aliases để đảm bảo thẻ cũ không bao giờ bị crash
   silver:        { baseColor:'#E2E8F0', shadow:'#64748B', highlight:'#FFFFFF', accent:'#38BDF8', text:'#0F172A', metalness:.95, roughness:.24, specularStrength:.92, normalStrength:.28, textureScale:6, fontPair:'precision', name:'Brushed Steel' },
@@ -234,18 +234,15 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
   }
 
-  // ACCENT_COLOR: nếu nền sáng mà màu accent quá sáng (ví dụ #38BDF8 xanh ngọc nhạt hoặc #B9F2FF) thì chuyển sang xanh dương đậm #0284C7 / vàng đồng sậm #92400E để chữ chức danh/slogan không bị lóa trắng
+  // ACCENT_COLOR: với mọi chất liệu nền sáng (Inox Xước và Art Paper), thống nhất dùng màu Xanh Sapphire đậm #0369A1 tương tự Inox Xước
+  // để chữ chức danh, slogan, tagline luôn tương phản cực mạnh, không bao giờ bị màu vàng/vàng chanh lóa trên nền giấy
   let ACCENT_COLOR = vip.accentColor || matPreset.accent;
   if (isLightBg) {
-    if (matKey === 'art_paper' || matKey === 'paper') {
-      ACCENT_COLOR = '#854D0E'; // Nâu đồng sang trọng tương phản cao trên giấy mỹ thuật
-    } else {
-      ACCENT_COLOR = '#0369A1'; // Xanh sapphire đậm tương phản cao trên inox xước
-    }
+    ACCENT_COLOR = '#0369A1'; // Đồng nhất màu Xanh Sapphire đậm chuẩn nét của Inox Xước
   }
 
   // Dynamic secondary text color and divider color according to background luminance
-  const TEXT_MUTED = isLightBg ? '#334155' : '#94a3b8';
+  const TEXT_MUTED = isLightBg ? '#0F172A' : '#94a3b8';
   const CONTACT_TEXT_COLOR = isLightBg ? '#0F172A' : '#E2E8F0';
   const DIVIDER_COLOR = isLightBg ? 'rgba(15, 23, 42, 0.25)' : 'rgba(255, 255, 255, 0.15)';
 
@@ -945,14 +942,14 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     if (profile.tel && vCurY < safeBottom - 70) {
       ctx.fillStyle = TEXT_COLOR;
-      ctx.font = `bold 19px ${FONT_BODY}`;
+      ctx.font = `bold 20px ${FONT_BODY}`;
       ctx.textAlign = 'left';
       ctx.fillText(`📞  ${profile.tel}`, safeLeft, vCurY);
       vCurY += 40;
     }
     if (profile.email && vCurY < safeBottom - 70) {
       ctx.fillStyle = CONTACT_TEXT_COLOR;
-      ctx.font = `500 17px ${FONT_BODY}`;
+      ctx.font = `600 18px ${FONT_BODY}`;
       ctx.textAlign = 'left';
       ctx.fillText(`✉️  ${profile.email}`, safeLeft, vCurY);
       vCurY += 40;
@@ -960,14 +957,14 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
     if (displayUrl && vCurY < safeBottom - 70) {
       ctx.fillStyle = CONTACT_TEXT_COLOR;
-      ctx.font = `500 17px ${FONT_BODY}`;
+      ctx.font = `600 18px ${FONT_BODY}`;
       ctx.textAlign = 'left';
       ctx.fillText(`🌐  ${displayUrl}`, safeLeft, vCurY);
       vCurY += 40;
     }
     if (profile.adr && vCurY < safeBottom - 50) {
       ctx.fillStyle = TEXT_MUTED;
-      ctx.font = `15px ${FONT_BODY}`;
+      ctx.font = `16px ${FONT_BODY}`;
       ctx.textAlign = 'left';
       ctx.fillText(`📍`, safeLeft, vCurY);
 
@@ -977,10 +974,10 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         y: vCurY,
         maxWidth: vContactMaxW - 28,
         maxHeight: 46,
-        baseFontSize: 15,
-        minFontSize: 12,
+        baseFontSize: 16,
+        minFontSize: 13,
         fontFamily: FONT_BODY,
-        fontWeight: '500',
+        fontWeight: '600',
         color: TEXT_MUTED,
         maxLines: 2,
         lineHeightRatio: 1.15
