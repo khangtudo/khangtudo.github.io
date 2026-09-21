@@ -234,6 +234,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
   }
 
+  // ACCENT_COLOR: với các chất liệu khác
   let ACCENT_COLOR = vip.accentColor || matPreset.accent || '#38BDF8';
   if (isLightBg) {
     ACCENT_COLOR = '#0369A1';
@@ -245,7 +246,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
   let DIVIDER_COLOR = isLightBg ? 'rgba(15, 23, 42, 0.25)' : 'rgba(255, 255, 255, 0.15)';
 
   // Xử lý màu sắc riêng cho từng chất liệu theo chuẩn thiết kế:
-  // - Art Paper: Tên người & Tên Cty = Đỏ (#DC2626), Chức danh = Đen (#0F172A), Thông tin = Xám (#475569), Viền = Xám (#94A3B8)
+  // - Art Paper: Tên người & Tên Cty = Đỏ (#DC2626), Chức danh & Slogan = Đen (#0F172A), Toàn bộ Thông tin liên hệ = Xám (#475569), Viền = Xám (#94A3B8)
   // - Inox Xước: Nền xước sáng, Chữ chính = Đen (#0F172A), Chức danh/slogan = Xanh Sapphire (#0369A1), Viền = Xanh Sapphire (#0369A1)
   const isArtPaper = (matKey === 'art_paper' || matKey === 'paper');
 
@@ -253,6 +254,10 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
   let TITLE_COLOR = ACCENT_COLOR;
   let ORG_COLOR = TEXT_MUTED;
   let BORDER_COLOR = ACCENT_COLOR;
+  let AVATAR_BG = '#1e293b';
+  let AVATAR_BORDER = ACCENT_COLOR;
+  let AVATAR_TEXT = ACCENT_COLOR;
+  let SLOGAN_COLOR = ACCENT_COLOR;
 
   if (isArtPaper) {
     NAME_COLOR = '#DC2626'; // Đỏ thương hiệu sang trọng, tương phản tuyệt đối trên giấy ngà
@@ -260,13 +265,21 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     ORG_COLOR = '#DC2626'; // Tên công ty màu đỏ đồng bộ
     BORDER_COLOR = '#94A3B8'; // Viền xám thanh lịch, bỏ hoàn toàn màu xanh neon/cyan
     TEXT_MUTED = '#475569'; // Thông tin phụ màu xám thanh lịch
-    CONTACT_TEXT_COLOR = '#334155'; // Thông tin liên hệ màu xám đậm rõ nét
+    CONTACT_TEXT_COLOR = '#475569'; // Toàn bộ thông tin liên hệ (Điện thoại, Email, Web, Địa chỉ) CÙNG MỘT MÀU XÁM ĐỒNG NHẤT
     DIVIDER_COLOR = 'rgba(100, 116, 139, 0.35)'; // Đường kẻ xám
+    AVATAR_BG = '#F1F5F9'; // Nền avatar xám sáng sang trọng
+    AVATAR_BORDER = '#94A3B8'; // Viền avatar xám
+    AVATAR_TEXT = '#DC2626'; // Chữ cái viết tắt màu đỏ đồng bộ thương hiệu
+    SLOGAN_COLOR = '#0F172A'; // Slogan màu đen than sắc nét, không còn màu xanh
   } else if (isLightBg) {
     NAME_COLOR = '#0F172A';
     TITLE_COLOR = '#0369A1';
     ORG_COLOR = '#334155';
     BORDER_COLOR = '#0369A1';
+    AVATAR_BG = '#F1F5F9';
+    AVATAR_BORDER = '#0369A1';
+    AVATAR_TEXT = '#0369A1';
+    SLOGAN_COLOR = '#0369A1';
   }
 
   const fontPair = vip.fontPair || matPreset.fontPair || 'precision';
@@ -545,17 +558,17 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.restore();
       ctx.beginPath();
       ctx.arc(avX + avW / 2, avY + avH / 2, avW / 2, 0, Math.PI * 2);
-      ctx.strokeStyle = ACCENT_COLOR;
+      ctx.strokeStyle = AVATAR_BORDER;
       ctx.lineWidth = 3;
       ctx.stroke();
     } else {
-      ctx.fillStyle = '#1e293b';
+      ctx.fillStyle = AVATAR_BG;
       roundRect(avX, avY, avW, avH, 18);
       ctx.fill();
-      ctx.strokeStyle = ACCENT_COLOR;
+      ctx.strokeStyle = AVATAR_BORDER;
       ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.fillStyle = ACCENT_COLOR;
+      ctx.fillStyle = AVATAR_TEXT;
       ctx.font = `bold 30px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
       ctx.fillText(getInitials(profile.fn), avX + avW / 2, avY + 54);
@@ -647,25 +660,35 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     let contactCurY = divY + 32;
 
     if (profile.tel && contactCurY < safeBottom - 50) {
-      ctx.fillStyle = '#f43f5e';
-      ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '15px system-ui, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('📞', iconX, contactCurY);
-      ctx.fillStyle = TEXT_COLOR;
-      ctx.font = `bold 21px ${FONT_BODY}`;
+      if (isArtPaper) {
+        ctx.font = '16px system-ui, sans-serif';
+        ctx.fillText('📞', iconX, contactCurY);
+      } else {
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '15px system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('📞', iconX, contactCurY);
+      }
+      ctx.fillStyle = CONTACT_TEXT_COLOR;
+      ctx.font = `bold 20px ${FONT_BODY}`;
       ctx.fillText(profile.tel, textX, contactCurY);
       contactCurY += 44;
     }
 
     if (profile.email && contactCurY < safeBottom - 50) {
-      ctx.fillStyle = ACCENT_COLOR;
-      ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#0f172a';
-      ctx.font = '15px system-ui, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('✉️', iconX, contactCurY);
+      if (isArtPaper) {
+        ctx.font = '16px system-ui, sans-serif';
+        ctx.fillText('✉️', iconX, contactCurY);
+      } else {
+        ctx.fillStyle = ACCENT_COLOR;
+        ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '15px system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('✉️', iconX, contactCurY);
+      }
       ctx.fillStyle = CONTACT_TEXT_COLOR;
       ctx.font = `500 20px ${FONT_BODY}`;
       ctx.fillText(profile.email, textX, contactCurY);
@@ -674,12 +697,17 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
     if (displayUrl && contactCurY < safeBottom - 50) {
-      ctx.fillStyle = '#0ea5e9';
-      ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '15px system-ui, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('🌐', iconX, contactCurY);
+      if (isArtPaper) {
+        ctx.font = '16px system-ui, sans-serif';
+        ctx.fillText('🌐', iconX, contactCurY);
+      } else {
+        ctx.fillStyle = '#0ea5e9';
+        ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '15px system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('🌐', iconX, contactCurY);
+      }
       ctx.fillStyle = CONTACT_TEXT_COLOR;
       ctx.font = `500 20px ${FONT_BODY}`;
       ctx.fillText(displayUrl, textX, contactCurY);
@@ -687,12 +715,17 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
 
     if (profile.adr && contactCurY < safeBottom - 35) {
-      ctx.fillStyle = '#10b981';
-      ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '15px system-ui, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('📍', iconX, contactCurY);
+      if (isArtPaper) {
+        ctx.font = '16px system-ui, sans-serif';
+        ctx.fillText('📍', iconX, contactCurY);
+      } else {
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '15px system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('📍', iconX, contactCurY);
+      }
 
       // Address auto-wraps up to 2 lines
       fitAndDrawText(ctx, {
@@ -705,7 +738,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         minFontSize: 13,
         fontFamily: FONT_BODY,
         fontWeight: '500',
-        color: TEXT_MUTED,
+        color: CONTACT_TEXT_COLOR,
         maxLines: 2,
         lineHeightRatio: 1.2
       });
@@ -876,18 +909,18 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.restore();
       ctx.beginPath();
       ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
-      ctx.strokeStyle = ACCENT_COLOR;
+      ctx.strokeStyle = AVATAR_BORDER;
       ctx.lineWidth = 3.5;
       ctx.stroke();
     } else {
-      ctx.fillStyle = '#1e293b';
+      ctx.fillStyle = AVATAR_BG;
       ctx.beginPath();
       ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = ACCENT_COLOR;
+      ctx.strokeStyle = AVATAR_BORDER;
       ctx.lineWidth = 3;
       ctx.stroke();
-      ctx.fillStyle = ACCENT_COLOR;
+      ctx.fillStyle = AVATAR_TEXT;
       ctx.font = `bold 36px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
       ctx.fillText(getInitials(profile.fn), avCenterX, avY + 13);
@@ -964,7 +997,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const vContactMaxW = safeRight - safeLeft - 30;
 
     if (profile.tel && vCurY < safeBottom - 70) {
-      ctx.fillStyle = TEXT_COLOR;
+      ctx.fillStyle = CONTACT_TEXT_COLOR;
       ctx.font = `bold 20px ${FONT_BODY}`;
       ctx.textAlign = 'left';
       ctx.fillText(`📞  ${profile.tel}`, safeLeft, vCurY);
@@ -986,7 +1019,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       vCurY += 40;
     }
     if (profile.adr && vCurY < safeBottom - 50) {
-      ctx.fillStyle = TEXT_MUTED;
+      ctx.fillStyle = CONTACT_TEXT_COLOR;
       ctx.font = `16px ${FONT_BODY}`;
       ctx.textAlign = 'left';
       ctx.fillText(`📍`, safeLeft, vCurY);
@@ -1001,7 +1034,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         minFontSize: 13,
         fontFamily: FONT_BODY,
         fontWeight: '600',
-        color: TEXT_MUTED,
+        color: CONTACT_TEXT_COLOR,
         maxLines: 2,
         lineHeightRatio: 1.15
       });
@@ -1019,7 +1052,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         minFontSize: 12,
         fontFamily: FONT_BODY,
         fontWeight: 'italic 500',
-        color: ACCENT_COLOR,
+        color: SLOGAN_COLOR,
         textAlign: 'center',
         maxLines: 2,
         lineHeightRatio: 1.15
