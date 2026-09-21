@@ -229,7 +229,7 @@
   </div>
 
   <script type="module">
-    import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js?v=1790002749514';
+    import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js?v=1790003336813';
 
     // Parse active profile from Hash or LocalStorage
     function getActiveProfile() {
@@ -261,6 +261,11 @@
       return p;
     }
     const activeProfile = getActiveProfile();
+
+    // PBR Properties & Material Key from Pro / VIP Preset
+    const vip = activeProfile ? (activeProfile.vipTheme || {}) : {};
+    const matKey = (vip.material && VIP_MATERIALS[vip.material]) ? vip.material : 'pvc';
+    const pbr = VIP_MATERIALS[matKey] || VIP_MATERIALS.pvc;
 
     // -------------------------------------------------------------
     // Global Elements & State
@@ -474,11 +479,7 @@
       });
     }
 
-    // PBR Properties from Pro / VIP Preset
-    const vip = activeProfile ? (activeProfile.vipTheme || {}) : {};
-    const matKey = (vip.material && VIP_MATERIALS[vip.material]) ? vip.material : 'pvc';
-    const pbr = VIP_MATERIALS[matKey] || VIP_MATERIALS.pvc;
-
+    // Material PBR Properties (Inherited from top-level VIP preset)
     const roughnessVal = (typeof pbr.roughness === 'number') ? pbr.roughness : 0.3;
     const metalnessVal = (typeof pbr.metalness === 'number') ? pbr.metalness : 0.1;
     const accentHex = pbr.accent ? parseInt(pbr.accent.replace('#', '0x'), 16) : 0x38bdf8;
