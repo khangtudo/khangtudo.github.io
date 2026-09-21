@@ -204,10 +204,36 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
   const matKey = (vip.material && VIP_MATERIALS[vip.material]) ? vip.material : 'pvc';
   const matPreset = VIP_MATERIALS[matKey] || VIP_MATERIALS.pvc;
 
+  // Tự động nhận diện chất liệu hoặc màu nền sáng để đảm bảo độ tương phản chữ luôn đạt chuẩn
+  const isLightPreset = (matKey === 'brushed_steel' || matKey === 'silver' || matKey === 'art_paper' || matKey === 'paper');
+
+  // Hàm tính độ sáng tương đối (Luminance) nếu người dùng có custom bgColor
+  function isHexColorLight(hex) {
+    if (!hex || typeof hex !== 'string') return false;
+    const clean = hex.replace('#', '');
+    if (clean.length !== 6) return false;
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    // Công thức ITU-R BT.709 perceived luminance
+    const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    return lum > 0.55;
+  }
+
+  const isLightBg = isLightPreset || (vip.bgColor ? isHexColorLight(vip.bgColor) : false);
+
   const BG_COLOR = vip.bgColor || matPreset.baseColor;
-  const TEXT_COLOR = vip.textColor || matPreset.text;
+  // Nếu là chất liệu nền sáng mà textColor lại chưa được chỉnh hoặc vẫn mang giá trị mặc định của theme tối (#FFFFFF / #F4F7FA) -> ép dùng màu chữ của preset (#0F172A / #22252A)
+  let TEXT_COLOR = vip.textColor || matPreset.text;
+  if (isLightBg && (TEXT_COLOR === '#FFFFFF' || TEXT_COLOR === '#ffffff' || TEXT_COLOR === '#F4F7FA' || TEXT_COLOR === '#f4f7fa')) {
+    TEXT_COLOR = matPreset.text || '#0F172A';
+  }
+
   const ACCENT_COLOR = vip.accentColor || matPreset.accent;
-  const TEXT_MUTED = '#94a3b8';
+  // Dynamic secondary text color and divider color according to background luminance
+  const TEXT_MUTED = isLightBg ? '#475569' : '#94a3b8';
+  const CONTACT_TEXT_COLOR = isLightBg ? '#1E293B' : '#E2E8F0';
+  const DIVIDER_COLOR = isLightBg ? 'rgba(15, 23, 42, 0.15)' : 'rgba(255, 255, 255, 0.15)';
 
   const fontPair = vip.fontPair || matPreset.fontPair || 'precision';
   let FONT_DISPLAY = '-apple-system, BlinkMacSystemFont, "Be Vietnam Pro", sans-serif';
@@ -561,7 +587,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     // Dynamic Divider
     const divY = Math.max(fy + 200, orgRes.nextY + 12);
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.strokeStyle = DIVIDER_COLOR;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(safeLeft, divY);
@@ -594,7 +620,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.font = '15px system-ui, sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText('✉️', iconX, contactCurY);
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = CONTACT_TEXT_COLOR;
       ctx.font = `500 20px ${FONT_BODY}`;
       ctx.fillText(profile.email, textX, contactCurY);
       contactCurY += 44;
@@ -608,7 +634,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.font = '15px system-ui, sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText('🌐', iconX, contactCurY);
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = CONTACT_TEXT_COLOR;
       ctx.font = `500 20px ${FONT_BODY}`;
       ctx.fillText(displayUrl, textX, contactCurY);
       contactCurY += 44;
@@ -633,7 +659,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         minFontSize: 13,
         fontFamily: FONT_BODY,
         fontWeight: '500',
-        color: '#94a3b8',
+        color: TEXT_MUTED,
         maxLines: 2,
         lineHeightRatio: 1.2
       });
@@ -737,7 +763,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         minFontSize: 13,
         fontFamily: FONT_BODY,
         fontWeight: '500',
-        color: '#cbd5e1',
+        color: TEXT_MUTED,
         textAlign: 'center',
         maxLines: 2,
         lineHeightRatio: 1.18
@@ -878,9 +904,9 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       lineHeightRatio: 1.15
     });
 
-    // Divider
+    // Dynamic Divider
     const vDivY = Math.max(fy + 335, vOrgRes.nextY + 12);
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.strokeStyle = DIVIDER_COLOR;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(safeLeft, vDivY);
@@ -899,7 +925,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       vCurY += 40;
     }
     if (profile.email && vCurY < safeBottom - 70) {
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = CONTACT_TEXT_COLOR;
       ctx.font = `500 17px ${FONT_BODY}`;
       ctx.textAlign = 'left';
       ctx.fillText(`✉️  ${profile.email}`, safeLeft, vCurY);
@@ -907,14 +933,14 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
     const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
     if (displayUrl && vCurY < safeBottom - 70) {
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = CONTACT_TEXT_COLOR;
       ctx.font = `500 17px ${FONT_BODY}`;
       ctx.textAlign = 'left';
       ctx.fillText(`🌐  ${displayUrl}`, safeLeft, vCurY);
       vCurY += 40;
     }
     if (profile.adr && vCurY < safeBottom - 50) {
-      ctx.fillStyle = '#94a3b8';
+      ctx.fillStyle = TEXT_MUTED;
       ctx.font = `15px ${FONT_BODY}`;
       ctx.textAlign = 'left';
       ctx.fillText(`📍`, safeLeft, vCurY);
@@ -929,7 +955,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         minFontSize: 12,
         fontFamily: FONT_BODY,
         fontWeight: '500',
-        color: '#94a3b8',
+        color: TEXT_MUTED,
         maxLines: 2,
         lineHeightRatio: 1.15
       });
@@ -1053,7 +1079,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         minFontSize: 12,
         fontFamily: FONT_BODY,
         fontWeight: '500',
-        color: '#cbd5e1',
+        color: TEXT_MUTED,
         textAlign: 'center',
         maxLines: 2,
         lineHeightRatio: 1.15

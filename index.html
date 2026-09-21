@@ -2685,10 +2685,35 @@ const BRAND_ICONS = {
     art_paper: 'Art Paper'
   };
 
+  // Color & Theme Presets cho 5 chất liệu chuẩn (đảm bảo nền sáng thì chữ đen, nền tối thì chữ trắng sáng)
+  const VIP_MAT_PRESETS = {
+    pvc: { bgColor: '#0F172A', textColor: '#FFFFFF', accentColor: '#38BDF8' },
+    titanium: { bgColor: '#20252B', textColor: '#F4F7FA', accentColor: '#B9F2FF' },
+    brushed_steel: { bgColor: '#E2E8F0', textColor: '#0F172A', accentColor: '#38BDF8' },
+    acrylic: { bgColor: '#0C1929', textColor: '#FFFFFF', accentColor: '#38BDF8' },
+    art_paper: { bgColor: '#F7F5F0', textColor: '#22252A', accentColor: '#C5A880' }
+  };
+
   function setVipMaterial(mat, syncRender = false) {
     currentVipMaterial = mat;
     if (!profile.vipTheme) profile.vipTheme = {};
     profile.vipTheme.material = mat;
+
+    // Tự động đồng bộ màu nền và màu chữ theo chất liệu đã chọn (trừ khi người dùng chủ động chỉnh tay riêng)
+    const preset = VIP_MAT_PRESETS[mat];
+    if (preset) {
+      profile.vipTheme.bgColor = preset.bgColor;
+      profile.vipTheme.textColor = preset.textColor;
+      profile.vipTheme.accentColor = preset.accentColor;
+
+      // Cập nhật các input trong form nếu đang mở
+      const inBg = document.getElementById('vipBgColor');
+      const inText = document.getElementById('vipTextColor');
+      const inAccent = document.getElementById('vipAccentColor');
+      if (inBg) inBg.value = preset.bgColor;
+      if (inText) inText.value = preset.textColor;
+      if (inAccent) inAccent.value = preset.accentColor;
+    }
 
     // Cập nhật nhãn nút quick badge
     const lblCurrentMat = document.getElementById('lblCurrentMat');
