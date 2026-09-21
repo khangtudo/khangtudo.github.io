@@ -234,6 +234,11 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
   }
 
+  let ACCENT_COLOR = vip.accentColor || matPreset.accent || '#38BDF8';
+  if (isLightBg) {
+    ACCENT_COLOR = '#0369A1';
+  }
+
   // Dynamic secondary text color and divider color according to background luminance
   let TEXT_MUTED = isLightBg ? '#0F172A' : '#94a3b8';
   let CONTACT_TEXT_COLOR = isLightBg ? '#0F172A' : '#E2E8F0';
