@@ -234,17 +234,35 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
   }
 
-  // ACCENT_COLOR: với mọi chất liệu nền sáng (Inox Xước và Art Paper), thống nhất dùng màu Xanh Sapphire đậm #0369A1 tương tự Inox Xước
-  // để chữ chức danh, slogan, tagline luôn tương phản cực mạnh, không bao giờ bị màu vàng/vàng chanh lóa trên nền giấy
-  let ACCENT_COLOR = vip.accentColor || matPreset.accent;
-  if (isLightBg) {
-    ACCENT_COLOR = '#0369A1'; // Đồng nhất màu Xanh Sapphire đậm chuẩn nét của Inox Xước
-  }
-
   // Dynamic secondary text color and divider color according to background luminance
-  const TEXT_MUTED = isLightBg ? '#0F172A' : '#94a3b8';
-  const CONTACT_TEXT_COLOR = isLightBg ? '#0F172A' : '#E2E8F0';
-  const DIVIDER_COLOR = isLightBg ? 'rgba(15, 23, 42, 0.25)' : 'rgba(255, 255, 255, 0.15)';
+  let TEXT_MUTED = isLightBg ? '#0F172A' : '#94a3b8';
+  let CONTACT_TEXT_COLOR = isLightBg ? '#0F172A' : '#E2E8F0';
+  let DIVIDER_COLOR = isLightBg ? 'rgba(15, 23, 42, 0.25)' : 'rgba(255, 255, 255, 0.15)';
+
+  // Xử lý màu sắc riêng cho từng chất liệu theo chuẩn thiết kế:
+  // - Art Paper: Tên người & Tên Cty = Đỏ (#DC2626), Chức danh = Đen (#0F172A), Thông tin = Xám (#475569), Viền = Xám (#94A3B8)
+  // - Inox Xước: Nền xước sáng, Chữ chính = Đen (#0F172A), Chức danh/slogan = Xanh Sapphire (#0369A1), Viền = Xanh Sapphire (#0369A1)
+  const isArtPaper = (matKey === 'art_paper' || matKey === 'paper');
+
+  let NAME_COLOR = TEXT_COLOR;
+  let TITLE_COLOR = ACCENT_COLOR;
+  let ORG_COLOR = TEXT_MUTED;
+  let BORDER_COLOR = ACCENT_COLOR;
+
+  if (isArtPaper) {
+    NAME_COLOR = '#DC2626'; // Đỏ thương hiệu sang trọng, tương phản tuyệt đối trên giấy ngà
+    TITLE_COLOR = '#0F172A'; // Đen than sắc nét
+    ORG_COLOR = '#DC2626'; // Tên công ty màu đỏ đồng bộ
+    BORDER_COLOR = '#94A3B8'; // Viền xám thanh lịch, bỏ hoàn toàn màu xanh neon/cyan
+    TEXT_MUTED = '#475569'; // Thông tin phụ màu xám thanh lịch
+    CONTACT_TEXT_COLOR = '#334155'; // Thông tin liên hệ màu xám đậm rõ nét
+    DIVIDER_COLOR = 'rgba(100, 116, 139, 0.35)'; // Đường kẻ xám
+  } else if (isLightBg) {
+    NAME_COLOR = '#0F172A';
+    TITLE_COLOR = '#0369A1';
+    ORG_COLOR = '#334155';
+    BORDER_COLOR = '#0369A1';
+  }
 
   const fontPair = vip.fontPair || matPreset.fontPair || 'precision';
   let FONT_DISPLAY = '-apple-system, BlinkMacSystemFont, "Be Vietnam Pro", sans-serif';
@@ -467,7 +485,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
 
     // 4. Accent Border (drawn inset by 2px from bleeding edge)
-    ctx.strokeStyle = ACCENT_COLOR;
+    ctx.strokeStyle = BORDER_COLOR;
     ctx.lineWidth = (matKey === 'gold' || matKey === 'frost') ? 4 : 5;
     ctx.stroke();
 
@@ -561,7 +579,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 24,
       fontFamily: nameOffset.customFont || FONT_DISPLAY,
       fontWeight: 'bold',
-      color: nameOffset.customColor || TEXT_COLOR,
+      color: nameOffset.customColor || NAME_COLOR,
       maxLines: 2,
       lineHeightRatio: 1.15
     });
@@ -579,7 +597,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 15,
       fontFamily: titleOffset.customFont || FONT_BODY,
       fontWeight: '600',
-      color: titleOffset.customColor || ACCENT_COLOR,
+      color: titleOffset.customColor || TITLE_COLOR,
       maxLines: 2,
       lineHeightRatio: 1.15
     });
@@ -597,7 +615,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 13,
       fontFamily: orgOffset.customFont || FONT_BODY,
       fontWeight: '500',
-      color: orgOffset.customColor || TEXT_MUTED,
+      color: orgOffset.customColor || ORG_COLOR,
       maxLines: 2,
       lineHeightRatio: 1.15
     });
@@ -605,7 +623,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     // Vertical Accent Bar (drawn alongside name/title block)
     const barTop = safeTop + 8;
     const barH = Math.max(80, orgRes.nextY - barTop - 4);
-    ctx.fillStyle = ACCENT_COLOR;
+    ctx.fillStyle = isArtPaper ? '#DC2626' : ACCENT_COLOR;
     ctx.fillRect(safeLeft, barTop, 6, barH);
 
     // Dynamic Divider
@@ -689,7 +707,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
 
     // Footer Tagline strictly inside safe bottom
-    ctx.fillStyle = ACCENT_COLOR;
+    ctx.fillStyle = isArtPaper ? TEXT_MUTED : ACCENT_COLOR;
     ctx.font = `bold 15px ${FONT_DISPLAY}`;
     ctx.textAlign = 'left';
     ctx.letterSpacing = '1px';
@@ -751,7 +769,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 22,
       fontFamily: FONT_DISPLAY,
       fontWeight: 'bold',
-      color: TEXT_COLOR,
+      color: ORG_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -768,7 +786,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 14,
       fontFamily: FONT_BODY,
       fontWeight: '600',
-      color: ACCENT_COLOR,
+      color: TITLE_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -883,7 +901,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 20,
       fontFamily: vNameOffset.customFont || FONT_DISPLAY,
       fontWeight: 'bold',
-      color: vNameOffset.customColor || TEXT_COLOR,
+      color: vNameOffset.customColor || NAME_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -902,7 +920,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 14,
       fontFamily: vTitleOffset.customFont || FONT_BODY,
       fontWeight: 'bold',
-      color: vTitleOffset.customColor || ACCENT_COLOR,
+      color: vTitleOffset.customColor || TITLE_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -921,7 +939,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 13,
       fontFamily: FONT_BODY,
       fontWeight: '500',
-      color: TEXT_MUTED,
+      color: ORG_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -1004,7 +1022,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
 
     // Footer
-    ctx.fillStyle = TEXT_MUTED;
+    ctx.fillStyle = isArtPaper ? TEXT_MUTED : ACCENT_COLOR;
     ctx.font = `bold 13px ${FONT_DISPLAY}`;
     ctx.textAlign = 'center';
     ctx.letterSpacing = '1px';
@@ -1067,7 +1085,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 19,
       fontFamily: FONT_DISPLAY,
       fontWeight: 'bold',
-      color: TEXT_COLOR,
+      color: ORG_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -1084,7 +1102,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       minFontSize: 13,
       fontFamily: FONT_BODY,
       fontWeight: 'bold italic',
-      color: ACCENT_COLOR,
+      color: TITLE_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15

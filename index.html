@@ -1593,7 +1593,8 @@
         <span style="color:#d8af62; font-size:1.1rem; font-weight:700;">→</span>
       </button>
 
-      <!-- Option 3: Dán Ảnh Thật 2 Mặt Vào Thẻ 3D AR -->
+      <!-- Option 3: Dán Ảnh Thật 2 Mặt Vào Thẻ 3D AR (Tạm ẩn để nâng cấp tính năng ổn định hơn) -->
+      <!--
       <button type="button" id="btnChoiceOpenScanner" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(16, 185, 129, 0.12)); border:1px solid rgba(56, 189, 248, 0.5); text-align:left; cursor:pointer; transition:background 0.15s ease; box-sizing: border-box;">
         <div style="font-size:1.6rem; line-height:1;">📷</div>
         <div style="flex:1; min-width:0;">
@@ -1605,6 +1606,7 @@
         </div>
         <span style="color:#38bdf8; font-size:1.1rem; font-weight:700;">→</span>
       </button>
+      -->
 
       <!-- Footer: Sub-link tinh tế cho người dùng muốn tạo thêm thẻ khác -->
       <div id="choiceModalFooter" style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); text-align:center; font-size:0.72rem; color:#94a3b8;">
@@ -2685,13 +2687,15 @@ const BRAND_ICONS = {
     art_paper: 'Art Paper'
   };
 
-  // Color & Theme Presets cho 5 chất liệu chuẩn (đảm bảo nền sáng thì chữ đen, nền tối thì chữ trắng sáng)
+  // Color & Theme Presets cho 5 chất liệu chuẩn:
+  // - Art Paper: Nền trắng ngà #F7F5F0, Tên người/Cty = Đỏ (#DC2626), Chức danh = Đen (#0F172A), Viền/Thông tin = Xám (#94A3B8 / #475569)
+  // - Inox Xước: Nền sáng xước #E2E8F0, Chữ = Đen #0F172A, Accent = Xanh Sapphire #0369A1
   const VIP_MAT_PRESETS = {
     pvc: { bgColor: '#0F172A', textColor: '#FFFFFF', accentColor: '#38BDF8' },
     titanium: { bgColor: '#20252B', textColor: '#F4F7FA', accentColor: '#B9F2FF' },
     brushed_steel: { bgColor: '#E2E8F0', textColor: '#0F172A', accentColor: '#0369A1' },
     acrylic: { bgColor: '#0C1929', textColor: '#FFFFFF', accentColor: '#38BDF8' },
-    art_paper: { bgColor: '#F7F5F0', textColor: '#0F172A', accentColor: '#0369A1' }
+    art_paper: { bgColor: '#F7F5F0', textColor: '#DC2626', accentColor: '#94A3B8' }
   };
 
   function setVipMaterial(mat, syncRender = false) {

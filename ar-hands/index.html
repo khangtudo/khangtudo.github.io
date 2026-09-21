@@ -221,15 +221,15 @@
 
     <div class="hud-controls">
       <button class="btn-ar-ctrl" id="btnSwitchCam">📷 Đổi Cam</button>
-      <button class="btn-ar-ctrl" id="btnToggleMesh">🦴 Khớp Xương: BẬT</button>
-      <button class="btn-ar-ctrl" id="btnRotateCard">📐 Xoay 90°</button>
+      <button class="btn-ar-ctrl" id="btnToggleMesh">🦴 Khớp: TẮT</button>
+      <button class="btn-ar-ctrl" id="btnRotateCard">📐 Xoay Ngang</button>
       <button class="btn-ar-ctrl" id="btnFlipCard">🔄 Lật Thẻ</button>
       <a href="/" class="btn-ar-ctrl" style="text-decoration:none; max-width: 75px;">✕ Thoát</a>
     </div>
   </div>
 
   <script type="module">
-    import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js?v=1789968424947';
+    import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js?v=1789969351945';
 
     // Parse active profile from Hash or LocalStorage
     function getActiveProfile() {
@@ -279,7 +279,7 @@
     const btnToggleMesh = document.getElementById('btnToggleMesh');
     const btnFlipCard = document.getElementById('btnFlipCard');
 
-    let showSkeleton = true;
+    let showSkeleton = false;
     let cardFlipped = false; // false = Front (0°), true = Back (180°)
     let currentGesture = 'NONE'; // 'NONE' | 'PALM' | 'PINCH' | 'FIST_FLIP' | 'OPEN_FLIP'
 
@@ -987,7 +987,7 @@
     // -------------------------------------------------------------
     btnToggleMesh.onclick = () => {
       showSkeleton = !showSkeleton;
-      btnToggleMesh.textContent = `🦴 Khớp Xương: ${showSkeleton ? 'BẬT' : 'TẮT'}`;
+      btnToggleMesh.textContent = `🦴 Khớp: ${showSkeleton ? 'BẬT' : 'TẮT'}`;
       btnToggleMesh.classList.toggle('active', showSkeleton);
     };
 
@@ -1005,10 +1005,10 @@
         // Toggle giữa xoay thẳng hàng cổ tay (-90° / 90°) và ngang bàn tay (0°)
         if (Math.abs(cardOrientationOffsetZ) > 0.1) {
           cardOrientationOffsetZ = 0;
-          btnRotateCard.textContent = '📐 Ngang Tay';
+          btnRotateCard.textContent = '📐 Xoay Dọc';
         } else {
           cardOrientationOffsetZ = -Math.PI / 2;
-          btnRotateCard.textContent = '📐 Dọc Cổ Tay';
+          btnRotateCard.textContent = '📐 Xoay Ngang';
         }
       };
     }
