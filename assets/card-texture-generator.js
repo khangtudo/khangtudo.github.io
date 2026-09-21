@@ -223,17 +223,31 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
   const isLightBg = isLightPreset || (vip.bgColor ? isHexColorLight(vip.bgColor) : false);
 
   const BG_COLOR = vip.bgColor || matPreset.baseColor;
-  // Nếu là chất liệu nền sáng mà textColor lại chưa được chỉnh hoặc vẫn mang giá trị mặc định của theme tối (#FFFFFF / #F4F7FA) -> ép dùng màu chữ của preset (#0F172A / #22252A)
+  
+  // Xử lý triệt để màu chữ và màu viền: nếu là chất liệu sáng hoặc màu nền sáng
+  // Bất kể textColor trong profile là màu gì (nếu là màu sáng/trắng hoặc chưa chỉnh),
+  // bắt buộc phải chuyển toàn bộ các thành phần chữ và điểm nhấn sang màu tối tương phản.
   let TEXT_COLOR = vip.textColor || matPreset.text;
-  if (isLightBg && (TEXT_COLOR === '#FFFFFF' || TEXT_COLOR === '#ffffff' || TEXT_COLOR === '#F4F7FA' || TEXT_COLOR === '#f4f7fa')) {
-    TEXT_COLOR = matPreset.text || '#0F172A';
+  if (isLightBg) {
+    if (!TEXT_COLOR || isHexColorLight(TEXT_COLOR) || TEXT_COLOR === '#FFFFFF' || TEXT_COLOR === '#ffffff' || TEXT_COLOR === '#F4F7FA' || TEXT_COLOR === '#f4f7fa') {
+      TEXT_COLOR = matPreset.text || '#0F172A';
+    }
   }
 
-  const ACCENT_COLOR = vip.accentColor || matPreset.accent;
+  // ACCENT_COLOR: nếu nền sáng mà màu accent quá sáng (ví dụ #38BDF8 xanh ngọc nhạt hoặc #B9F2FF) thì chuyển sang xanh dương đậm #0284C7 / vàng đồng sậm #92400E để chữ chức danh/slogan không bị lóa trắng
+  let ACCENT_COLOR = vip.accentColor || matPreset.accent;
+  if (isLightBg) {
+    if (matKey === 'art_paper' || matKey === 'paper') {
+      ACCENT_COLOR = '#854D0E'; // Nâu đồng sang trọng tương phản cao trên giấy mỹ thuật
+    } else {
+      ACCENT_COLOR = '#0369A1'; // Xanh sapphire đậm tương phản cao trên inox xước
+    }
+  }
+
   // Dynamic secondary text color and divider color according to background luminance
-  const TEXT_MUTED = isLightBg ? '#475569' : '#94a3b8';
-  const CONTACT_TEXT_COLOR = isLightBg ? '#1E293B' : '#E2E8F0';
-  const DIVIDER_COLOR = isLightBg ? 'rgba(15, 23, 42, 0.15)' : 'rgba(255, 255, 255, 0.15)';
+  const TEXT_MUTED = isLightBg ? '#334155' : '#94a3b8';
+  const CONTACT_TEXT_COLOR = isLightBg ? '#0F172A' : '#E2E8F0';
+  const DIVIDER_COLOR = isLightBg ? 'rgba(15, 23, 42, 0.25)' : 'rgba(255, 255, 255, 0.15)';
 
   const fontPair = vip.fontPair || matPreset.fontPair || 'precision';
   let FONT_DISPLAY = '-apple-system, BlinkMacSystemFont, "Be Vietnam Pro", sans-serif';
@@ -267,13 +281,22 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     if (!item) return { dx: 0, dy: 0, fx: null, customLines: null, customFont: null, customSize: null, customColor: null };
     const dx = (typeof item.relX === 'number') ? Math.round(item.relX * cardWidth) : (item.offsetX || 0);
     const dy = (typeof item.relY === 'number') ? Math.round(item.relY * cardHeight) : (item.offsetY || 0);
+    
+    // Nếu là nền sáng, kiểm tra xem màu tùy chỉnh trong customColor có bị trắng hoặc quá sáng không
+    let validCustomColor = item.color || null;
+    if (isLightBg && validCustomColor) {
+      if (isHexColorLight(validCustomColor) || validCustomColor === '#fff' || validCustomColor === '#ffffff' || validCustomColor === '#F4F7FA') {
+        validCustomColor = null; // Huỷ màu trắng cũ đã lưu để fallback về TEXT_COLOR hoặc ACCENT_COLOR đậm
+      }
+    }
+
     return {
       dx, dy,
       fx: item.fx || null,
       customLines: Array.isArray(item.lines) ? item.lines : null,
       customFont: item.fontFamily || null,
       customSize: item.fontSize || null,
-      customColor: item.color || null
+      customColor: validCustomColor
     };
   };
 
@@ -437,11 +460,14 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
 
     // 3. Contrast Scrim behind text region for accessibility
-    const scrim = ctx.createLinearGradient(x, y, x + w * 0.65, y);
-    scrim.addColorStop(0, 'rgba(0, 0, 0, 0.35)');
-    scrim.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = scrim;
-    ctx.fill();
+    // Chỉ tạo bóng đổ tối mờ phía sau văn bản khi nền là màu tối; với nền sáng (Inox Xước, Art Paper), không phủ bóng tối để tránh làm đục nền và gây bẩn/loang màu chữ
+    if (!isLightBg) {
+      const scrim = ctx.createLinearGradient(x, y, x + w * 0.65, y);
+      scrim.addColorStop(0, 'rgba(0, 0, 0, 0.35)');
+      scrim.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = scrim;
+      ctx.fill();
+    }
 
     // 4. Accent Border (drawn inset by 2px from bleeding edge)
     ctx.strokeStyle = ACCENT_COLOR;
