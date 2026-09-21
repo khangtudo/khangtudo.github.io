@@ -257,19 +257,25 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
   let AVATAR_BG = '#1e293b';
   let AVATAR_BORDER = ACCENT_COLOR;
   let AVATAR_TEXT = ACCENT_COLOR;
+  let LOGO_BG = '#0f172a';
+  let LOGO_BORDER = ACCENT_COLOR;
+  let LOGO_TEXT = ACCENT_COLOR;
   let SLOGAN_COLOR = ACCENT_COLOR;
 
   if (isArtPaper) {
     NAME_COLOR = '#DC2626'; // Đỏ thương hiệu sang trọng, tương phản tuyệt đối trên giấy ngà
     TITLE_COLOR = '#0F172A'; // Đen than sắc nét
     ORG_COLOR = '#DC2626'; // Tên công ty màu đỏ đồng bộ
-    BORDER_COLOR = '#64748B'; // Viền xám trung tính, bỏ hoàn toàn màu xanh neon/cyan
+    BORDER_COLOR = '#64748B'; // Viền xám trung tính
     TEXT_MUTED = '#1E293B'; // Thông tin phụ màu đen xám đậm rõ nét
-    CONTACT_TEXT_COLOR = '#0F172A'; // Toàn bộ thông tin liên hệ (Điện thoại, Email, Web, Địa chỉ) dùng màu ĐEN THAN #0F172A tương phản cực cao, tuyệt đối không bị mờ nhạt hay ám xanh
+    CONTACT_TEXT_COLOR = '#0F172A'; // Toàn bộ thông tin liên hệ dùng màu ĐEN THAN #0F172A
     DIVIDER_COLOR = 'rgba(15, 23, 42, 0.25)'; // Đường kẻ đen mờ
     AVATAR_BG = '#F1F5F9'; // Nền avatar xám sáng sang trọng
-    AVATAR_BORDER = '#64748B'; // Viền avatar xám đậm
+    AVATAR_BORDER = '#DC2626'; // Viền avatar màu ĐỎ CRIMSON sắc nét, nổi bật rõ ràng trên nền giấy
     AVATAR_TEXT = '#DC2626'; // Chữ cái viết tắt màu đỏ đồng bộ thương hiệu
+    LOGO_BG = '#F1F5F9'; // Nền logo mặt sau xám sáng sang trọng
+    LOGO_BORDER = '#DC2626'; // Khung viền logo mặt sau màu ĐỎ đồng bộ, loại bỏ hoàn toàn màu xanh
+    LOGO_TEXT = '#DC2626'; // Chữ cái viết tắt logo mặt sau màu ĐỎ đồng bộ
     SLOGAN_COLOR = '#0F172A'; // Slogan màu đen than sắc nét, không còn màu xanh
   } else if (isLightBg) {
     NAME_COLOR = '#0F172A';
@@ -279,6 +285,9 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     AVATAR_BG = '#F1F5F9';
     AVATAR_BORDER = '#0369A1';
     AVATAR_TEXT = '#0369A1';
+    LOGO_BG = '#F1F5F9';
+    LOGO_BORDER = '#0369A1';
+    LOGO_TEXT = '#0369A1';
     SLOGAN_COLOR = '#0369A1';
   }
 
@@ -661,8 +670,13 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     if (profile.tel && contactCurY < safeBottom - 50) {
       if (isArtPaper) {
-        ctx.font = '16px system-ui, sans-serif';
-        ctx.fillText('📞', iconX, contactCurY);
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('📞', iconX + 10, contactCurY - 2);
+        ctx.textAlign = 'left';
       } else {
         ctx.fillStyle = '#f43f5e';
         ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
@@ -679,8 +693,13 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     if (profile.email && contactCurY < safeBottom - 50) {
       if (isArtPaper) {
-        ctx.font = '16px system-ui, sans-serif';
-        ctx.fillText('✉️', iconX, contactCurY);
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✉️', iconX + 10, contactCurY - 2);
+        ctx.textAlign = 'left';
       } else {
         ctx.fillStyle = ACCENT_COLOR;
         ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
@@ -698,8 +717,13 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
     if (displayUrl && contactCurY < safeBottom - 50) {
       if (isArtPaper) {
-        ctx.font = '16px system-ui, sans-serif';
-        ctx.fillText('🌐', iconX, contactCurY);
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🌐', iconX + 10, contactCurY - 2);
+        ctx.textAlign = 'left';
       } else {
         ctx.fillStyle = '#0ea5e9';
         ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
@@ -716,8 +740,13 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     if (profile.adr && contactCurY < safeBottom - 35) {
       if (isArtPaper) {
-        ctx.font = '16px system-ui, sans-serif';
-        ctx.fillText('📍', iconX, contactCurY);
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('📍', iconX + 10, contactCurY - 2);
+        ctx.textAlign = 'left';
       } else {
         ctx.fillStyle = '#10b981';
         ctx.beginPath(); ctx.arc(iconX + 10, contactCurY - 6, 13, 0, Math.PI * 2); ctx.fill();
@@ -774,23 +803,23 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     if (logoImg) {
       ctx.save();
       roundRect(lgX, lgY, lgW, lgH, 20);
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = LOGO_BG;
       ctx.fill();
       ctx.clip();
       ctx.drawImage(logoImg, lgX + 5, lgY + 5, lgW - 10, lgH - 10);
       ctx.restore();
       roundRect(lgX, lgY, lgW, lgH, 20);
-      ctx.strokeStyle = ACCENT_COLOR;
+      ctx.strokeStyle = LOGO_BORDER;
       ctx.lineWidth = 3;
       ctx.stroke();
     } else {
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = LOGO_BG;
       roundRect(lgX, lgY, lgW, lgH, 24);
       ctx.fill();
-      ctx.strokeStyle = ACCENT_COLOR;
+      ctx.strokeStyle = LOGO_BORDER;
       ctx.lineWidth = 3.5;
       ctx.stroke();
-      ctx.fillStyle = ACCENT_COLOR;
+      ctx.fillStyle = LOGO_TEXT;
       ctx.font = `bold 42px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
       ctx.fillText(getInitials(profile.org || profile.fn), bcx, lgY + 68);
@@ -996,48 +1025,115 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     let vCurY = vDivY + 36;
     const vContactMaxW = safeRight - safeLeft - 30;
 
+    const vIconX = safeLeft + 12;
+    const vTextX = safeLeft + 38;
+
     if (profile.tel && vCurY < safeBottom - 70) {
-      ctx.fillStyle = CONTACT_TEXT_COLOR;
-      ctx.font = `bold 20px ${FONT_BODY}`;
-      ctx.textAlign = 'left';
-      ctx.fillText(`📞  ${profile.tel}`, safeLeft, vCurY);
+      if (isArtPaper) {
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath(); ctx.arc(vIconX, vCurY - 6, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '13px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('📞', vIconX, vCurY - 2);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = CONTACT_TEXT_COLOR;
+        ctx.font = `bold 19px ${FONT_BODY}`;
+        ctx.fillText(profile.tel, vTextX, vCurY);
+      } else {
+        ctx.fillStyle = CONTACT_TEXT_COLOR;
+        ctx.font = `bold 20px ${FONT_BODY}`;
+        ctx.textAlign = 'left';
+        ctx.fillText(`📞  ${profile.tel}`, safeLeft, vCurY);
+      }
       vCurY += 40;
     }
     if (profile.email && vCurY < safeBottom - 70) {
-      ctx.fillStyle = CONTACT_TEXT_COLOR;
-      ctx.font = `600 18px ${FONT_BODY}`;
-      ctx.textAlign = 'left';
-      ctx.fillText(`✉️  ${profile.email}`, safeLeft, vCurY);
+      if (isArtPaper) {
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath(); ctx.arc(vIconX, vCurY - 6, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '13px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✉️', vIconX, vCurY - 2);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = CONTACT_TEXT_COLOR;
+        ctx.font = `600 17px ${FONT_BODY}`;
+        ctx.fillText(profile.email, vTextX, vCurY);
+      } else {
+        ctx.fillStyle = CONTACT_TEXT_COLOR;
+        ctx.font = `600 18px ${FONT_BODY}`;
+        ctx.textAlign = 'left';
+        ctx.fillText(`✉️  ${profile.email}`, safeLeft, vCurY);
+      }
       vCurY += 40;
     }
     const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
     if (displayUrl && vCurY < safeBottom - 70) {
-      ctx.fillStyle = CONTACT_TEXT_COLOR;
-      ctx.font = `600 18px ${FONT_BODY}`;
-      ctx.textAlign = 'left';
-      ctx.fillText(`🌐  ${displayUrl}`, safeLeft, vCurY);
+      if (isArtPaper) {
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath(); ctx.arc(vIconX, vCurY - 6, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '13px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🌐', vIconX, vCurY - 2);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = CONTACT_TEXT_COLOR;
+        ctx.font = `600 17px ${FONT_BODY}`;
+        ctx.fillText(displayUrl, vTextX, vCurY);
+      } else {
+        ctx.fillStyle = CONTACT_TEXT_COLOR;
+        ctx.font = `600 18px ${FONT_BODY}`;
+        ctx.textAlign = 'left';
+        ctx.fillText(`🌐  ${displayUrl}`, safeLeft, vCurY);
+      }
       vCurY += 40;
     }
     if (profile.adr && vCurY < safeBottom - 50) {
-      ctx.fillStyle = CONTACT_TEXT_COLOR;
-      ctx.font = `16px ${FONT_BODY}`;
-      ctx.textAlign = 'left';
-      ctx.fillText(`📍`, safeLeft, vCurY);
+      if (isArtPaper) {
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath(); ctx.arc(vIconX, vCurY - 6, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '13px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('📍', vIconX, vCurY - 2);
+        ctx.textAlign = 'left';
 
-      fitAndDrawText(ctx, {
-        text: profile.adr,
-        x: safeLeft + 28,
-        y: vCurY,
-        maxWidth: vContactMaxW - 28,
-        maxHeight: 46,
-        baseFontSize: 16,
-        minFontSize: 13,
-        fontFamily: FONT_BODY,
-        fontWeight: '600',
-        color: CONTACT_TEXT_COLOR,
-        maxLines: 2,
-        lineHeightRatio: 1.15
-      });
+        fitAndDrawText(ctx, {
+          text: profile.adr,
+          x: vTextX,
+          y: vCurY,
+          maxWidth: vContactMaxW - 24,
+          maxHeight: 46,
+          baseFontSize: 16,
+          minFontSize: 13,
+          fontFamily: FONT_BODY,
+          fontWeight: '600',
+          color: CONTACT_TEXT_COLOR,
+          maxLines: 2,
+          lineHeightRatio: 1.15
+        });
+      } else {
+        ctx.fillStyle = CONTACT_TEXT_COLOR;
+        ctx.font = `16px ${FONT_BODY}`;
+        ctx.textAlign = 'left';
+        ctx.fillText(`📍`, safeLeft, vCurY);
+
+        fitAndDrawText(ctx, {
+          text: profile.adr,
+          x: safeLeft + 28,
+          y: vCurY,
+          maxWidth: vContactMaxW - 28,
+          maxHeight: 46,
+          baseFontSize: 16,
+          minFontSize: 13,
+          fontFamily: FONT_BODY,
+          fontWeight: '600',
+          color: CONTACT_TEXT_COLOR,
+          maxLines: 2,
+          lineHeightRatio: 1.15
+        });
+      }
     }
 
     // Slogan
@@ -1090,23 +1186,23 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     if (logoImg) {
       ctx.save();
       roundRect(bLgX, bLgY, bLgW, bLgH, 24);
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = LOGO_BG;
       ctx.fill();
       ctx.clip();
       ctx.drawImage(logoImg, bLgX + 6, bLgY + 6, bLgW - 12, bLgH - 12);
       ctx.restore();
       roundRect(bLgX, bLgY, bLgW, bLgH, 24);
-      ctx.strokeStyle = ACCENT_COLOR;
+      ctx.strokeStyle = LOGO_BORDER;
       ctx.lineWidth = 3.5;
       ctx.stroke();
     } else {
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = LOGO_BG;
       roundRect(bLgX, bLgY, bLgW, bLgH, 26);
       ctx.fill();
-      ctx.strokeStyle = ACCENT_COLOR;
+      ctx.strokeStyle = LOGO_BORDER;
       ctx.lineWidth = 3.5;
       ctx.stroke();
-      ctx.fillStyle = ACCENT_COLOR;
+      ctx.fillStyle = LOGO_TEXT;
       ctx.font = `bold 44px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
       ctx.fillText(getInitials(profile.org || profile.fn), bcx, bLgY + 70);
