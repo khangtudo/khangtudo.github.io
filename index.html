@@ -634,7 +634,7 @@
       width: 48px;
       height: 48px;
     }
-    /* Quick Material Button (Góc dưới bên phải - thay thế nút (i)) */
+    /* Quick Material Button (Mặc định ẩn trên trang chủ, chỉ hiển thị khi ở chế độ UX Builder) */
     .card-mat-quick-badge {
       position: absolute;
       bottom: clamp(10px, 2vh, 16px);
@@ -647,7 +647,7 @@
       color: #38bdf8;
       font-size: 0.72rem;
       font-weight: 700;
-      display: inline-flex;
+      display: none; /* Mặc định ẩn trên trang chủ để giữ sự tinh tế cho canvas card */
       align-items: center;
       gap: 5px;
       cursor: pointer;
@@ -656,6 +656,10 @@
       transition: all 0.2s ease;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
       user-select: none;
+    }
+    /* Chỉ hiển thị khi đang trong chế độ chỉnh sửa trực tiếp (UX Builder) */
+    .builder-active .card-mat-quick-badge {
+      display: inline-flex;
     }
     /* Vùng chạm ảo ≥ 44px cho nút đổi vật liệu trên mobile */
     .card-mat-quick-badge::before {
@@ -673,6 +677,11 @@
       border-color: #38bdf8;
       transform: scale(1.08);
       box-shadow: 0 0 14px rgba(56, 189, 248, 0.6);
+    }
+    #btnBuilderMatQuick:hover {
+      background: rgba(56, 189, 248, 0.25) !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
     }
 
     /* Quick Material Floating Bar */
@@ -1224,6 +1233,9 @@
         <span style="font-size:0.75rem; color:#f7e5ad; font-weight:700; background:rgba(0,0,0,0.6); padding:4px 10px; border-radius:99px; border:1px solid rgba(216,175,98,0.4);">
           ✨ Chế độ UX Builder đang BẬT (Kéo thả / Nhấp đúp gõ)
         </span>
+        <button type="button" id="btnBuilderMatQuick" style="background:rgba(15,23,42,0.85); border:1px solid rgba(56,189,248,0.55); color:#38bdf8; font-size:0.72rem; font-weight:700; padding:5px 12px; border-radius:99px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s ease;" title="Đổi chất liệu thẻ">
+          <span>💎</span> <span id="lblBuilderMatName">Vật Liệu: PVC</span>
+        </button>
         <button type="button" id="btnDoneBuilderMode" style="background:#38bdf8; color:#070a12; border:none; font-weight:700; font-size:0.75rem; padding:5px 12px; border-radius:99px; cursor:pointer;">
           ✓ Xong & Lưu
         </button>
@@ -2344,8 +2356,12 @@ const BRAND_ICONS = {
   const btnContinueFree = document.getElementById('btnContinueFree');
   let pendingVipAction = null;
 
-  function triggerVipWithSupportPrompt(actionCallback) {
+  function triggerVipWithSupportPrompt(actionCallback, customTitle, customSubtitle) {
     pendingVipAction = actionCallback;
+    const elTitle = document.getElementById('donateTitle');
+    const elSub = document.getElementById('donateSubtitle');
+    if (elTitle) elTitle.textContent = customTitle || 'Ủng hộ dự án';
+    if (elSub) elSub.textContent = customSubtitle || 'Nếu công cụ này hữu ích, vui lòng cân nhắc ủng hộ để phát triển. Xin cảm ơn!';
     if (donateModal) {
       donateModal.classList.add('active');
       mainAppShell.setAttribute('inert', 'true');
@@ -2423,9 +2439,7 @@ const BRAND_ICONS = {
   if (btnChoiceOpenBuilder) {
     btnChoiceOpenBuilder.onclick = () => {
       closeCreateChoiceModal();
-      triggerVipWithSupportPrompt(() => {
-        setBuilderMode(true);
-      });
+      setBuilderMode(true);
     };
   }
 
@@ -2722,6 +2736,8 @@ const BRAND_ICONS = {
     // Cập nhật nhãn nút quick badge
     const lblCurrentMat = document.getElementById('lblCurrentMat');
     if (lblCurrentMat) lblCurrentMat.textContent = VIP_MAT_LABELS[mat] || mat;
+    const lblBuilderMatName = document.getElementById('lblBuilderMatName');
+    if (lblBuilderMatName) lblBuilderMatName.textContent = `Vật Liệu: ${VIP_MAT_LABELS[mat] || mat}`;
 
     // Cập nhật các nút trong bảng form
     document.querySelectorAll('.btn-vip-mat').forEach(b => {
@@ -2747,14 +2763,17 @@ const BRAND_ICONS = {
     }
   }
 
-  // Quick Material Badge & Floating Drawer Logic
+  // Quick Material Badge & Floating Drawer Logic (Hiển thị và tương tác trong chế độ UX Builder)
   const btnQuickMatToggle = document.getElementById('btnQuickMatToggle');
+  const btnBuilderMatQuick = document.getElementById('btnBuilderMatQuick');
   const quickMatDrawer = document.getElementById('quickMatDrawer');
-  if (btnQuickMatToggle && quickMatDrawer) {
-    btnQuickMatToggle.onclick = (e) => {
+  if (quickMatDrawer) {
+    const toggleMatDrawer = (e) => {
       e.stopPropagation();
       quickMatDrawer.classList.toggle('active');
     };
+    if (btnQuickMatToggle) btnQuickMatToggle.onclick = toggleMatDrawer;
+    if (btnBuilderMatQuick) btnBuilderMatQuick.onclick = toggleMatDrawer;
 
     document.querySelectorAll('.quick-mat-chip').forEach(chip => {
       chip.onclick = (e) => {
@@ -2762,12 +2781,12 @@ const BRAND_ICONS = {
         const chosenMat = chip.getAttribute('data-mat');
         quickMatDrawer.classList.remove('active');
         
-        // Nếu chọn chất liệu VIP Pro cao cấp (Titanium, Silver, Frosted, Art Paper), hiện popup ủng hộ nhẹ nhàng
+        // Nếu chọn chất liệu VIP Pro cao cấp (Titanium, Inox Xước, Acrylic, Art Paper), hiện modal đề nghị ủng hộ tinh tế
         if (chosenMat !== 'pvc') {
           triggerVipWithSupportPrompt(() => {
             setVipMaterial(chosenMat, true);
             showToast(`Đã đổi chất liệu: ${VIP_MAT_LABELS[chosenMat] || chosenMat}`);
-          });
+          }, `Mở Khóa Chất Liệu ${VIP_MAT_LABELS[chosenMat] || chosenMat}`, 'Nếu bạn yêu thích chất liệu đặc biệt này, hãy cân nhắc ủng hộ để đồng hành phát triển dự án nhé!');
         } else {
           setVipMaterial(chosenMat, true);
           showToast(`Đã đổi chất liệu: ${VIP_MAT_LABELS[chosenMat] || chosenMat}`);
@@ -2777,7 +2796,7 @@ const BRAND_ICONS = {
 
     // Đóng drawer khi click ra ngoài
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#quickMatDrawer') && !e.target.closest('#btnQuickMatToggle')) {
+      if (!e.target.closest('#quickMatDrawer') && !e.target.closest('#btnQuickMatToggle') && !e.target.closest('#btnBuilderMatQuick')) {
         quickMatDrawer.classList.remove('active');
       }
     });
@@ -3290,6 +3309,7 @@ const BRAND_ICONS = {
     } else {
       hideFloatingToolbar();
       deselectActiveElement();
+      if (quickMatDrawer) quickMatDrawer.classList.remove('active');
       saveBuilderLayoutToStorage();
     }
 
