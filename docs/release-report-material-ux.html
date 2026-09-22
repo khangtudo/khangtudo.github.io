@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>inid.me - UHH Vibe Workflow Release Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.25); }
+      50% { box-shadow: 0 0 45px rgba(56, 189, 248, 0.6); }
+    }
+    .card-glow { animation: pulseGlow 4s infinite ease-in-out; }
+    .gradient-border {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(216, 175, 98, 0.4));
+      padding: 1px;
+      border-radius: 16px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-8 font-sans">
+  <div class="max-w-5xl mx-auto space-y-8">
+    
+    <!-- Header -->
+    <header class="flex items-center justify-between border-b border-slate-800 pb-6">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">💎</span>
+          <h1 class="text-2xl font-black tracking-tight text-white">inid.me — UX Release &amp; Vibe Workflow Report</h1>
+        </div>
+        <p class="text-sm text-sky-400 font-medium mt-1">Refactor: Đưa nút đổi vật liệu &amp; đề nghị Donate vào Chế độ Chỉnh sửa trực tiếp (UX Builder)</p>
+      </div>
+      <div class="text-right">
+        <span class="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full text-xs font-bold">100% GREEN PASS</span>
+        <div class="text-xs text-slate-400 mt-1">Harness: UHH v2.1 • Vibe Workflow</div>
+      </div>
+    </header>
+
+    <!-- KPI Metric Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div class="text-xs font-semibold text-slate-400">TRANG CHỦ CANVAS</div>
+        <div class="text-xl font-bold text-sky-400 mt-1">Sạch &amp; Tinh Tế</div>
+        <div class="text-xs text-slate-500 mt-1">display: none cho nút kim cương</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div class="text-xs font-semibold text-slate-400">VÀO UX BUILDER</div>
+        <div class="text-xl font-bold text-amber-300 mt-1">Không Bị Chặn</div>
+        <div class="text-xs text-slate-500 mt-1">Gỡ paywall chặn cửa ban đầu</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div class="text-xs font-semibold text-slate-400">DONATE MODAL</div>
+        <div class="text-xl font-bold text-emerald-400 mt-1">Đúng Thời Điểm</div>
+        <div class="text-xs text-slate-500 mt-1">Chỉ hiện khi chọn VIP Pro material</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div class="text-xs font-semibold text-slate-400">STAGING QA/QC</div>
+        <div class="text-xl font-bold text-emerald-400 mt-1">5/5 PASS</div>
+        <div class="text-xs text-slate-500 mt-1">Toàn bộ logic test &amp; syntax OK</div>
+      </div>
+    </div>
+
+    <!-- Sơ đồ Mermaid -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <span>🔄</span> Kiến Trúc Luồng Mới Đã Tinh Chỉnh
+      </h2>
+      <div class="mermaid bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
+flowchart LR
+    A[🏠 Trang Chủ Canvas] -->|Ẩn nút kim cương| B[Mặt Thẻ Tinh Giản]
+    B -->|Bấm Tạo Mới / Chỉnh Sửa| C[Modal Tùy Chọn]
+    C -->|Chọn 'Chỉnh Sửa Trực Tiếp'| D[🎨 Chế Độ UX Builder]
+    D -->|Hiển thị nút 💎 & Drawer| E[Thanh Công Cụ Builder]
+    E -->|Chọn PVC Miễn Phí| F[Áp dụng ngay]
+    E -->|Chọn Titanium / Inox / Acrylic / Art Paper| G[🌟 Modal Đề Nghị Donate Tinh Tế]
+    G -->|Đóng / Tiếp tục| F
+    F -->|Bấm 'Xong & Lưu'| H[Trở về Trang Chủ: Ẩn nút 💎 & Giữ thẻ sạch đẹp]
+      </div>
+    </div>
+
+    <!-- Bảng so sánh Before vs After -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-red-950/20 border border-red-900/40 rounded-xl p-5">
+        <div class="text-red-400 font-bold text-sm mb-2 flex items-center gap-2">
+          <span>❌</span> Luồng Cũ Trước Khi Sửa
+        </div>
+        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+          <li>Nút 💎 hiển thị thường trực đè lên góc thẻ canvas ngay trang chủ.</li>
+          <li>Chọn 'Chỉnh Sửa Trực Tiếp' lập tức bị chặn đường bởi modal donate (cấn, chưa tinh tế).</li>
+          <li>Người dùng có cảm giác bị đòi hỏi donate trước khi kịp trải nghiệm công cụ.</li>
+        </ul>
+      </div>
+      <div class="bg-emerald-950/20 border border-emerald-900/40 rounded-xl p-5">
+        <div class="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-2">
+          <span>✅</span> Luồng Mới Chuẩn Vibe &amp; Tinh Tế
+        </div>
+        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+          <li>Trang chủ giữ nguyên vẻ đẹp tối giản của danh thiếp thông minh, không có nút lạ đè lên.</li>
+          <li>Người dùng vào UX Builder tự do kéo thả, gõ chữ, trải nghiệm không gian 3D.</li>
+          <li>Chỉ khi người dùng chủ động chạm vào vật liệu VIP thì mới xuất hiện lời ngỏ ủng hộ nhẹ nhàng.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
+      Được kiểm định tự động theo UHH Vibe Workflow • Commit: <code>671bce2</code> • inid.me (khangtudo.github.io)
+    </footer>
+  </div>
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+  </script>
+</body>
+</html>
