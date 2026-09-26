@@ -784,14 +784,35 @@
             filteredHandPos.copy(filteredKnuckles);
           }
 
-          // Xây dựng hệ trục chuẩn Orthonormal 3D Basis của lòng bàn tay
+          // Xây dựng hệ trục chuẩn Orthonormal 3D Basis của lòng bàn tay (Hỗ trợ CẢ 2 BÀN TAY: Trái & Phải)
           // vUp: Trục hướng từ Cổ tay (Wrist) lên Điểm Gốc Hội Tụ Các Ngón Tay (Knuckles)
           const vUp = new THREE.Vector3()
             .subVectors(filteredKnuckles, filteredWristPos)
             .normalize();
           
+          // Xác định chiều bàn tay (Left Hand vs Right Hand) dựa trên multiHandedness của MediaPipe hoặc hình học ngón tay:
+          // MediaPipe trả về results.multiHandedness[0] = { label: 'Left' | 'Right' }
+          // Lưu ý: Đối với camera trước (isFront = true), MediaPipe Hands định danh theo góc nhìn người soi gương.
+          let handednessLabel = 'Right';
+          if (results.multiHandedness && results.multiHandedness.length > 0) {
+            handednessLabel = results.multiHandedness[0].label || 'Right';
+          }
+
+          // Đo lường vector ngang lòng bàn tay:
+          // Đối với bàn tay hướng về phía camera:
+          // - Tay Trái (Left Hand): Ngón trỏ nằm ở phía bên phải ngón út -> (Index - Pinky) trỏ sang +X
+          // - Tay Phải (Right Hand): Ngón trỏ nằm ở phía bên trái ngón út -> (Index - Pinky) trỏ sang -X
+          // Để ma trận vRight luôn hướng sang bên phải màn hình (+X) và vNormal luôn hướng ra ngoài (về phía camera):
           let vRight = new THREE.Vector3().subVectors(filteredIndexMcp, filteredPinkyMcp).normalize();
           let vNormal = new THREE.Vector3().crossVectors(vRight, vUp).normalize();
+
+          // Kiểm tra hướng pháp tuyến vNormal so với hướng nhìn camera (+Z):
+          // Nếu vNormal bị âm (trỏ vào trong màn hình do giơ tay phải hoặc xoay mu bàn tay),
+          // ta đảo ngược vRight để vNormal luôn quay mặt trước của thẻ về phía camera người xem!
+          if (vNormal.z < 0) {
+            vRight.negate();
+            vNormal.crossVectors(vRight, vUp).normalize();
+          }
           vRight.crossVectors(vUp, vNormal).normalize();
 
           if (vNormal.lengthSq() > 0.001) {
