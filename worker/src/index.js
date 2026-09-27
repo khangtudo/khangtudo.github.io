@@ -1,11 +1,26 @@
 import { sendOtpEmail } from './mail.js';
 
+// List of common disposable / temporary email domains
+const DISPOSABLE_EMAIL_DOMAINS = new Set([
+  '10minutemail.com', '10minutemail.net', 'guerrillamail.com', 'guerrillamail.net',
+  'guerrillamail.org', 'tempmail.com', 'temp-mail.org', 'mailinator.com',
+  'throwawaymail.com', 'fakeinbox.com', 'getairmail.com', 'sharklasers.com',
+  'yopmail.com', 'yopmail.fr', 'trashmail.com', 'trashmail.net',
+  'maildrop.cc', 'dispostable.com', 'crazymailing.com', 'mytemp.email'
+]);
+
+function isDisposableEmail(email) {
+  if (!email || !email.includes('@')) return false;
+  const domain = email.split('@')[1].toLowerCase().trim();
+  return DISPOSABLE_EMAIL_DOMAINS.has(domain);
+}
+
 // CORS response helper
 function corsResponse(body, status = 200, headers = {}) {
   const defaultHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Turnstile-Token',
     ...headers
   };
 
@@ -48,11 +63,37 @@ function maskEmail(email) {
   return user[0] + '***' + user[user.length - 1] + '@' + domain;
 }
 
+// Turnstile token verification helper
+async function verifyTurnstileToken(secretKey, token, ip) {
+  if (!secretKey) return true; // If TURNSTILE_SECRET_KEY is not configured, bypass gracefully
+  if (!token) return false;
+
+  try {
+    const formData = new FormData();
+    formData.append('secret', secretKey);
+    formData.append('response', token);
+    if (ip) formData.append('remoteip', ip);
+
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formData
+    });
+    const outcome = await res.json();
+    return outcome.success === true;
+  } catch (err) {
+    console.error('Turnstile verification error:', err);
+    return true; // Fail open if Cloudflare turnstile API is unreachable
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '');
     const method = request.method.toUpperCase();
+
+    // Client IP from Cloudflare header
+    const clientIp = request.headers.get('CF-Connecting-IP') || '127.0.0.1';
 
     // Handle CORS preflight
     if (method === 'OPTIONS') {
@@ -67,25 +108,39 @@ export default {
         const body = await request.json().catch(() => ({}));
         const email = (body.email || '').trim().toLowerCase();
         const cardId = (body.cardId || '').trim();
+        const turnstileToken = body.turnstileToken || request.headers.get('X-Turnstile-Token') || '';
 
+        // Check 1: Valid email format
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           return corsResponse({ error: 'Địa chỉ email không hợp lệ.' }, 400);
         }
 
-        // If cardId is provided, verify card exists and matches owner email
-        let targetCard = null;
-        if (cardId) {
-          const rawCard = await env.INID_KV.get(`card:${cardId}`);
-          if (!rawCard) {
-            return corsResponse({ error: 'Không tìm thấy thông tin danh thiếp.' }, 404);
-          }
-          targetCard = JSON.parse(rawCard);
-          if (targetCard.email !== email) {
-            return corsResponse({ error: 'Email không khớp với chủ sở hữu của danh thiếp này.' }, 403);
+        // Lớp 2: Chặn Disposable / Temporary Email
+        if (isDisposableEmail(email)) {
+          return corsResponse({ error: 'Không hỗ trợ sử dụng địa chỉ email rác / tạm thời.' }, 400);
+        }
+
+        // Lớp 3: Cloudflare Turnstile Verification (nếu được cấu hình secret)
+        if (env && env.TURNSTILE_SECRET_KEY) {
+          const isHuman = await verifyTurnstileToken(env.TURNSTILE_SECRET_KEY, turnstileToken, clientIp);
+          if (!isHuman) {
+            return corsResponse({ error: 'Xác thực bảo mật Turnstile không hợp lệ. Vui lòng thử lại.' }, 403);
           }
         }
 
-        // Rate limiting check: check if last OTP request was sent less than 45s ago
+        // Lớp 1: IP Rate Limiting (Chặn bào quota từ 1 địa chỉ IP)
+        // Quy tắc: Tối đa 5 lượt gửi OTP trong vòng 10 phút trên cùng 1 IP
+        const ipKey = `ip_limit:${clientIp}`;
+        const ipRaw = await env.INID_KV.get(ipKey);
+        let ipData = ipRaw ? JSON.parse(ipRaw) : { count: 0, firstReq: Date.now() };
+
+        if (ipData.count >= 5) {
+          return corsResponse({ 
+            error: 'Bạn đã yêu cầu gửi mã quá nhiều lần từ thiết bị này. Vui lòng chờ 10 phút.' 
+          }, 429);
+        }
+
+        // Rate limiting check cho từng Email riêng biệt (cooldown 45s)
         const existingOtpKey = `otp:${email}`;
         const existingOtpRaw = await env.INID_KV.get(existingOtpKey);
         if (existingOtpRaw) {
@@ -95,6 +150,22 @@ export default {
             return corsResponse({ error: `Vui lòng chờ ${waitSec} giây trước khi yêu cầu mã mới.` }, 429);
           }
         }
+
+        // If cardId is provided, verify card exists and matches owner email
+        if (cardId) {
+          const rawCard = await env.INID_KV.get(`card:${cardId}`);
+          if (!rawCard) {
+            return corsResponse({ error: 'Không tìm thấy thông tin danh thiếp.' }, 404);
+          }
+          const targetCard = JSON.parse(rawCard);
+          if (targetCard.email !== email) {
+            return corsResponse({ error: 'Email không khớp với chủ sở hữu của danh thiếp này.' }, 403);
+          }
+        }
+
+        // Tăng đếm rate limit IP và lưu với TTL 600s (10 phút)
+        ipData.count += 1;
+        await env.INID_KV.put(ipKey, JSON.stringify(ipData), { expirationTtl: 600 });
 
         const otp = generateNumericOtp(6);
         const otpData = {
@@ -110,7 +181,7 @@ export default {
           expirationTtl: 600
         });
 
-        // Send email via MailChannels / Resend
+        // Send email via Brevo / Resend / MailChannels
         await sendOtpEmail(env, {
           email,
           otp,
@@ -173,7 +244,6 @@ export default {
           const cardData = JSON.parse(rawCard);
           cardData.editTokens = cardData.editTokens || [];
           cardData.editTokens.push({ token: editToken, addedAt: new Date().toISOString() });
-          // Keep only the latest 5 devices
           if (cardData.editTokens.length > 5) {
             cardData.editTokens = cardData.editTokens.slice(-5);
           }
@@ -191,7 +261,6 @@ export default {
 
         // CASE B: Creating a brand new card
         let newCardId = generateCardId(8);
-        // Ensure no collision
         let existing = await env.INID_KV.get(`card:${newCardId}`);
         while (existing) {
           newCardId = generateCardId(8);
@@ -209,7 +278,6 @@ export default {
 
         await env.INID_KV.put(`card:${newCardId}`, JSON.stringify(newCardData));
 
-        // Save card index for user email
         const userCardsKey = `user_cards:${email}`;
         const rawUserCards = await env.INID_KV.get(userCardsKey);
         const userCards = rawUserCards ? JSON.parse(rawUserCards) : [];
@@ -294,7 +362,6 @@ export default {
         });
       }
 
-      // Fallback 404 for unknown endpoints
       return corsResponse({ error: 'Endpoint không tồn tại.', endpoint: path }, 404);
 
     } catch (err) {

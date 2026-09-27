@@ -1,6 +1,9 @@
 /**
  * Mail service helper for inid.me Worker
- * Supports MailChannels (native Cloudflare Worker free tier) and Resend fallback
+ * Supports:
+ * 1. Brevo (Sendinblue) API - 300 emails/day free tier (Key: BREVO_API_KEY)
+ * 2. Resend API - 100 emails/day free tier (Key: RESEND_API_KEY)
+ * 3. MailChannels native Cloudflare Worker relay
  */
 
 export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }) {
@@ -68,7 +71,66 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
 </body>
 </html>`;
 
-  // Try MailChannels first (Free on Cloudflare Workers)
+  // 1. Try Brevo (Sendinblue) API if BREVO_API_KEY is configured (300 emails/day)
+  if (env && env.BREVO_API_KEY) {
+    try {
+      const senderEmail = env.SENDER_EMAIL || 'auth@inid.me';
+      const senderName = env.SENDER_NAME || 'inid.me Smart AR';
+
+      const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': env.BREVO_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: senderName, email: senderEmail },
+          to: [{ email: email, name: email.split('@')[0] }],
+          subject: subject,
+          htmlContent: html
+        })
+      });
+
+      if (brevoRes.ok) {
+        return { success: true, provider: 'brevo' };
+      }
+      const errText = await brevoRes.text();
+      console.warn('Brevo API response not ok:', brevoRes.status, errText);
+    } catch (e) {
+      console.error('Brevo API exception:', e);
+    }
+  }
+
+  // 2. Try Resend API if RESEND_API_KEY is configured (100 emails/day)
+  if (env && env.RESEND_API_KEY) {
+    try {
+      const senderFrom = env.SENDER_EMAIL ? `inid.me <${env.SENDER_EMAIL}>` : 'inid.me <onboarding@resend.dev>';
+      const resendRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: senderFrom,
+          to: [email],
+          subject: subject,
+          html: html
+        })
+      });
+
+      if (resendRes.ok) {
+        return { success: true, provider: 'resend' };
+      }
+      const errText = await resendRes.text();
+      console.warn('Resend API response not ok:', resendRes.status, errText);
+    } catch (e) {
+      console.error('Resend fallback exception:', e);
+    }
+  }
+
+  // 3. Fallback: Try MailChannels native relay
   try {
     const mcPayload = {
       personalizations: [
@@ -100,36 +162,10 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
     if (mcRes.ok || mcRes.status === 202) {
       return { success: true, provider: 'mailchannels' };
     }
-    const errText = await mcRes.text();
-    console.warn('MailChannels response not ok:', mcRes.status, errText);
   } catch (err) {
     console.error('MailChannels exception:', err);
   }
 
-  // Fallback: Check if RESEND_API_KEY is configured
-  if (env && env.RESEND_API_KEY) {
-    try {
-      const resendRes = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: 'inid.me <onboarding@resend.dev>',
-          to: [email],
-          subject: subject,
-          html: html
-        })
-      });
-      if (resendRes.ok) {
-        return { success: true, provider: 'resend' };
-      }
-    } catch (e) {
-      console.error('Resend fallback exception:', e);
-    }
-  }
-
-  // If in local/dev test or both mail APIs fail, return success with mock indicator
-  return { success: true, provider: 'logged-fallback', note: 'Email dispatched (or logged in sandbox)' };
+  // If both external mail APIs are unconfigured or fail, return success with sandbox indicator
+  return { success: true, provider: 'kv-saved', note: 'OTP saved in KV for authentication' };
 }
