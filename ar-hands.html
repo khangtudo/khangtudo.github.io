@@ -157,7 +157,9 @@
       align-items: center;
       justify-content: center;
       gap: 16px;
-      transition: opacity 0.4s;
+      padding: 20px;
+      box-sizing: border-box;
+      transition: opacity 0.4s ease;
     }
     .spinner {
       width: 44px;
@@ -168,6 +170,78 @@
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Modern Real-time Progress Bar */
+    .ar-progress-box {
+      width: 90%;
+      max-width: 380px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 14px;
+      padding: 16px 18px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      box-sizing: border-box;
+    }
+    .ar-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+    }
+    .ar-progress-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      overflow: hidden;
+      position: relative;
+    }
+    .ar-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0ea5e9, #38bdf8, #10b981);
+      border-radius: 99px;
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    }
+    .ar-progress-detail {
+      margin-top: 10px;
+      font-size: 0.72rem;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .ai-status-ready {
+      background: rgba(16, 185, 129, 0.2) !important;
+      border: 1px solid rgba(16, 185, 129, 0.5) !important;
+      color: #34d399 !important;
+    }
+    .ai-status-loading {
+      background: rgba(245, 158, 11, 0.2) !important;
+      border: 1px solid rgba(245, 158, 11, 0.5) !important;
+      color: #fbbf24 !important;
+    }
+    .ai-status-sim {
+      background: rgba(148, 163, 184, 0.2) !important;
+      border: 1px solid rgba(148, 163, 184, 0.5) !important;
+      color: #cbd5e1 !important;
+    }
+    .ai-status-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      margin-right: 4px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
   </style>
 
   <!-- MediaPipe Hands & Camera Utils CDN -->
@@ -186,18 +260,35 @@
   <!-- Hand Skeleton 2D Canvas Layer -->
   <canvas id="handSkeleton"></canvas>
 
-  <!-- Loading State -->
+  <!-- Loading State with Real-time Progress Bar -->
   <div id="loadingOverlay">
-    <div class="spinner"></div>
-    <div style="font-weight: 700; font-size: 1rem; color: #fff;">Khởi động AI MediaPipe Hands...</div>
-    <div style="font-size: 0.78rem; color: #94a3b8;">Đang nạp mô hình thị giác máy tính & Camera AR</div>
+    <div class="ar-progress-box">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <div class="spinner" style="width: 28px; height: 28px; border-width: 2.5px; margin: 0;"></div>
+        <div style="text-align: left;">
+          <div style="font-weight: 700; font-size: 0.95rem; color: #fff;" id="txtProgressTitle">Khởi Động AI MediaPipe Hands...</div>
+          <div style="font-size: 0.72rem; color: #38bdf8;" id="txtProgressStep">Đang kết nối Camera & Canvas 3D (1/3)</div>
+        </div>
+      </div>
+      
+      <div class="ar-progress-header">
+        <span id="txtProgressStatus">Đang nạp mô hình thị giác...</span>
+        <span id="txtProgressPercent" style="font-weight: 700; color: #38bdf8;">15%</span>
+      </div>
+      <div class="ar-progress-track">
+        <div class="ar-progress-fill" id="progressFill" style="width: 15%;"></div>
+      </div>
+      <div class="ar-progress-detail" id="txtProgressDetail">
+        Mô hình AI MediaPipe (~10MB) được tải và lưu đệm trên trình duyệt để nhận diện bàn tay chính xác theo thời gian thực.
+      </div>
+    </div>
   </div>
 
   <!-- HUD Header -->
   <div class="ar-hud-header">
     <div class="hud-brand">
       <div class="hud-brand-title">inid<span>.me</span></div>
-      <div class="hud-badge" style="background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.5); color:#34d399;">PRODUCTION • AI HAND AR</div>
+      <div class="hud-badge ai-status-loading" id="badgeAiStatus"><span class="ai-status-dot"></span>AI ĐANG NẠP...</div>
     </div>
     <div class="hud-metrics">
       <button id="btnAdjustKnucklePos" style="background:rgba(56,189,248,0.2); border:1px solid rgba(56,189,248,0.5); color:#38bdf8; border-radius:6px; padding:2px 8px; font-size:0.75rem; font-weight:700; cursor:pointer;" title="Bấm để đổi khoảng cách so với gốc ngón tay">📍 Gốc ngón: 1.8cm</button>
@@ -221,7 +312,7 @@
 
     <div class="hud-controls">
       <button class="btn-ar-ctrl" id="btnSwitchCam">📷 Đổi Cam</button>
-      <button class="btn-ar-ctrl" id="btnToggleMesh">🦴 Khớp: TẮT</button>
+      <button class="btn-ar-ctrl active" id="btnToggleMesh">🦴 Khớp: BẬT</button>
       <button class="btn-ar-ctrl" id="btnRotateCard">📐 Xoay Ngang</button>
       <button class="btn-ar-ctrl" id="btnFlipCard">🔄 Lật Thẻ</button>
       <a href="/" class="btn-ar-ctrl" style="text-decoration:none; max-width: 75px;">✕ Thoát</a>
@@ -284,7 +375,31 @@
     const btnToggleMesh = document.getElementById('btnToggleMesh');
     const btnFlipCard = document.getElementById('btnFlipCard');
 
-    let showSkeleton = false;
+    // -------------------------------------------------------------
+    // REAL-TIME PROGRESS TRACKING & AI LIFECYCLE
+    // -------------------------------------------------------------
+    let currentProgressVal = 10;
+    function updateProgress(percent, title, step, status, detail) {
+      currentProgressVal = Math.max(currentProgressVal, Math.min(100, Math.round(percent)));
+      const elFill = document.getElementById('progressFill');
+      const elPct = document.getElementById('txtProgressPercent');
+      const elTitle = document.getElementById('txtProgressTitle');
+      const elStep = document.getElementById('txtProgressStep');
+      const elStatus = document.getElementById('txtProgressStatus');
+      const elDetail = document.getElementById('txtProgressDetail');
+      if (elFill) elFill.style.width = `${currentProgressVal}%`;
+      if (elPct) elPct.textContent = `${currentProgressVal}%`;
+      if (title && elTitle) elTitle.textContent = title;
+      if (step && elStep) elStep.textContent = step;
+      if (status && elStatus) elStatus.textContent = status;
+      if (detail && elDetail) elDetail.textContent = detail;
+    }
+
+    let hasAiInitialized = false;
+    let filesRequested = 0;
+    let cameraConnected = false;
+
+    let showSkeleton = true;
     let cardFlipped = false; // false = Front (0°), true = Back (180°)
     let currentGesture = 'NONE'; // 'NONE' | 'PALM' | 'PINCH' | 'FIST_FLIP' | 'OPEN_FLIP'
 
@@ -541,6 +656,23 @@
 
     function onResults(results) {
       try {
+        if (!hasAiInitialized && !isSimulating) {
+          hasAiInitialized = true;
+          updateProgress(100, 'AI Đã Sẵn Sàng!', 'Hoàn tất khởi tạo 100%', 'Mô hình AI đã sẵn sàng xử lý khung hình!', 'Đưa bàn tay vào trước camera để tương tác với thẻ 3D.');
+          const badge = document.getElementById('badgeAiStatus');
+          if (badge) {
+            badge.className = 'hud-badge ai-status-ready';
+            badge.innerHTML = '<span class="ai-status-dot"></span>AI SẴN SÀNG';
+          }
+          if (navigator.vibrate) { try { navigator.vibrate(50); } catch(e){} }
+          setTimeout(() => {
+            if (loadingOverlay) {
+              loadingOverlay.style.opacity = '0';
+              setTimeout(() => loadingOverlay.style.display = 'none', 400);
+            }
+          }, 450);
+        }
+
         const latency = Math.round(performance.now() - lastInferenceStart);
         txtLatency.textContent = latency + 'ms';
 
@@ -818,7 +950,18 @@
     // MEDIAPIPE INITIALIZATION
     // -------------------------------------------------------------
     const hands = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+      locateFile: (file) => {
+        filesRequested++;
+        const p = Math.min(88, 30 + filesRequested * 15);
+        updateProgress(
+          p,
+          'Đang Nạp Mô Hình AI...',
+          'Tải tài nguyên AI (2/3)',
+          `Đang nạp ${file}...`,
+          'Mô hình học sâu MediaPipe (~10MB) đang được tải & biên dịch WebAssembly.'
+        );
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+      }
     });
 
     hands.setOptions({
@@ -832,6 +975,14 @@
 
     let currentFacingMode = 'environment'; // 'user' (front) | 'environment' (back)
     let cameraFeed = null;
+    let isLoopAnimating = false;
+
+    function startAnimationLoop() {
+      if (!isLoopAnimating) {
+        isLoopAnimating = true;
+        animate();
+      }
+    }
 
     function initCamera(facing) {
       // Check Secure Context & MediaDevices support (required for Camera on iOS/Android)
@@ -872,12 +1023,16 @@
     function startSimulationMode(reason) {
       isSimulating = true;
       console.log('Starting Interactive Simulation Mode:', reason);
+      updateProgress(100, 'Chế Độ Thử Nghiệm', 'Sẵn sàng tương tác', 'Mô phỏng chuột / cảm ứng kích hoạt', 'Di chuột hoặc chạm màn hình để điều khiển thẻ 3D.');
+      const badge = document.getElementById('badgeAiStatus');
+      if (badge) {
+        badge.className = 'hud-badge ai-status-sim';
+        badge.innerHTML = '<span class="ai-status-dot"></span>MÔ PHỎNG';
+      }
       loadingOverlay.style.opacity = '0';
       setTimeout(() => loadingOverlay.style.display = 'none', 400);
 
-      if (!isSimulating) {
-        animate();
-      }
+      startAnimationLoop();
 
       const isHttps = window.location.protocol === 'https:';
       if (!isHttps && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
@@ -955,21 +1110,32 @@
       simulateHand(window.innerWidth / 2, window.innerHeight / 2, false);
     }
 
-    // Safety timeout: Sau tối đa 3.5s, nếu Camera feed chưa gọi được thì tự động ẩn loadingOverlay để người dùng không bị kẹt
+    // Safety timeout: Sau 12s, nếu mạng quá chậm chưa nạp xong model, mở stage để không kẹt người dùng
     setTimeout(() => {
-      if (loadingOverlay && loadingOverlay.style.display !== 'none') {
-        console.warn('Camera load timeout reached, revealing interactive stage');
-        loadingOverlay.style.opacity = '0';
-        setTimeout(() => loadingOverlay.style.display = 'none', 400);
-        animate();
+      if (!hasAiInitialized) {
+        console.warn('AI load timeout reached, revealing stage with fallback message');
+        if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+          updateProgress(90, 'Đang Nạp Mô Hình Nền', 'Khởi tạo chạy nền', 'Camera đã kết nối, AI tiếp tục nạp ngầm...', 'Đưa bàn tay lại gần camera khi biểu tượng AI chuyển sang màu xanh.');
+          const badge = document.getElementById('badgeAiStatus');
+          if (badge) {
+            badge.className = 'hud-badge ai-status-loading';
+            badge.innerHTML = '<span class="ai-status-dot"></span>AI CHỜ TAY';
+          }
+          loadingOverlay.style.opacity = '0';
+          setTimeout(() => loadingOverlay.style.display = 'none', 400);
+          startAnimationLoop();
+        }
       }
-    }, 3500);
+    }, 12000);
+
+    // Bắt đầu quy trình khởi tạo: Camera -> Three.js -> AI Model Warm-up
+    updateProgress(15, 'Khởi Động AR Hands...', 'Kết nối Camera (1/3)', 'Đang xin quyền & mở Camera...', 'Độ phân giải tối ưu 1280x720.');
 
     initCamera(currentFacingMode).then(() => {
+      cameraConnected = true;
       console.log('Camera started successfully with facingMode:', currentFacingMode);
-      loadingOverlay.style.opacity = '0';
-      setTimeout(() => loadingOverlay.style.display = 'none', 400);
-      animate();
+      updateProgress(40, 'Camera Đã Sẵn Sàng!', 'Nạp mô hình AI (2/3)', 'Đang kết nối MediaPipe Vision AI...', 'Mô hình Deep Learning đang được tải và nạp vào GPU/WASM.');
+      startAnimationLoop();
     }).catch(err => {
       console.warn('Camera not available, falling back to Simulation Mode:', err);
       startSimulationMode(err.message);
