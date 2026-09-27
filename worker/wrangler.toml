@@ -1,0 +1,7 @@
+name = "inid-auth-worker"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+
+[[kv_namespaces]]
+binding = "INID_KV"
+id = "298959ba3d124175bc151a42f86aa834"

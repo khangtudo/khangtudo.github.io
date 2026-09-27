@@ -1134,6 +1134,28 @@
       color: #070a12;
     }
 
+
+  /* Email & OTP Auth Modal */
+  .auth-step-wrap { transition: all 0.25s ease; }
+  .otp-digit-input {
+    width: 100%; box-sizing: border-box; padding: 12px;
+    text-align: center; letter-spacing: 8px; font-size: 1.4rem;
+    font-weight: 800; font-family: ui-monospace, SFMono-Regular, monospace;
+    border-radius: 12px; border: 1.5px solid #38bdf8;
+    background: #070a12; color: #38bdf8; outline: none;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+  }
+  .otp-digit-input:focus { border-color: #7dd3fc; box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+  .auth-btn-primary {
+    width: 100%; padding: 12px; border-radius: 12px;
+    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+    color: #fff; border: none; font-weight: 700; font-size: 0.9rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    gap: 8px; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .auth-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4); }
+  .auth-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
 </style>
 </head>
 <body>
@@ -1573,6 +1595,62 @@
   </div>
 
   <!-- Create Card / Edit Mode Choice Modal -->
+  
+  <!-- Email & OTP Authentication Modal (Universal Unique Link & Ownership) -->
+  <div class="qr-modal" id="emailAuthModal" role="dialog" aria-modal="true" aria-label="Xác thực Email & OTP">
+    <div class="qr-card" style="max-width: 380px; width: 92%; max-height: min(90vh, 520px); overflow-y: auto; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 25px 60px rgba(0,0,0,0.95); padding: 22px 18px; border-radius: 20px; box-sizing: border-box;">
+      <button class="qr-close" id="btnCloseEmailAuthModal" aria-label="Đóng bảng xác thực" style="color: #94a3b8; top: 14px; right: 14px;">✕</button>
+      
+      <!-- STEP 1: Enter Email -->
+      <div id="authStepEmail" class="auth-step-wrap">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+          <span style="font-size:1.5rem; line-height:1;" id="authModalIcon">✨</span>
+          <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff; margin:0;" id="authModalTitle">Tạo Danh Thiếp Mới</h3>
+        </div>
+        <p style="font-size:0.75rem; color:#94a3b8; margin: 0 0 16px 0; line-height:1.4;" id="authModalDesc">
+          Nhập email của bạn để lưu giữ <b>Universal Unique Link</b> và nhận mã OTP xác thực bảo mật quyền cập nhật khi đổi thiết bị.
+        </p>
+
+        <div style="margin-bottom:14px;">
+          <label for="authInputEmail" style="display:block; font-size:0.75rem; color:#cbd5e1; font-weight:600; margin-bottom:6px;">Email của bạn:</label>
+          <input type="email" id="authInputEmail" placeholder="vidu@congty.com" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid #334155; background:#070a12; color:#fff; font-size:0.88rem; outline:none; transition:border 0.2s;" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='#334155'">
+          <div id="authEmailError" style="color:#ef4444; font-size:0.72rem; margin-top:5px; display:none;"></div>
+        </div>
+
+        <button type="button" id="btnAuthSendOtp" class="auth-btn-primary">
+          <span id="txtBtnSendOtp">Tiếp tục & Nhận mã OTP</span> <span>→</span>
+        </button>
+      </div>
+
+      <!-- STEP 2: Enter OTP -->
+      <div id="authStepOtp" class="auth-step-wrap" style="display:none;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+          <span style="font-size:1.5rem; line-height:1;">📬</span>
+          <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff; margin:0;">Nhập Mã OTP Xác Thực</h3>
+        </div>
+        <p style="font-size:0.75rem; color:#94a3b8; margin: 0 0 16px 0; line-height:1.4;">
+          Mã xác thực gồm 6 số đã được gửi đến: <b id="authTargetEmailText" style="color:#38bdf8;"></b>
+        </p>
+
+        <div style="margin-bottom:14px;">
+          <label for="authInputOtp" style="display:block; font-size:0.75rem; color:#cbd5e1; font-weight:600; margin-bottom:6px;">Mã OTP (6 chữ số):</label>
+          <input type="text" id="authInputOtp" class="otp-digit-input" maxlength="6" placeholder="123456" inputmode="numeric">
+          <div id="authOtpError" style="color:#ef4444; font-size:0.72rem; margin-top:5px; display:none;"></div>
+        </div>
+
+        <button type="button" id="btnAuthVerifyOtp" class="auth-btn-primary" style="background:linear-gradient(135deg, #059669 0%, #10b981 100%); margin-bottom:12px;">
+          <span id="txtBtnVerifyOtp">Xác Thực & Kích Hoạt</span> <span>✓</span>
+        </button>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:#64748b;">
+          <button type="button" id="btnAuthBackToEmail" style="background:none; border:none; color:#94a3b8; cursor:pointer; padding:0; text-decoration:underline;">← Đổi email</button>
+          <button type="button" id="btnAuthResendOtp" style="background:none; border:none; color:#38bdf8; cursor:pointer; padding:0; text-decoration:underline;">Gửi lại mã</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <div class="qr-modal" id="createChoiceModal" role="dialog" aria-modal="true" aria-label="Tùy chọn chỉnh sửa hoặc tạo mới">
     <div class="qr-card" style="max-width: 350px; width: 92%; max-height: min(85vh, 440px); overflow-y: auto; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(216, 175, 98, 0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.95); padding: 18px 16px; border-radius: 18px; box-sizing: border-box;">
       <button class="qr-close" id="btnCloseCreateChoiceModal" aria-label="Đóng bảng tùy chọn" style="color: #94a3b8; top: 12px; right: 12px;">✕</button>
@@ -1944,7 +2022,9 @@ const BRAND_ICONS = {
 
   let currentLang = 'vi';
   let lastFocusedTrigger = null;
-  let profile = {
+  const INID_API_URL = 'https://inid-auth-worker.phanmanhkhang89.workers.dev';
+
+  const DEMO_PROFILE = {
     fn: "Phan Mạnh Khang",
     org: "Minh Tam Prolab",
     title: "CGO - Giám Đốc Tăng Trưởng",
@@ -1960,15 +2040,34 @@ const BRAND_ICONS = {
       { type: "zalo", url: "https://zalo.me/minhtamprolab" },
       { type: "insta", url: "https://instagram.com/minhtamprolab" },
       { type: "li", url: "https://linkedin.com/in/phanmanhkhang" }
-    ]
+    ],
+    isDemo: true
   };
 
-  // Decode profile from URL hash if present
-  if (window.location.hash.startsWith('#data=')) {
-    try {
+  let profile = Object.assign({}, DEMO_PROFILE);
+  let isDemoCard = true;
+  let activeCardId = null;
+  let authMode = 'create'; // 'create' | 'claim'
+
+  // Detect card ID from URL search (?id=...) or path (/p/<id>)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const cardIdFromPath = (pathParts[0] === 'p' && pathParts[1]) ? pathParts[1] : null;
+    activeCardId = urlParams.get('id') || cardIdFromPath || null;
+
+    if (activeCardId) {
+      isDemoCard = false;
+    } else if (window.location.hash.startsWith('#data=')) {
       const b64 = window.location.hash.slice(6);
-      profile = Object.assign(profile, JSON.parse(decodeURIComponent(atob(b64))));
-    } catch(e) {}
+      const parsedData = JSON.parse(decodeURIComponent(atob(b64)));
+      if (parsedData && (parsedData.fn || parsedData.org)) {
+        profile = Object.assign({}, parsedData);
+        isDemoCard = false;
+      }
+    }
+  } catch (err) {
+    console.warn('URL parsing notice:', err);
   }
 
   // VisualViewport Keyboard Handler
@@ -2076,14 +2175,23 @@ const BRAND_ICONS = {
 
   // Helper: Kiểm tra người dùng có đang sở hữu/lưu thẻ trong máy không
   function isSavedCardOwner() {
-    try {
-      const saved = localStorage.getItem('inid_ar_profile');
-      if (!saved) return false;
-      const parsed = JSON.parse(saved);
-      return !!(parsed && (parsed.fn || parsed.org || parsed.tel));
-    } catch(e) {
+    // 1. Khi đang xem Demo Card (Trang chủ mặc định): KHÔNG BAO GIỜ là Owner!
+    if (isDemoCard) return false;
+
+    // 2. Khi đang mở một cardId cụ thể: kiểm tra xem máy này có editToken của cardId đó không
+    if (activeCardId) {
+      const token = localStorage.getItem('inid_edit_token_' + activeCardId);
+      const savedCardId = localStorage.getItem('inid_my_card_id');
+      if (token && (savedCardId === activeCardId || token.length > 10)) return true;
       return false;
     }
+
+    // 3. Nếu nạp qua hash #data=...: chỉ là owner nếu máy này có lưu auth token hợp lệ
+    const myOwnerToken = localStorage.getItem('inid_user_owner_token');
+    const mySavedCard = localStorage.getItem('inid_my_card_id');
+    if (myOwnerToken && mySavedCard) return true;
+
+    return false;
   }
 
   function updateI18n() {
@@ -2332,7 +2440,17 @@ const BRAND_ICONS = {
     }
   }
 
-  if (btnCreateNewDock) btnCreateNewDock.onclick = openCreateChoiceModal;
+  function handleCreateOrEditClick() {
+    if (!isSavedCardOwner()) {
+      // Khách vãng lai xem demo hoặc xem thẻ người khác -> Mở luồng tạo thẻ mới bằng email + OTP
+      openEmailAuthModal('create');
+    } else {
+      // Chủ thẻ -> Mở menu tùy chọn chỉnh sửa
+      openCreateChoiceModal();
+    }
+  }
+
+  if (btnCreateNewDock) btnCreateNewDock.onclick = handleCreateOrEditClick;
   if (btnCloseCreateChoiceModal) btnCloseCreateChoiceModal.onclick = closeCreateChoiceModal;
 
   if (createChoiceModal) {
@@ -2344,7 +2462,29 @@ const BRAND_ICONS = {
   if (btnChoiceOpenForm) {
     btnChoiceOpenForm.onclick = () => {
       closeCreateChoiceModal();
-      openSheet(!isSavedCardOwner());
+      if (!isSavedCardOwner()) {
+        openEmailAuthModal('create');
+      } else {
+        openSheet(false);
+      }
+    };
+  }
+
+  if (btnChoiceOpenBuilder) {
+    btnChoiceOpenBuilder.onclick = () => {
+      closeCreateChoiceModal();
+      if (!isSavedCardOwner()) {
+        openEmailAuthModal('create');
+      } else {
+        openVipProBuilder();
+      }
+    };
+  }
+
+  if (btnCreateAnotherCard) {
+    btnCreateAnotherCard.onclick = () => {
+      closeCreateChoiceModal();
+      openEmailAuthModal('create');
     };
   }
 
@@ -2926,7 +3066,13 @@ const BRAND_ICONS = {
     if (lastFocusedTrigger) { lastFocusedTrigger.focus(); }
   }
 
-  btnOpenEdit.onclick = openSheet;
+  btnOpenEdit.onclick = () => {
+    if (!isSavedCardOwner()) {
+      openEmailAuthModal('create');
+    } else {
+      openSheet(false);
+    }
+  };
   btnCloseEdit.onclick = closeSheet;
   overlayBackdrop.onclick = () => { closeSheet(); closeQr(); };
 
@@ -3061,15 +3207,38 @@ const BRAND_ICONS = {
       const profileJson = JSON.stringify(profile);
       localStorage.setItem('inid_ar_profile', profileJson);
       const b64 = btoa(encodeURIComponent(profileJson));
-      history.replaceState(null, '', `#data=${b64}`);
+      if (!activeCardId) {
+        history.replaceState(null, '', `#data=${b64}`);
+      }
       const btnArHandsLink = document.getElementById('btnArHandsLink');
       if (btnArHandsLink) {
         btnArHandsLink.href = `/ar-hands/#data=${b64}`;
       }
+
+      // Sync to Cloudflare Worker KV if activeCardId exists and we are the owner
+      if (activeCardId) {
+        const editToken = localStorage.getItem('inid_edit_token_' + activeCardId);
+        if (editToken) {
+          fetch(`${INID_API_URL}/api/card/${activeCardId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${editToken}`
+            },
+            body: JSON.stringify({ profile })
+          }).then(r => r.json()).then(res => {
+            if (res.success) {
+              console.log('Synced to inid.me Cloudflare KV successfully');
+            }
+          }).catch(err => {
+            console.warn('Cloud sync background error:', err);
+          });
+        }
+      }
     } catch (e) {
       console.warn('Error saving profile hash:', e);
     }
-    showToast('Đã lưu & đồng bộ!');
+    showToast(currentLang === 'vi' ? 'Đã lưu & đồng bộ đám mây!' : 'Saved & Cloud Synced!');
   };
 
   // Load Minh Tam Prolab Sample
@@ -3714,6 +3883,284 @@ const BRAND_ICONS = {
       saveBuilderLayoutToStorage();
       showToast('Đã dán ảnh danh thiếp thật lên thẻ 3D AR!');
     };
+  }
+
+  // -------------------------------------------------------------
+  // EMAIL & OTP AUTHENTICATION LOGIC (UNIVERSAL UNIQUE LINK & OWNERSHIP)
+  // -------------------------------------------------------------
+  const emailAuthModal = document.getElementById('emailAuthModal');
+  const btnCloseEmailAuthModal = document.getElementById('btnCloseEmailAuthModal');
+  const authStepEmail = document.getElementById('authStepEmail');
+  const authStepOtp = document.getElementById('authStepOtp');
+  const authModalTitle = document.getElementById('authModalTitle');
+  const authModalDesc = document.getElementById('authModalDesc');
+  const authInputEmail = document.getElementById('authInputEmail');
+  const authEmailError = document.getElementById('authEmailError');
+  const btnAuthSendOtp = document.getElementById('btnAuthSendOtp');
+  const txtBtnSendOtp = document.getElementById('txtBtnSendOtp');
+  const authTargetEmailText = document.getElementById('authTargetEmailText');
+  const authInputOtp = document.getElementById('authInputOtp');
+  const authOtpError = document.getElementById('authOtpError');
+  const btnAuthVerifyOtp = document.getElementById('btnAuthVerifyOtp');
+  const txtBtnVerifyOtp = document.getElementById('txtBtnVerifyOtp');
+  const btnAuthBackToEmail = document.getElementById('btnAuthBackToEmail');
+  const btnAuthResendOtp = document.getElementById('btnAuthResendOtp');
+  const btnClaimOwnerOtp = document.getElementById('btnClaimOwnerOtp');
+  const ownerClaimBanner = document.getElementById('ownerClaimBanner');
+
+  let currentAuthEmail = '';
+
+  function openEmailAuthModal(mode = 'create') {
+    authMode = mode;
+    if (authEmailError) authEmailError.style.display = 'none';
+    if (authOtpError) authOtpError.style.display = 'none';
+
+    if (authMode === 'create') {
+      if (authModalTitle) authModalTitle.textContent = currentLang === 'vi' ? 'Tạo Danh Thiếp Mới' : 'Create Smart Card';
+      if (authModalDesc) authModalDesc.innerHTML = currentLang === 'vi' 
+        ? 'Nhập email của bạn để lưu giữ <b>Universal Unique Link</b> và nhận mã OTP xác thực bảo mật quyền cập nhật khi đổi thiết bị.'
+        : 'Enter your email to secure your <b>Universal Unique Link</b> and receive an OTP to update your card across devices.';
+      if (authInputEmail) authInputEmail.value = '';
+    } else {
+      if (authModalTitle) authModalTitle.textContent = currentLang === 'vi' ? 'Xác Thực Chủ Danh Thiếp' : 'Verify Card Owner';
+      if (authModalDesc) authModalDesc.innerHTML = currentLang === 'vi'
+        ? 'Nhập email đã đăng ký của danh thiếp này để nhận mã OTP mở quyền chỉnh sửa trên thiết bị hiện tại.'
+        : 'Enter the registered email of this card to receive an OTP and unlock editing permissions on this device.';
+      if (authInputEmail) authInputEmail.value = profile.email || '';
+    }
+
+    if (authStepEmail) authStepEmail.style.display = 'block';
+    if (authStepOtp) authStepOtp.style.display = 'none';
+
+    if (emailAuthModal) {
+      emailAuthModal.classList.add('active');
+      mainAppShell.setAttribute('inert', 'true');
+      setTimeout(() => { if (authInputEmail) authInputEmail.focus(); }, 100);
+    }
+  }
+
+  function closeEmailAuthModal() {
+    if (emailAuthModal) {
+      emailAuthModal.classList.remove('active');
+      mainAppShell.removeAttribute('inert');
+    }
+  }
+
+  if (btnCloseEmailAuthModal) btnCloseEmailAuthModal.onclick = closeEmailAuthModal;
+  if (emailAuthModal) {
+    emailAuthModal.addEventListener('click', (e) => {
+      if (e.target === emailAuthModal) closeEmailAuthModal();
+    });
+  }
+
+  if (btnAuthBackToEmail) {
+    btnAuthBackToEmail.onclick = () => {
+      if (authStepOtp) authStepOtp.style.display = 'none';
+      if (authStepEmail) authStepEmail.style.display = 'block';
+      if (authInputEmail) authInputEmail.focus();
+    };
+  }
+
+  async function handleSendOtp() {
+    const email = (authInputEmail.value || '').trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (authEmailError) {
+        authEmailError.textContent = currentLang === 'vi' ? 'Vui lòng nhập địa chỉ email hợp lệ.' : 'Please enter a valid email address.';
+        authEmailError.style.display = 'block';
+      }
+      authInputEmail.focus();
+      return;
+    }
+    if (authEmailError) authEmailError.style.display = 'none';
+
+    currentAuthEmail = email;
+    btnAuthSendOtp.disabled = true;
+    txtBtnSendOtp.textContent = currentLang === 'vi' ? 'Đang gửi mã...' : 'Sending code...';
+
+    try {
+      const payload = {
+        email,
+        cardId: authMode === 'claim' ? activeCardId : null
+      };
+
+      const res = await fetch(`${INID_API_URL}/api/card/request-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Không thể gửi mã OTP.');
+      }
+
+      // Switch to Step 2
+      if (authTargetEmailText) authTargetEmailText.textContent = data.emailMasked || email;
+      if (authStepEmail) authStepEmail.style.display = 'none';
+      if (authStepOtp) authStepOtp.style.display = 'block';
+      if (authInputOtp) {
+        authInputOtp.value = '';
+        setTimeout(() => authInputOtp.focus(), 100);
+      }
+      showToast(currentLang === 'vi' ? 'Đã gửi mã OTP về email của bạn!' : 'OTP code sent to your email!');
+    } catch (err) {
+      if (authEmailError) {
+        authEmailError.textContent = err.message || 'Lỗi gửi mã OTP.';
+        authEmailError.style.display = 'block';
+      }
+    } finally {
+      btnAuthSendOtp.disabled = false;
+      txtBtnSendOtp.textContent = currentLang === 'vi' ? 'Tiếp tục & Nhận mã OTP' : 'Continue & Get OTP';
+    }
+  }
+
+  if (btnAuthSendOtp) btnAuthSendOtp.onclick = handleSendOtp;
+  if (btnAuthResendOtp) btnAuthResendOtp.onclick = handleSendOtp;
+  if (authInputEmail) {
+    authInputEmail.onkeydown = (e) => {
+      if (e.key === 'Enter') handleSendOtp();
+    };
+  }
+
+  async function handleVerifyOtp() {
+    const otp = (authInputOtp.value || '').trim();
+    if (!otp || otp.length < 6) {
+      if (authOtpError) {
+        authOtpError.textContent = currentLang === 'vi' ? 'Vui lòng nhập đủ 6 chữ số OTP.' : 'Please enter 6-digit OTP code.';
+        authOtpError.style.display = 'block';
+      }
+      authInputOtp.focus();
+      return;
+    }
+    if (authOtpError) authOtpError.style.display = 'none';
+
+    btnAuthVerifyOtp.disabled = true;
+    txtBtnVerifyOtp.textContent = currentLang === 'vi' ? 'Đang xác thực...' : 'Verifying...';
+
+    try {
+      const payload = {
+        email: currentAuthEmail,
+        otp,
+        cardId: authMode === 'claim' ? activeCardId : null,
+        initialProfile: authMode === 'create' ? {
+          fn: '',
+          title: '',
+          org: '',
+          tel: '',
+          email: currentAuthEmail,
+          url: '',
+          adr: '',
+          slogan: '',
+          orientation: 'vertical',
+          socials: []
+        } : undefined
+      };
+
+      const res = await fetch(`${INID_API_URL}/api/card/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Xác thực OTP thất bại.');
+      }
+
+      // Success!
+      closeEmailAuthModal();
+
+      const newCardId = data.cardId;
+      const editToken = data.editToken;
+
+      localStorage.setItem('inid_my_card_id', newCardId);
+      localStorage.setItem('inid_my_email', currentAuthEmail);
+      localStorage.setItem('inid_edit_token_' + newCardId, editToken);
+
+      activeCardId = newCardId;
+      isDemoCard = false;
+
+      // Update URL to universal unique link without full reload
+      try {
+        const newUrl = `${window.location.origin}/?id=${newCardId}`;
+        window.history.replaceState({ cardId: newCardId }, '', newUrl);
+      } catch (e) {}
+
+      // Update UI state
+      if (ownerClaimBanner) ownerClaimBanner.style.display = 'none';
+      updateI18n();
+
+      if (data.isNew) {
+        // Clear demo data for a clean personal slate
+        profile = {
+          fn: '',
+          org: '',
+          title: '',
+          tel: '',
+          email: currentAuthEmail,
+          url: '',
+          adr: '',
+          mapUrl: '',
+          slogan: '',
+          orientation: 'vertical',
+          socials: []
+        };
+        renderCard();
+        openSheet(true); // Open clean form
+        showToast(currentLang === 'vi' 
+          ? `✨ Đã tạo Universal Unique Link: inid.me/p/${newCardId}` 
+          : `✨ Created Universal Unique Link: inid.me/p/${newCardId}`);
+      } else {
+        if (data.profile) {
+          profile = Object.assign(profile, data.profile);
+          renderCard();
+        }
+        showToast(currentLang === 'vi' 
+          ? 'Xác thực chủ thẻ thành công! Bạn có thể chỉnh sửa ngay.' 
+          : 'Card owner verified! You can now edit your card.');
+        openSheet(false);
+      }
+
+    } catch (err) {
+      if (authOtpError) {
+        authOtpError.textContent = err.message || 'Mã OTP không chính xác.';
+        authOtpError.style.display = 'block';
+      }
+    } finally {
+      btnAuthVerifyOtp.disabled = false;
+      txtBtnVerifyOtp.textContent = currentLang === 'vi' ? 'Xác Thực & Kích Hoạt' : 'Verify & Activate';
+    }
+  }
+
+  if (btnAuthVerifyOtp) btnAuthVerifyOtp.onclick = handleVerifyOtp;
+  if (authInputOtp) {
+    authInputOtp.onkeydown = (e) => {
+      if (e.key === 'Enter') handleVerifyOtp();
+    };
+  }
+
+  if (btnClaimOwnerOtp) {
+    btnClaimOwnerOtp.onclick = () => {
+      openEmailAuthModal('claim');
+    };
+  }
+
+  // Fetch remote card if activeCardId exists in URL
+  if (activeCardId) {
+    fetch(`${INID_API_URL}/api/card/${activeCardId}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.card && res.card.profile && (res.card.profile.fn || res.card.profile.org)) {
+          profile = Object.assign({}, res.card.profile);
+          isDemoCard = false;
+          renderCard();
+          updateI18n();
+          if (ownerClaimBanner) {
+            ownerClaimBanner.style.display = isSavedCardOwner() ? 'none' : 'block';
+          }
+        }
+      })
+      .catch(e => console.warn('Could not fetch card from cloud:', e));
   }
 
   // Open Edit Sheet if #edit in URL
