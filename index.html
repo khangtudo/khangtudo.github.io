@@ -1608,7 +1608,7 @@
           <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff; margin:0;" id="authModalTitle">Tạo Danh Thiếp Mới</h3>
         </div>
         <p style="font-size:0.75rem; color:#94a3b8; margin: 0 0 16px 0; line-height:1.4;" id="authModalDesc">
-          Nhập email của bạn để lưu giữ <b>Universal Unique Link</b> và nhận mã OTP xác thực bảo mật quyền cập nhật khi đổi thiết bị.
+          Nhập email của bạn để nhận <b>Liên kết định danh độc nhất</b> và mã OTP xác thực bảo mật quyền cập nhật khi đổi thiết bị.
         </p>
 
         <div style="margin-bottom:14px;">
@@ -3911,7 +3911,7 @@ const BRAND_ICONS = {
     if (authMode === 'create') {
       if (authModalTitle) authModalTitle.textContent = currentLang === 'vi' ? 'Tạo Danh Thiếp Mới' : 'Create Smart Card';
       if (authModalDesc) authModalDesc.innerHTML = currentLang === 'vi' 
-        ? 'Nhập email của bạn để lưu giữ <b>Universal Unique Link</b> và nhận mã OTP xác thực bảo mật quyền cập nhật khi đổi thiết bị.'
+        ? 'Nhập email của bạn để nhận <b>Liên kết định danh độc nhất</b> và mã OTP xác thực bảo mật quyền cập nhật khi đổi thiết bị.'
         : 'Enter your email to secure your <b>Universal Unique Link</b> and receive an OTP to update your card across devices.';
       if (authInputEmail) authInputEmail.value = '';
     } else {
@@ -4101,7 +4101,7 @@ const BRAND_ICONS = {
         renderCard();
         openSheet(true); // Open clean form
         showToast(currentLang === 'vi' 
-          ? `✨ Đã tạo Universal Unique Link: inid.me/p/${newCardId}` 
+          ? `✨ Đã tạo liên kết danh thiếp độc nhất: inid.me/p/${newCardId}` 
           : `✨ Created Universal Unique Link: inid.me/p/${newCardId}`);
       } else {
         if (data.profile) {

@@ -56,8 +56,8 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
       </div>
 
       <div class="info-card">
-        <strong>🌐 Universal Unique Link là gì?</strong><br>
-        Đây là liên kết định danh độc nhất cho danh thiếp của bạn. Khi bạn đổi thiết bị (từ máy tính sang điện thoại hay máy tính bảng), chỉ cần mở liên kết và xác thực lại bằng mã OTP gửi về email này để tiếp tục cập nhật thông tin.
+        <strong>🌐 Liên kết định danh độc nhất là gì?</strong><br>
+        Đây là địa chỉ web cố định và riêng biệt dành cho danh thiếp thông minh của bạn. Khi bạn đổi thiết bị (từ máy tính sang điện thoại hay máy tính bảng), chỉ cần mở liên kết và xác thực lại bằng mã OTP gửi về email này để tiếp tục cập nhật thông tin.
       </div>
     </div>
     <div class="footer">

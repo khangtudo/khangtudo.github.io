@@ -6,9 +6,18 @@ function corsResponse(body, status = 200, headers = {}) {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Content-Type': 'application/json; charset=utf-8',
     ...headers
   };
+
+  if (status === 204) {
+    return new Response(null, {
+      status: 204,
+      headers: defaultHeaders
+    });
+  }
+
+  defaultHeaders['Content-Type'] = 'application/json; charset=utf-8';
+
   return new Response(typeof body === 'string' ? body : JSON.stringify(body), {
     status,
     headers: defaultHeaders
@@ -47,7 +56,7 @@ export default {
 
     // Handle CORS preflight
     if (method === 'OPTIONS') {
-      return corsResponse({}, 204);
+      return corsResponse(null, 204);
     }
 
     try {
