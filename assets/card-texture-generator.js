@@ -271,10 +271,10 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     CONTACT_TEXT_COLOR = '#0F172A'; // Toàn bộ thông tin liên hệ dùng màu ĐEN THAN #0F172A
     DIVIDER_COLOR = 'rgba(15, 23, 42, 0.25)'; // Đường kẻ đen mờ
     AVATAR_BG = '#F1F5F9'; // Nền avatar xám sáng sang trọng
-    AVATAR_BORDER = '#DC2626'; // Viền avatar màu ĐỎ CRIMSON sắc nét, nổi bật rõ ràng trên nền giấy
+    AVATAR_BORDER = 'rgba(15, 23, 42, 0.12)'; // Tối giản, không viền đỏ // Viền avatar màu ĐỎ CRIMSON sắc nét, nổi bật rõ ràng trên nền giấy
     AVATAR_TEXT = '#DC2626'; // Chữ cái viết tắt màu đỏ đồng bộ thương hiệu
     LOGO_BG = '#F1F5F9'; // Nền logo mặt sau xám sáng sang trọng
-    LOGO_BORDER = '#DC2626'; // Khung viền logo mặt sau màu ĐỎ đồng bộ, loại bỏ hoàn toàn màu xanh
+    LOGO_BORDER = 'rgba(15, 23, 42, 0.12)'; // Tối giản, không viền đỏ // Khung viền logo mặt sau màu ĐỎ đồng bộ, loại bỏ hoàn toàn màu xanh
     LOGO_TEXT = '#DC2626'; // Chữ cái viết tắt logo mặt sau màu ĐỎ đồng bộ
     SLOGAN_COLOR = '#0F172A'; // Slogan màu đen than sắc nét, không còn màu xanh
   } else if (isLightBg) {
