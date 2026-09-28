@@ -87,10 +87,9 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
       const personalization = {
         to: [{ email: email, name: email.split('@')[0] }]
       };
-      if (env.MAILCHANNELS_DKIM_SELECTOR) {
-        personalization.dkim_domain = env.MAILCHANNELS_DKIM_DOMAIN || 'inid.me';
-        personalization.dkim_selector = env.MAILCHANNELS_DKIM_SELECTOR;
-      }
+      // Always specify DKIM for inid.me if not configured
+      personalization.dkim_domain = env.MAILCHANNELS_DKIM_DOMAIN || 'inid.me';
+      personalization.dkim_selector = env.MAILCHANNELS_DKIM_SELECTOR || 'mc';
 
       const mcPayload = {
         personalizations: [personalization],
