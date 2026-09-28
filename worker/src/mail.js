@@ -84,12 +84,16 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
         mcHeaders['X-Api-Key'] = env.MAILCHANNELS_API_KEY;
       }
 
+      const personalization = {
+        to: [{ email: email, name: email.split('@')[0] }]
+      };
+      if (env.MAILCHANNELS_DKIM_SELECTOR) {
+        personalization.dkim_domain = env.MAILCHANNELS_DKIM_DOMAIN || 'inid.me';
+        personalization.dkim_selector = env.MAILCHANNELS_DKIM_SELECTOR;
+      }
+
       const mcPayload = {
-        personalizations: [
-          {
-            to: [{ email: email, name: email.split('@')[0] }]
-          }
-        ],
+        personalizations: [personalization],
         from: {
           email: senderEmail,
           name: senderName
@@ -110,10 +114,16 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
       });
 
       if (mcRes.ok || mcRes.status === 202) {
-        return { success: true, provider: 'mailchannels' };
+        const mcJson = await mcRes.json().catch(() => null);
+        if (mcJson && Array.isArray(mcJson.results) && mcJson.results[0]?.status === 'failed') {
+          console.warn('MailChannels rejected message:', mcJson.results[0]?.reason);
+        } else {
+          return { success: true, provider: 'mailchannels' };
+        }
+      } else {
+        const errText = await mcRes.text();
+        console.warn('MailChannels API response not ok:', mcRes.status, errText);
       }
-      const errText = await mcRes.text();
-      console.warn('MailChannels API response not ok:', mcRes.status, errText);
     } catch (err) {
       console.error('MailChannels exception:', err);
     }
