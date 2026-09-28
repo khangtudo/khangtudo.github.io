@@ -2025,14 +2025,8 @@
         <span style="color:#38bdf8; font-size:1.2rem; font-weight:700;">→</span>
       </a>
 
-      <!-- Option 2: Native Surface AR -->
-      <button id="btnTriggerNativeAr" style="width:100%; display:flex; align-items:center; gap:12px; padding:14px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); text-align:left; cursor:pointer; transition:background 0.15s ease;">
-        <div style="font-size:2rem; line-height:1;">🪟</div>
-        <div style="flex:1;">
-          <div style="font-size:0.92rem; font-weight:700; color:#fff;">Không Gian Thực (Surface AR)</div>
-          <div style="font-size:0.75rem; color:#94a3b8; margin-top:3px; line-height:1.35;">Đặt thẻ lên mặt phẳng (Apple Quick Look USDZ / Google Scene Viewer)</div>
-        </div>
-      </button>
+            <!-- Option 2: Native Surface AR (Disabled because USDZ/GLB are static assets) -->
+      <div style="display:none;" id="btnTriggerNativeAr"></div>
     </div>
   </div>
 
@@ -3112,7 +3106,7 @@ const BRAND_ICONS = {
       badgeBg: 'rgba(15, 23, 42, 0.05)',
       badgeBorder: 'rgba(15, 23, 42, 0.12)',
       contactText: '#0F172A',
-      contactIconBg: '#0F172A',
+      contactIconBg: '#DC2626',
       contactIconColor: '#FFFFFF',
       sloganColor: '#0F172A',
       textMuted: '#1E293B'
@@ -3636,23 +3630,16 @@ const BRAND_ICONS = {
 
   function openArModal() {
     lastFocusedTrigger = document.getElementById('btnLaunchAr') || document.activeElement;
-    if (arModal) {
-      // Sync dynamic profile to AR Hands link & localStorage
-      const btnArHandsLink = document.getElementById('btnArHandsLink');
-      if (btnArHandsLink) {
-        try {
-          const profileJson = JSON.stringify(profile);
-          localStorage.setItem('inid_ar_profile', profileJson);
-          const b64 = btoa(encodeURIComponent(profileJson));
-          btnArHandsLink.href = `/ar-hands/#data=${b64}`;
-        } catch (err) {
-          console.warn('Failed to encode profile for AR Hands link:', err);
-        }
-      }
-      arModal.classList.add('active');
-      mainAppShell.setAttribute('inert', 'true');
-      if (btnCloseArModal) btnCloseArModal.focus();
+    // Direct navigation to dynamic real-time AR Hands to ensure 100% texture parity
+    try {
+      const profileJson = JSON.stringify(profile);
+      localStorage.setItem('inid_ar_profile', profileJson);
+      const b64 = btoa(encodeURIComponent(profileJson));
+      window.location.href = `/ar-hands/#data=${b64}`;
+    } catch (err) {
+      window.location.href = '/ar-hands/';
     }
+  }
   }
 
   function closeArModal() {
