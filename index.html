@@ -679,30 +679,10 @@
       margin: 6px 0;
       width: 100%;
     }
-    .contact-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: clamp(0.72rem, 2.2vw, 0.88rem);
-      color: var(--text);
-      text-decoration: none;
-      padding: clamp(6px, 1.2vh, 10px) 12px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.06);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-height: clamp(34px, 5vh, 42px);
-      box-sizing: border-box;
+    .contact-badge:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--primary);
     }
-    .contact-badge span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .contact-badge:hover { background: rgba(56, 189, 248, 0.15); border-color: var(--primary); }
-
     .card-bottom {
       display: flex;
       justify-content: space-between;
@@ -3032,11 +3012,111 @@ const BRAND_ICONS = {
   // - Art Paper: Nền trắng ngà #F7F5F0, Tên người/Cty = Đỏ (#DC2626), Chức danh = Đen (#0F172A), Viền/Thông tin = Xám (#94A3B8 / #475569)
   // - Inox Xước: Nền sáng xước #E2E8F0, Chữ = Đen #0F172A, Accent = Xanh Sapphire #0369A1
   const VIP_MAT_PRESETS = {
-    pvc: { bgColor: '#0F172A', textColor: '#FFFFFF', accentColor: '#38BDF8' },
-    titanium: { bgColor: '#20252B', textColor: '#F4F7FA', accentColor: '#B9F2FF' },
-    brushed_steel: { bgColor: '#E2E8F0', textColor: '#0F172A', accentColor: '#0369A1' },
-    acrylic: { bgColor: '#0C1929', textColor: '#FFFFFF', accentColor: '#38BDF8' },
-    art_paper: { bgColor: '#F7F5F0', textColor: '#DC2626', accentColor: '#94A3B8' }
+    pvc: {
+      bgColor: '#0F172A',
+      textColor: '#FFFFFF',
+      accentColor: '#38BDF8',
+      nameColor: '#FFFFFF',
+      titleColor: '#38BDF8',
+      orgColor: '#94A3B8',
+      backOrgColor: '#FFFFFF',
+      avatarBorder: '#38BDF8',
+      avatarBg: '#1e293b',
+      logoBorder: '#38BDF8',
+      logoBg: '#0f172a',
+      divider: 'rgba(255, 255, 255, 0.15)',
+      badgeBg: 'rgba(255, 255, 255, 0.05)',
+      badgeBorder: 'rgba(255, 255, 255, 0.10)',
+      contactText: '#FFFFFF',
+      contactIconBg: 'rgba(56, 189, 248, 0.2)',
+      contactIconColor: '#38BDF8',
+      sloganColor: '#38BDF8',
+      textMuted: '#94A3B8'
+    },
+    titanium: {
+      bgColor: '#20252B',
+      textColor: '#F4F7FA',
+      accentColor: '#B9F2FF',
+      nameColor: '#F4F7FA',
+      titleColor: '#B9F2FF',
+      orgColor: '#94A3B8',
+      backOrgColor: '#F4F7FA',
+      avatarBorder: '#B9F2FF',
+      avatarBg: '#0B0E12',
+      logoBorder: '#B9F2FF',
+      logoBg: '#0B0E12',
+      divider: 'rgba(255, 255, 255, 0.18)',
+      badgeBg: 'rgba(255, 255, 255, 0.06)',
+      badgeBorder: 'rgba(255, 255, 255, 0.12)',
+      contactText: '#F4F7FA',
+      contactIconBg: 'rgba(185, 242, 255, 0.2)',
+      contactIconColor: '#B9F2FF',
+      sloganColor: '#B9F2FF',
+      textMuted: '#94A3B8'
+    },
+    brushed_steel: {
+      bgColor: '#E2E8F0',
+      textColor: '#0F172A',
+      accentColor: '#0369A1',
+      nameColor: '#0F172A',
+      titleColor: '#0369A1',
+      orgColor: '#334155',
+      backOrgColor: '#0F172A',
+      avatarBorder: '#0369A1',
+      avatarBg: '#F1F5F9',
+      logoBorder: '#0369A1',
+      logoBg: '#F1F5F9',
+      divider: 'rgba(15, 23, 42, 0.25)',
+      badgeBg: 'rgba(15, 23, 42, 0.06)',
+      badgeBorder: 'rgba(15, 23, 42, 0.15)',
+      contactText: '#0F172A',
+      contactIconBg: 'rgba(3, 105, 161, 0.18)',
+      contactIconColor: '#0369A1',
+      sloganColor: '#0369A1',
+      textMuted: '#334155'
+    },
+    acrylic: {
+      bgColor: '#0C1929',
+      textColor: '#FFFFFF',
+      accentColor: '#38BDF8',
+      nameColor: '#FFFFFF',
+      titleColor: '#38BDF8',
+      orgColor: '#94A3B8',
+      backOrgColor: '#FFFFFF',
+      avatarBorder: '#38BDF8',
+      avatarBg: 'rgba(56, 189, 248, 0.1)',
+      logoBorder: '#38BDF8',
+      logoBg: 'rgba(56, 189, 248, 0.1)',
+      divider: 'rgba(56, 189, 248, 0.25)',
+      badgeBg: 'rgba(56, 189, 248, 0.08)',
+      badgeBorder: 'rgba(56, 189, 248, 0.25)',
+      contactText: '#FFFFFF',
+      contactIconBg: 'rgba(56, 189, 248, 0.25)',
+      contactIconColor: '#38BDF8',
+      sloganColor: '#38BDF8',
+      textMuted: '#94A3B8'
+    },
+    art_paper: {
+      bgColor: '#F7F5F0',
+      textColor: '#0F172A',
+      accentColor: '#64748B',
+      nameColor: '#DC2626',
+      titleColor: '#0F172A',
+      orgColor: '#DC2626',
+      backOrgColor: '#DC2626',
+      avatarBorder: 'rgba(15, 23, 42, 0.12)',
+      avatarBg: '#F1F5F9',
+      logoBorder: 'rgba(15, 23, 42, 0.12)',
+      logoBg: '#F1F5F9',
+      divider: 'rgba(15, 23, 42, 0.20)',
+      badgeBg: 'rgba(15, 23, 42, 0.05)',
+      badgeBorder: 'rgba(15, 23, 42, 0.12)',
+      contactText: '#0F172A',
+      contactIconBg: '#0F172A',
+      contactIconColor: '#FFFFFF',
+      sloganColor: '#0F172A',
+      textMuted: '#1E293B'
+    }
   };
 
   function setVipMaterial(mat, syncRender = false) {
