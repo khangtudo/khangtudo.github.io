@@ -71,7 +71,55 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
 </body>
 </html>`;
 
-  // 1. Try Brevo (Sendinblue) API if BREVO_API_KEY is configured (300 emails/day)
+  // 1. Try MailChannels API if MAILCHANNELS_API_KEY is configured or requested
+  if (env && (env.MAILCHANNELS_API_KEY || env.MAIL_PROVIDER === 'mailchannels')) {
+    try {
+      const senderEmail = env.SENDER_EMAIL || 'auth@inid.me';
+      const senderName = env.SENDER_NAME || 'inid.me Smart AR';
+
+      const mcHeaders = {
+        'content-type': 'application/json'
+      };
+      if (env.MAILCHANNELS_API_KEY) {
+        mcHeaders['X-Api-Key'] = env.MAILCHANNELS_API_KEY;
+      }
+
+      const mcPayload = {
+        personalizations: [
+          {
+            to: [{ email: email, name: email.split('@')[0] }]
+          }
+        ],
+        from: {
+          email: senderEmail,
+          name: senderName
+        },
+        subject: subject,
+        content: [
+          {
+            type: 'text/html',
+            value: html
+          }
+        ]
+      };
+
+      const mcRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
+        method: 'POST',
+        headers: mcHeaders,
+        body: JSON.stringify(mcPayload)
+      });
+
+      if (mcRes.ok || mcRes.status === 202) {
+        return { success: true, provider: 'mailchannels' };
+      }
+      const errText = await mcRes.text();
+      console.warn('MailChannels API response not ok:', mcRes.status, errText);
+    } catch (err) {
+      console.error('MailChannels exception:', err);
+    }
+  }
+
+  // 2. Try Brevo (Sendinblue) API if BREVO_API_KEY is configured (300 emails/day)
   if (env && env.BREVO_API_KEY) {
     try {
       const senderEmail = env.SENDER_EMAIL || 'auth@inid.me';
@@ -102,7 +150,7 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
     }
   }
 
-  // 2. Try Resend API if RESEND_API_KEY is configured (100 emails/day)
+  // 3. Try Resend API if RESEND_API_KEY is configured (100 emails/day)
   if (env && env.RESEND_API_KEY) {
     try {
       const senderFrom = env.SENDER_EMAIL ? `inid.me <${env.SENDER_EMAIL}>` : 'inid.me <onboarding@resend.dev>';
@@ -130,42 +178,14 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
     }
   }
 
-  // 3. Fallback: Try MailChannels native relay
-  try {
-    const mcPayload = {
-      personalizations: [
-        {
-          to: [{ email: email, name: email.split('@')[0] }]
-        }
-      ],
-      from: {
-        email: 'auth@inid.me',
-        name: 'inid.me Smart AR'
-      },
-      subject: subject,
-      content: [
-        {
-          type: 'text/html',
-          value: html
-        }
-      ]
-    };
-
-    const mcRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify(mcPayload)
-    });
-
-    if (mcRes.ok || mcRes.status === 202) {
-      return { success: true, provider: 'mailchannels' };
-    }
-  } catch (err) {
-    console.error('MailChannels exception:', err);
+  // 4. If dev mode sandbox is explicitly allowed via DEV_SANDBOX_MAIL=true
+  if (env && (env.DEV_SANDBOX_MAIL === 'true' || env.DEV_SANDBOX_MAIL === true)) {
+    return { success: true, provider: 'kv-saved', note: 'Dev sandbox: OTP saved in KV only' };
   }
 
-  // If both external mail APIs are unconfigured or fail, return success with sandbox indicator
-  return { success: true, provider: 'kv-saved', note: 'OTP saved in KV for authentication' };
+  // All providers failed or unconfigured in production
+  return {
+    success: false,
+    error: 'Không thể gửi email OTP qua các nhà cung cấp dịch vụ (chưa cấu hình API key hoặc nhà cung cấp từ chối).'
+  };
 }

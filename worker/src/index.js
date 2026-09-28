@@ -181,19 +181,29 @@ export default {
           expirationTtl: 600
         });
 
-        // Send email via Brevo / Resend / MailChannels
-        await sendOtpEmail(env, {
+        // Send email via MailChannels / Brevo / Resend
+        const mailResult = await sendOtpEmail(env, {
           email,
           otp,
           link: cardId ? `https://inid.me/p/${cardId}` : 'https://inid.me',
           purpose: cardId ? 'edit' : 'create'
         });
 
+        if (!mailResult.success) {
+          // Xóa OTP khỏi KV vì gửi mail không thành công, tránh rác và tránh lộ OTP
+          await env.INID_KV.delete(existingOtpKey);
+          return corsResponse({
+            error: 'Không thể gửi mã OTP qua email vào lúc này. Vui lòng thử lại sau hoặc liên hệ quản trị viên.',
+            details: mailResult.error || 'Mail delivery failed'
+          }, 502);
+        }
+
         return corsResponse({
           success: true,
           message: `Mã OTP đã được gửi đến email ${maskEmail(email)}.`,
           emailMasked: maskEmail(email),
-          expiresInSeconds: 600
+          expiresInSeconds: 600,
+          provider: mailResult.provider
         });
       }
 
