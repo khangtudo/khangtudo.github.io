@@ -116,15 +116,18 @@ export async function sendOtpEmail(env, { email, otp, link, purpose = 'create' }
         const mcJson = await mcRes.json().catch(() => null);
         if (mcJson && Array.isArray(mcJson.results) && mcJson.results[0]?.status === 'failed') {
           console.warn('MailChannels rejected message:', mcJson.results[0]?.reason);
+          return { success: false, error: mcJson.results[0]?.reason, debug: { mcJson, hasKey: Boolean(env.MAILCHANNELS_API_KEY) } };
         } else {
           return { success: true, provider: 'mailchannels' };
         }
       } else {
         const errText = await mcRes.text();
         console.warn('MailChannels API response not ok:', mcRes.status, errText);
+        return { success: false, error: `MailChannels status ${mcRes.status}: ${errText}`, debug: { hasKey: Boolean(env.MAILCHANNELS_API_KEY) } };
       }
     } catch (err) {
       console.error('MailChannels exception:', err);
+      return { success: false, error: `MailChannels exception: ${err.message}`, debug: { hasKey: Boolean(env.MAILCHANNELS_API_KEY) } };
     }
   }
 

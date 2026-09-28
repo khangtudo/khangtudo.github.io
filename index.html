@@ -386,6 +386,171 @@
       text-align: center;
     }
 
+    /* Modern AR-Parity Responsive Card Styles (Unified 2D & 3D AR) */
+    .card-perspective:not(.horizontal) .person-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 6px;
+      width: 100%;
+      margin-top: 4px;
+    }
+    .card-perspective:not(.horizontal) .card-avatar {
+      width: clamp(56px, 15vw, 76px);
+      height: clamp(56px, 15vw, 76px);
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--card-avatar-border, var(--card-accent, var(--primary)));
+      background: var(--card-avatar-bg, #1e293b);
+      flex-shrink: 0;
+      margin-bottom: 2px;
+      transition: border-color 0.25s ease;
+    }
+    .card-perspective:not(.horizontal) .person-text {
+      width: 100%;
+      text-align: center;
+    }
+    .card-perspective:not(.horizontal) .person-text h2 {
+      font-size: var(--card-name-size, clamp(1.2rem, 4.5vw, 1.55rem));
+      color: var(--card-name-color, var(--card-text, #fff));
+      font-family: var(--card-font-display, inherit);
+      font-weight: 700;
+      line-height: 1.18;
+      text-align: center;
+      margin: 0;
+    }
+    .card-perspective:not(.horizontal) .person-text p#cardTitle {
+      font-size: var(--card-title-size, clamp(0.78rem, 2.5vw, 0.95rem));
+      color: var(--card-title-color, var(--card-accent, var(--primary)));
+      font-family: var(--card-font-body, inherit);
+      font-weight: 600;
+      margin-top: 3px;
+      text-align: center;
+    }
+    .card-perspective:not(.horizontal) .person-text p#cardOrg {
+      font-size: clamp(0.74rem, 2.2vw, 0.88rem);
+      color: var(--card-org-color, var(--card-text-muted, var(--muted)));
+      font-family: var(--card-font-body, inherit);
+      font-weight: 600;
+      margin-top: 3px;
+      text-align: center;
+    }
+    .card-front-divider {
+      width: 100%;
+      height: 1.5px;
+      background: var(--card-divider, rgba(255, 255, 255, 0.15));
+      margin: 6px 0;
+      flex-shrink: 0;
+    }
+    .card-perspective:not(.horizontal) .contacts-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 100%;
+      margin: 2px 0;
+    }
+    .contact-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: clamp(0.72rem, 2.2vw, 0.86rem);
+      color: var(--card-contact-text, var(--card-text, var(--text)));
+      font-family: var(--card-font-body, inherit);
+      font-weight: 500;
+      text-decoration: none;
+      padding: clamp(5px, 1vh, 8px) 10px;
+      background: var(--card-badge-bg, rgba(255,255,255,0.03));
+      border-radius: 8px;
+      border: 1px solid var(--card-badge-border, rgba(255,255,255,0.06));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-height: clamp(32px, 4.5vh, 38px);
+      box-sizing: border-box;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .contact-icon-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-contact-icon-bg, rgba(56, 189, 248, 0.15));
+      color: var(--card-contact-icon-color, #ffffff);
+      font-size: 0.72rem;
+      flex-shrink: 0;
+    }
+    .card-perspective:not(.horizontal) .card-front-slogan {
+      font-size: clamp(0.7rem, 2.2vw, 0.82rem);
+      color: var(--card-slogan-color, var(--card-title-color, var(--card-accent)));
+      font-family: var(--card-font-body, inherit);
+      font-style: italic;
+      font-weight: 500;
+      text-align: center;
+      margin: 4px 0 2px 0;
+      line-height: 1.25;
+    }
+    .card-front-footer {
+      font-size: 0.65rem;
+      font-family: var(--card-font-display, inherit);
+      color: var(--card-text-muted, var(--card-accent));
+      text-align: center;
+      letter-spacing: 1px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: 4px;
+      opacity: 0.85;
+    }
+    .company-logo {
+      width: clamp(56px, 14vw, 76px);
+      height: clamp(56px, 14vw, 76px);
+      border-radius: 18px;
+      object-fit: contain;
+      border: 3px solid var(--card-logo-border, var(--card-accent, #38bdf8));
+      background: var(--card-logo-bg, #0f172a);
+      padding: 4px;
+      box-sizing: border-box;
+    }
+    .company-stack h3 {
+      font-size: clamp(1.15rem, 4vw, 1.45rem);
+      color: var(--card-back-org-color, var(--card-name-color, var(--card-text, #fff)));
+      font-family: var(--card-font-display, inherit);
+      font-weight: 700;
+      margin: 2px 0;
+    }
+    .company-stack .slogan {
+      font-size: clamp(0.78rem, 2.4vw, 0.92rem);
+      color: var(--card-slogan-color, var(--card-title-color, var(--card-accent, var(--primary))));
+      font-family: var(--card-font-body, inherit);
+      font-style: italic;
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.3;
+    }
+    .company-stack .address {
+      font-size: clamp(0.72rem, 2.2vw, 0.84rem);
+      color: var(--card-text-muted, var(--muted));
+      font-family: var(--card-font-body, inherit);
+      max-width: 260px;
+      line-height: 1.4;
+      font-weight: 500;
+      margin-top: 4px;
+    }
+    .card-back-caption {
+      font-size: 0.65rem;
+      font-family: var(--card-font-display, inherit);
+      color: var(--card-text-muted, var(--card-accent));
+      text-align: center;
+      letter-spacing: 1px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: auto;
+      opacity: 0.85;
+      padding-top: 6px;
+    }
+
     /* Pro / VIP Material Textures for 2D Card */
     .card-face.mat-pvc {
       background: linear-gradient(145deg, #0F172A 0%, #020617 100%);
@@ -405,9 +570,7 @@
       border-color: #94A3B8;
       box-shadow: 0 18px 40px -10px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.9), 0 0 20px rgba(255,255,255,0.3);
     }
-    .card-face.mat-brushed_steel * {
-      color: #0F172A !important;
-    }
+    /* .card-face.mat-brushed_steel text inherits CSS variables */
     .card-face.mat-acrylic {
       background: linear-gradient(135deg, rgba(56,189,248,0.22) 0%, rgba(12,25,41,0.65) 40%, rgba(4,11,20,0.8) 100%) !important;
       border: 1.5px solid rgba(255,255,255,0.45) !important;
@@ -420,9 +583,7 @@
       border-color: #DCD5C9;
       box-shadow: 0 16px 36px -8px rgba(0,0,0,0.6), inset 0 0 40px rgba(197,168,128,0.15);
     }
-    .card-face.mat-art_paper * {
-      color: #22252A !important;
-    }
+    /* .card-face.mat-art_paper text inherits CSS variables */
 
     /* VIP Luxury Text Effects */
     .vip-fx-gold {
@@ -1314,17 +1475,20 @@
                 <p id="cardOrg" class="ux-editable" data-layer-id="org" style="font-size:0.75rem; color:var(--muted)" title="Nhấp đúp để sửa chữ, gõ Enter để xuống dòng">Minh Tam Prolab</p>
               </div>
             </div>
+            <div class="card-front-divider" id="cardFrontDivider"></div>
 
             <div class="contacts-stack ux-draggable" id="layerContactsStack" data-layer-id="contacts_stack">
-              <a id="cardTelLink" href="tel:+84901112233" class="contact-badge" aria-label="Gọi điện thoại">📞 <span id="cardTel" class="ux-editable" data-layer-id="tel">+84 90 111 2233</span></a>
-              <a id="cardEmailLink" href="mailto:khang@minhtamprolab.com.vn" class="contact-badge" aria-label="Gửi email">✉️ <span id="cardEmail" class="ux-editable" data-layer-id="email">khang@minhtamprolab.com.vn</span></a>
-              <a id="cardUrlLink" href="https://minhtamprolab.com.vn" target="_blank" class="contact-badge" aria-label="Mở trang web doanh nghiệp">🌐 <span id="cardUrl" class="ux-editable" data-layer-id="url">minhtamprolab.com.vn</span></a>
+              <a id="cardTelLink" href="tel:+84901112233" class="contact-badge" aria-label="Gọi điện thoại"><span class="contact-icon-badge">📞</span> <span id="cardTel" class="ux-editable" data-layer-id="tel">+84 90 111 2233</span></a>
+              <a id="cardEmailLink" href="mailto:khang@minhtamprolab.com.vn" class="contact-badge" aria-label="Gửi email"><span class="contact-icon-badge">✉️</span> <span id="cardEmail" class="ux-editable" data-layer-id="email">khang@minhtamprolab.com.vn</span></a>
+              <a id="cardUrlLink" href="https://minhtamprolab.com.vn" target="_blank" class="contact-badge" aria-label="Mở trang web doanh nghiệp"><span class="contact-icon-badge">🌐</span> <span id="cardUrl" class="ux-editable" data-layer-id="url">minhtamprolab.com.vn</span></a>
             </div>
 
             <div class="card-bottom ux-draggable" id="layerCardBottom" data-layer-id="card_bottom">
               <div class="social-icons-box" id="cardSocials" aria-label="Liên kết mạng xã hội"></div>
             </div>
-          </div>
+          
+            <div class="card-front-slogan" id="cardFrontSlogan"></div>
+            <div class="card-front-footer" id="cardFrontFooter">INID.ME • SMART CARD</div></div>
 
           <!-- Back Face -->
           <div class="card-face card-back" aria-label="Mặt sau doanh nghiệp">
@@ -1335,6 +1499,7 @@
               <a class="address" id="cardAdrLink" href="https://maps.app.goo.gl/o9mcM5eqe9qPH7f1A" target="_blank" rel="noopener noreferrer" style="text-decoration:none; color:inherit; display:block; text-align:center; margin-top:4px;" title="Bấm để mở chỉ đường Google Maps">
                 <span id="cardAdr" class="ux-editable" data-layer-id="adr">40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM</span>
               </a>
+              <div class="card-back-caption" id="cardBackCaption">TAP OR SCAN TO CONNECT INSTANTLY</div>
             </div>
             <div class="card-bottom" style="display:none;"></div>
           </div>
@@ -2318,23 +2483,38 @@ const BRAND_ICONS = {
       arViewer.setAttribute('ios-src', currentUsdz);
     }
 
+        // Update Front slogan and footers for full parity with AR Card
+    const elFrontSlogan = document.getElementById('cardFrontSlogan');
+    if (elFrontSlogan) {
+      elFrontSlogan.textContent = profile.slogan || profile.tagline || '';
+      elFrontSlogan.style.display = (profile.slogan || profile.tagline) ? 'block' : 'none';
+    }
+    const elFrontFooter = document.getElementById('cardFrontFooter');
+    if (elFrontFooter) {
+      const matLabel = (profile.vipTheme && profile.vipTheme.material) ? profile.vipTheme.material.toUpperCase() : 'PVC';
+      elFrontFooter.textContent = `INID.ME • ${matLabel} PRO`;
+    }
+
     // Apply Pro / VIP 2D Styles & CSS Variables
     const vip = profile.vipTheme || { material: 'pvc', fontPair: 'precision', nameSize: 48, titleSize: 24 };
+    const matKey = (vip.material && VIP_MAT_PRESETS[vip.material]) ? vip.material : 'pvc';
+    const matPreset = VIP_MAT_PRESETS[matKey] || VIP_MAT_PRESETS.pvc;
+
     const cardFaces = document.querySelectorAll('.card-face');
     cardFaces.forEach(f => {
       f.classList.remove('mat-pvc', 'mat-titanium', 'mat-brushed_steel', 'mat-acrylic', 'mat-art_paper');
-      if (vip.material) f.classList.add(`mat-${vip.material}`);
+      if (matKey) f.classList.add(`mat-${matKey}`);
       else f.classList.add('mat-pvc');
     });
 
     const cardRoot = document.getElementById('cardPerspective');
     if (cardRoot) {
-      if (vip.bgColor) cardRoot.style.setProperty('--card-bg', vip.bgColor);
-      else cardRoot.style.removeProperty('--card-bg');
+      const bgColor = vip.bgColor || matPreset.bgColor;
+      cardRoot.style.setProperty('--card-bg', bgColor);
 
       // Custom Photo Texture Overlay (From 2-Sided Card Scanner)
-      const frontFace = document.querySelector('.card-face.front');
-      const backFace = document.querySelector('.card-face.back');
+      const frontFace = document.querySelector('.card-face.card-front') || document.querySelector('.card-face.front');
+      const backFace = document.querySelector('.card-face.card-back') || document.querySelector('.card-face.back');
       if (profile.scannedFrontPhoto && frontFace) {
         frontFace.style.backgroundImage = `url("${profile.scannedFrontPhoto}")`;
         frontFace.style.backgroundSize = 'cover';
@@ -2346,11 +2526,25 @@ const BRAND_ICONS = {
         backFace.style.backgroundPosition = 'center';
       }
 
-      if (vip.textColor) cardRoot.style.setProperty('--card-text', vip.textColor);
-      else cardRoot.style.removeProperty('--card-text');
-
-      if (vip.accentColor) cardRoot.style.setProperty('--card-accent', vip.accentColor);
-      else cardRoot.style.removeProperty('--card-accent');
+      // Material-specific & Custom Color mapping
+      cardRoot.style.setProperty('--card-text', vip.textColor || matPreset.textColor);
+      cardRoot.style.setProperty('--card-accent', vip.accentColor || matPreset.accentColor);
+      cardRoot.style.setProperty('--card-name-color', matPreset.nameColor);
+      cardRoot.style.setProperty('--card-title-color', matPreset.titleColor);
+      cardRoot.style.setProperty('--card-org-color', matPreset.orgColor);
+      cardRoot.style.setProperty('--card-back-org-color', matPreset.backOrgColor);
+      cardRoot.style.setProperty('--card-avatar-border', matPreset.avatarBorder);
+      cardRoot.style.setProperty('--card-avatar-bg', matPreset.avatarBg);
+      cardRoot.style.setProperty('--card-logo-border', matPreset.logoBorder);
+      cardRoot.style.setProperty('--card-logo-bg', matPreset.logoBg);
+      cardRoot.style.setProperty('--card-divider', matPreset.divider);
+      cardRoot.style.setProperty('--card-badge-bg', matPreset.badgeBg);
+      cardRoot.style.setProperty('--card-badge-border', matPreset.badgeBorder);
+      cardRoot.style.setProperty('--card-contact-text', matPreset.contactText);
+      cardRoot.style.setProperty('--card-contact-icon-bg', matPreset.contactIconBg);
+      cardRoot.style.setProperty('--card-contact-icon-color', matPreset.contactIconColor);
+      cardRoot.style.setProperty('--card-slogan-color', matPreset.sloganColor);
+      cardRoot.style.setProperty('--card-text-muted', matPreset.textMuted);
 
       if (vip.nameSize) cardRoot.style.setProperty('--card-name-size', `${vip.nameSize}px`);
       if (vip.titleSize) cardRoot.style.setProperty('--card-title-size', `${vip.titleSize}px`);

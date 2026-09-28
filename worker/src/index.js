@@ -194,7 +194,8 @@ export default {
           await env.INID_KV.delete(existingOtpKey);
           return corsResponse({
             error: 'Không thể gửi mã OTP qua email vào lúc này. Vui lòng thử lại sau hoặc liên hệ quản trị viên.',
-            details: mailResult.error || 'Mail delivery failed'
+            details: mailResult.error || 'Mail delivery failed',
+            debug: mailResult.debug || null
           }, 502);
         }
 
