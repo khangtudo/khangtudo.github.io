@@ -1740,96 +1740,17 @@
   </div>
 
   <!-- Create Card / Edit Mode Choice Modal -->
-  
-  <!-- Email & OTP Authentication Modal (Universal Unique Link & Ownership) -->
-  <div class="qr-modal" id="emailAuthModal" role="dialog" aria-modal="true" aria-label="Xác thực Email & OTP">
-    <div class="qr-card" style="max-width: 380px; width: 92%; max-height: min(90vh, 520px); overflow-y: auto; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 25px 60px rgba(0,0,0,0.95); padding: 22px 18px; border-radius: 20px; box-sizing: border-box;">
-      <button class="qr-close" id="btnCloseEmailAuthModal" aria-label="Đóng bảng xác thực" style="color: #94a3b8; top: 14px; right: 14px;">✕</button>
-      
-      <!-- STEP 1: Enter Email -->
-      <div id="authStepEmail" class="auth-step-wrap">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-          <span style="font-size:1.5rem; line-height:1;" id="authModalIcon">✨</span>
-          <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff; margin:0;" id="authModalTitle">Tạo Danh Thiếp Mới</h3>
-        </div>
-        <p style="font-size:0.75rem; color:#94a3b8; margin: 0 0 16px 0; line-height:1.4;" id="authModalDesc">
-          Nhập email của bạn để nhận <b>Liên kết định danh độc nhất</b> và mã OTP xác thực bảo mật quyền cập nhật khi đổi thiết bị.
-        </p>
-
-        <div style="margin-bottom:14px;">
-          <label for="authInputEmail" style="display:block; font-size:0.75rem; color:#cbd5e1; font-weight:600; margin-bottom:6px;">Email của bạn:</label>
-          <input type="email" id="authInputEmail" placeholder="vidu@congty.com" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid #334155; background:#070a12; color:#fff; font-size:0.88rem; outline:none; transition:border 0.2s;" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='#334155'">
-          <div id="authEmailError" style="color:#ef4444; font-size:0.72rem; margin-top:5px; display:none;"></div>
-        </div>
-
-        <button type="button" id="btnAuthSendOtp" class="auth-btn-primary">
-          <span id="txtBtnSendOtp">Tiếp tục & Nhận mã OTP</span> <span>→</span>
-        </button>
-      </div>
-
-      <!-- STEP 2: Enter OTP -->
-      <div id="authStepOtp" class="auth-step-wrap" style="display:none;">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-          <span style="font-size:1.5rem; line-height:1;">📬</span>
-          <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff; margin:0;">Nhập Mã OTP Xác Thực</h3>
-        </div>
-        <p style="font-size:0.75rem; color:#94a3b8; margin: 0 0 16px 0; line-height:1.4;">
-          Mã xác thực gồm 6 số đã được gửi đến: <b id="authTargetEmailText" style="color:#38bdf8;"></b>
-        </p>
-
-        <div style="margin-bottom:14px;">
-          <label for="authInputOtp" style="display:block; font-size:0.75rem; color:#cbd5e1; font-weight:600; margin-bottom:6px;">Mã OTP (6 chữ số):</label>
-          <input type="text" id="authInputOtp" class="otp-digit-input" maxlength="6" placeholder="123456" inputmode="numeric">
-          <div id="authOtpError" style="color:#ef4444; font-size:0.72rem; margin-top:5px; display:none;"></div>
-        </div>
-
-        <button type="button" id="btnAuthVerifyOtp" class="auth-btn-primary" style="background:linear-gradient(135deg, #059669 0%, #10b981 100%); margin-bottom:12px;">
-          <span id="txtBtnVerifyOtp">Xác Thực & Kích Hoạt</span> <span>✓</span>
-        </button>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:#64748b;">
-          <button type="button" id="btnAuthBackToEmail" style="background:none; border:none; color:#94a3b8; cursor:pointer; padding:0; text-decoration:underline;">← Đổi email</button>
-          <button type="button" id="btnAuthResendOtp" style="background:none; border:none; color:#38bdf8; cursor:pointer; padding:0; text-decoration:underline;">Gửi lại mã</button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="qr-modal" id="createChoiceModal" role="dialog" aria-modal="true" aria-label="Tùy chọn chỉnh sửa hoặc tạo mới">
-    <div class="qr-card" style="max-width: 350px; width: 92%; max-height: min(85vh, 440px); overflow-y: auto; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(216, 175, 98, 0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.95); padding: 18px 16px; border-radius: 18px; box-sizing: border-box;">
+  <div class="qr-modal" id="createChoiceModal" role="dialog" aria-modal="true" aria-label="Tùy chọn danh thiếp">
+    <div class="qr-card" style="max-width: 350px; width: 92%; max-height: min(85vh, 460px); overflow-y: auto; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(216, 175, 98, 0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.95); padding: 18px 16px; border-radius: 18px; box-sizing: border-box;">
       <button class="qr-close" id="btnCloseCreateChoiceModal" aria-label="Đóng bảng tùy chọn" style="color: #94a3b8; top: 12px; right: 12px;">✕</button>
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-        <span style="font-size:1.3rem; line-height:1;" id="choiceModalIcon">👑</span>
+        <span style="font-size:1.3rem; line-height:1;" id="choiceModalIcon">✏️</span>
         <h3 style="font-size:1rem; font-weight:700; color:#fff0be; margin:0;" id="choiceModalTitle">Chỉnh Sửa Thẻ Của Bạn</h3>
       </div>
       <p style="font-size:0.72rem; color:#94a3b8; margin: 0 0 14px 0;" id="choiceModalDesc">Chọn phương thức cập nhật danh thiếp của bạn</p>
       
-            <!-- Option Claim/Verify Owner for active card -->
-      <button type="button" id="btnChoiceVerifyOwner" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(56, 189, 248, 0.12)); border:1px solid rgba(16, 185, 129, 0.45); text-align:left; cursor:pointer; margin-bottom:10px; transition:background 0.15s ease; box-sizing: border-box;">
-        <div style="font-size:1.6rem; line-height:1;">🔑</div>
-        <div style="flex:1; min-width:0;">
-          <div style="font-size:0.88rem; font-weight:700; color:#34d399; display:flex; align-items:center; gap:6px;">
-            Bạn Là Chủ Thẻ Này?
-            <span style="font-size:0.6rem; background:#10b981; color:#070a12; padding:1px 5px; border-radius:4px; font-weight:800;">XÁC THỰC OTP</span>
-          </div>
-          <div style="font-size:0.7rem; color:#cbd5e1; margin-top:2px; line-height:1.3;">Xác thực email để mở quyền chỉnh sửa và lưu trữ liên kết của thẻ này</div>
-        </div>
-        <span style="color:#34d399; font-size:1.1rem; font-weight:700;">➔</span>
-      </button>
-
-      <!-- Option 1: Nhập liệu form đơn -->
-      <button type="button" id="btnChoiceOpenForm" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.35); text-align:left; cursor:pointer; margin-bottom:8px; transition:background 0.15s ease; box-sizing: border-box;">
-        <div style="font-size:1.6rem; line-height:1;">📝</div>
-        <div style="flex:1; min-width:0;">
-          <div style="font-size:0.88rem; font-weight:700; color:#38bdf8;">Nhập Liệu Vào Đơn</div>
-          <div style="font-size:0.7rem; color:#cbd5e1; margin-top:2px; line-height:1.3;">Biểu mẫu chi tiết: Họ tên, hotline, avatar, logo, 5 preset Pro/VIP</div>
-        </div>
-        <span style="color:#38bdf8; font-size:1.1rem; font-weight:700;">→</span>
-      </button>
-
-      <!-- Option 2: UX Builder Kéo thả trực tiếp -->
-      <button type="button" id="btnChoiceOpenBuilder" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:rgba(216, 175, 98, 0.12); border:1px solid rgba(216, 175, 98, 0.45); text-align:left; cursor:pointer; margin-bottom:8px; transition:background 0.15s ease; box-sizing: border-box;">
+      <!-- VỊ TRÍ 1: UX Builder Chỉnh sửa trực tiếp -->
+      <button type="button" id="btnChoiceOpenBuilder" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:rgba(216, 175, 98, 0.12); border:1px solid rgba(216, 175, 98, 0.45); text-align:left; cursor:pointer; margin-bottom:10px; transition:background 0.15s ease; box-sizing: border-box;">
         <div style="font-size:1.6rem; line-height:1;">🎨</div>
         <div style="flex:1; min-width:0;">
           <div style="font-size:0.88rem; font-weight:700; color:#fff0be; display:flex; align-items:center; gap:6px;">
@@ -1838,26 +1759,34 @@
           </div>
           <div style="font-size:0.7rem; color:#cbd5e1; margin-top:2px; line-height:1.3;">Kéo thả phần tử, gõ chữ, Enter ngắt dòng, ép kim vàng & dập nổi</div>
         </div>
-        <span style="color:#d8af62; font-size:1.1rem; font-weight:700;">→</span>
+        <span style="color:#d8af62; font-size:1.1rem; font-weight:700;">➔</span>
       </button>
 
-      <!-- Option 3: Dán Ảnh Thật 2 Mặt Vào Thẻ 3D AR (Tạm ẩn để nâng cấp tính năng ổn định hơn) -->
-      <!--
-      <button type="button" id="btnChoiceOpenScanner" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(16, 185, 129, 0.12)); border:1px solid rgba(56, 189, 248, 0.5); text-align:left; cursor:pointer; transition:background 0.15s ease; box-sizing: border-box;">
-        <div style="font-size:1.6rem; line-height:1;">📷</div>
+      <!-- VỊ TRÍ 2: Nhập liệu vào đơn (Form chi tiết) -->
+      <button type="button" id="btnChoiceOpenForm" style="width:100%; display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.35); text-align:left; cursor:pointer; margin-bottom:10px; transition:background 0.15s ease; box-sizing: border-box;">
+        <div style="font-size:1.6rem; line-height:1;">📝</div>
         <div style="flex:1; min-width:0;">
-          <div style="font-size:0.88rem; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:6px;">
-            Dán Ảnh Danh Thiếp Thật
-            <span style="font-size:0.6rem; background:#38bdf8; color:#070a12; padding:1px 5px; border-radius:4px; font-weight:800;">3D & AR</span>
-          </div>
-          <div style="font-size:0.7rem; color:#cbd5e1; margin-top:2px; line-height:1.3;">Chụp hoặc tải ảnh 2 mặt card thật để dán lên mô hình 3D xoay lật & AR Hands</div>
+          <div style="font-size:0.88rem; font-weight:700; color:#38bdf8;" id="txtChoiceFormTitle">Nhập Liệu Vào Đơn</div>
+          <div style="font-size:0.7rem; color:#cbd5e1; margin-top:2px; line-height:1.3;" id="txtChoiceFormDesc">Biểu mẫu chi tiết: Họ tên, hotline, avatar, logo, 5 preset Pro/VIP</div>
         </div>
-        <span style="color:#38bdf8; font-size:1.1rem; font-weight:700;">→</span>
+        <span style="color:#38bdf8; font-size:1.1rem; font-weight:700;">➔</span>
       </button>
-      -->
 
-      <!-- Footer: Sub-link tinh tế cho người dùng muốn tạo thêm thẻ khác -->
-      <div id="choiceModalFooter" style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); text-align:center; font-size:0.72rem; color:#94a3b8;">
+      <!-- VỊ TRÍ 3: Xác thực OTP chủ thẻ (ẨN HOÀN TOÀN khi đã nhận diện phiên làm việc cũ) -->
+      <button type="button" id="btnChoiceVerifyOwner" style="display:none; width:100%; align-items:center; gap:10px; padding:12px; border-radius:12px; background:linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(56, 189, 248, 0.12)); border:1px solid rgba(16, 185, 129, 0.45); text-align:left; cursor:pointer; margin-bottom:10px; transition:background 0.15s ease; box-sizing: border-box;">
+        <div style="font-size:1.6rem; line-height:1;">🔑</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:0.88rem; font-weight:700; color:#34d399; display:flex; align-items:center; gap:6px;">
+            Bạn Là Chủ Thẻ Này?
+            <span style="font-size:0.6rem; background:#10b981; color:#070a12; padding:1px 5px; border-radius:4px; font-weight:800;">XÁC THỰC OTP</span>
+          </div>
+          <div style="font-size:0.7rem; color:#cbd5e1; margin-top:2px; line-height:1.3;">Xác thực email để nhận quyền cập nhật thẻ này trên thiết bị mới</div>
+        </div>
+        <span style="color:#34d399; font-size:1.1rem; font-weight:700;">➔</span>
+      </button>
+
+      <!-- Footer: Tùy chọn tạo thêm thẻ mới hoàn toàn -->
+      <div id="choiceModalFooter" style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08); text-align:center; font-size:0.72rem; color:#94a3b8;">
         Cần tạo một thẻ mới hoàn toàn? <button type="button" id="btnCreateAnotherCard" style="background:none; border:none; color:#38bdf8; font-weight:600; text-decoration:underline; cursor:pointer; padding:0; font-size:0.72rem;">Tạo mới tại đây</button>
       </div>
     </div>
@@ -2325,25 +2254,20 @@ const BRAND_ICONS = {
   };
   document.addEventListener('click', closeFlagMenu);
 
-  // Helper: Kiểm tra người dùng có đang sở hữu/lưu thẻ trong máy không
-  function isSavedCardOwner() {
-    // 1. Khi đang xem Demo Card (Trang chủ mặc định): KHÔNG BAO GIỜ là Owner!
-    if (isDemoCard) return false;
-
-    // 2. Khi đang mở một cardId cụ thể: kiểm tra xem máy này có editToken của cardId đó không
-    if (activeCardId) {
-      const token = localStorage.getItem('inid_edit_token_' + activeCardId);
-      const savedCardId = localStorage.getItem('inid_my_card_id');
-      if (token && (savedCardId === activeCardId || token.length > 10)) return true;
-      return false;
+  // Canonical Owner State Resolver
+  // Returns: 'authorized' | 'unauthorized' | 'no-card'
+  function resolveOwnerState() {
+    if (isDemoCard || !activeCardId) return 'no-card';
+    const token = localStorage.getItem('inid_edit_token_' + activeCardId);
+    const savedCardId = localStorage.getItem('inid_my_card_id');
+    if (token && (savedCardId === activeCardId || token.length > 10)) {
+      return 'authorized';
     }
+    return 'unauthorized';
+  }
 
-    // 3. Nếu nạp qua hash #data=...: chỉ là owner nếu máy này có lưu auth token hợp lệ
-    const myOwnerToken = localStorage.getItem('inid_user_owner_token');
-    const mySavedCard = localStorage.getItem('inid_my_card_id');
-    if (myOwnerToken && mySavedCard) return true;
-
-    return false;
+  function isSavedCardOwner() {
+    return resolveOwnerState() === 'authorized';
   }
 
   function updateI18n() {
@@ -2609,11 +2533,34 @@ const BRAND_ICONS = {
   const btnCreateNewDock = document.getElementById('btnCreateNewDock');
 
   function openCreateChoiceModal() {
-    if (createChoiceModal) {
-      createChoiceModal.classList.add('active');
-      mainAppShell.setAttribute('inert', 'true');
+    if (!createChoiceModal) return;
+    const ownerState = resolveOwnerState();
+    const btnVerify = document.getElementById('btnChoiceVerifyOwner');
+    const formTitle = document.getElementById('txtChoiceFormTitle');
+    const formDesc = document.getElementById('txtChoiceFormDesc');
+    const modalTitle = document.getElementById('choiceModalTitle');
+    const modalDesc = document.getElementById('choiceModalDesc');
+
+    if (ownerState === 'authorized') {
+      // Đã nhận diện phiên làm việc cũ -> ẨN HOÀN TOÀN nút OTP (tránh lãng phí tài nguyên)
+      if (btnVerify) btnVerify.style.display = 'none';
+      if (modalTitle) modalTitle.textContent = currentLang === 'vi' ? 'Chỉnh Sửa Thẻ Của Bạn' : 'Edit Your Card';
+      if (modalDesc) modalDesc.textContent = currentLang === 'vi' ? 'Chọn phương thức cập nhật danh thiếp của bạn' : 'Select update method';
+      if (formTitle) formTitle.textContent = currentLang === 'vi' ? 'Chỉnh Sửa Bằng Biểu Mẫu' : 'Edit Form';
+      if (formDesc) formDesc.textContent = currentLang === 'vi' ? 'Cập nhật thông tin chi tiết hiện có trên thẻ' : 'Update existing information';
+    } else {
+      // Chưa nhận diện chủ thẻ -> Hiển thị nút Xác thực OTP ở vị trí thứ 3
+      if (btnVerify) btnVerify.style.display = 'flex';
+      if (modalTitle) modalTitle.textContent = currentLang === 'vi' ? 'Tùy Chọn Danh Thiếp' : 'Card Options';
+      if (modalDesc) modalDesc.textContent = currentLang === 'vi' ? 'Tạo thẻ mới hoặc nhận quyền chỉnh sửa thẻ này' : 'Create new card or claim ownership';
+      if (formTitle) formTitle.textContent = currentLang === 'vi' ? 'Tạo Thẻ Mới' : 'Create New Card';
+      if (formDesc) formDesc.textContent = currentLang === 'vi' ? 'Nhập thông tin mới để tạo danh thiếp riêng' : 'Enter info for a new card';
     }
+
+    createChoiceModal.classList.add('active');
+    mainAppShell.setAttribute('inert', 'true');
   }
+
   function closeCreateChoiceModal() {
     if (createChoiceModal) {
       createChoiceModal.classList.remove('active');
@@ -2651,10 +2598,11 @@ const BRAND_ICONS = {
   if (btnChoiceOpenForm) {
     btnChoiceOpenForm.onclick = () => {
       closeCreateChoiceModal();
-      if (!isSavedCardOwner()) {
-        openEmailAuthModal('create');
+      const ownerState = resolveOwnerState();
+      if (ownerState === 'authorized') {
+        openSheet({ mode: 'edit' });
       } else {
-        openSheet(false);
+        openSheet({ mode: 'create' });
       }
     };
   }
@@ -2662,10 +2610,11 @@ const BRAND_ICONS = {
   if (btnChoiceOpenBuilder) {
     btnChoiceOpenBuilder.onclick = () => {
       closeCreateChoiceModal();
-      if (!isSavedCardOwner()) {
-        openEmailAuthModal('create');
-      } else {
+      const ownerState = resolveOwnerState();
+      if (ownerState === 'authorized') {
         openVipProBuilder();
+      } else {
+        openEmailAuthModal('create');
       }
     };
   }
@@ -3243,11 +3192,10 @@ const BRAND_ICONS = {
     };
   }
 
-  function openSheet(clearFields = false) {
+  function openSheet(options = {}) {
+    const mode = (typeof options === 'string') ? options : (options.mode || (options.clearFields ? 'create' : 'edit'));
+    const isCreateNew = (mode === 'create');
     lastFocusedTrigger = btnOpenEdit;
-    // Chỉ xóa sạch form khi được yêu cầu rõ ràng (clearFields === true, ví dụ tạo thẻ mới hoàn toàn).
-    // Khi bấm Chỉnh Sửa thì PHẢI pre-fill 100% dữ liệu đang có trên thẻ hiện tại!
-    const isCreateNew = (clearFields === true);
 
     if (isCreateNew) {
       tempAvatarData = '';
