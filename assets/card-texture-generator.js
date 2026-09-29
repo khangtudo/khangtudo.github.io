@@ -720,7 +720,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       }
       const telOffset = getLayerOffset('tel', W, H);
       ctx.fillStyle = telOffset.customColor || CONTACT_TEXT_COLOR;
-      ctx.font = `bold 20px ${FONT_BODY}`;
+      ctx.font = `bold ${telOffset.customSize || 20}px ${telOffset.customFont || FONT_BODY}`;
       ctx.fillText(profile.tel, textX, contactCurY);
       contactCurY += 44;
     }
@@ -744,7 +744,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       }
       const emailOffset = getLayerOffset('email', W, H);
       ctx.fillStyle = emailOffset.customColor || CONTACT_TEXT_COLOR;
-      ctx.font = `500 20px ${FONT_BODY}`;
+      ctx.font = `500 ${emailOffset.customSize || 20}px ${emailOffset.customFont || FONT_BODY}`;
       ctx.fillText(profile.email, textX, contactCurY);
       contactCurY += 44;
     }
@@ -769,7 +769,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       }
       const urlOffset = getLayerOffset('url', W, H);
       ctx.fillStyle = urlOffset.customColor || CONTACT_TEXT_COLOR;
-      ctx.font = `500 20px ${FONT_BODY}`;
+      ctx.font = `500 ${urlOffset.customSize || 20}px ${urlOffset.customFont || FONT_BODY}`;
       ctx.fillText(displayUrl, textX, contactCurY);
       contactCurY += 44;
     }
@@ -1087,11 +1087,11 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.fillText('📞', vIconX, vCurY - 2);
         ctx.textAlign = 'left';
         ctx.fillStyle = vTelOffset.customColor || CONTACT_TEXT_COLOR;
-        ctx.font = `bold 19px ${FONT_BODY}`;
+        ctx.font = `bold ${vTelOffset.customSize || 19}px ${vTelOffset.customFont || FONT_BODY}`;
         ctx.fillText(profile.tel, vTextX, vCurY);
       } else {
         ctx.fillStyle = vTelOffset.customColor || CONTACT_TEXT_COLOR;
-        ctx.font = `bold 20px ${FONT_BODY}`;
+        ctx.font = `bold ${vTelOffset.customSize || 20}px ${vTelOffset.customFont || FONT_BODY}`;
         ctx.textAlign = 'left';
         ctx.fillText(`📞  ${profile.tel}`, safeLeft, vCurY);
       }
@@ -1108,11 +1108,11 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.fillText('✉️', vIconX, vCurY - 2);
         ctx.textAlign = 'left';
         ctx.fillStyle = vEmailOffset.customColor || CONTACT_TEXT_COLOR;
-        ctx.font = `bold 19px ${FONT_BODY}`;
+        ctx.font = `bold ${vEmailOffset.customSize || 19}px ${vEmailOffset.customFont || FONT_BODY}`;
         ctx.fillText(profile.email, vTextX, vCurY);
       } else {
         ctx.fillStyle = vEmailOffset.customColor || CONTACT_TEXT_COLOR;
-        ctx.font = `bold 20px ${FONT_BODY}`;
+        ctx.font = `bold ${vEmailOffset.customSize || 20}px ${vEmailOffset.customFont || FONT_BODY}`;
         ctx.textAlign = 'left';
         ctx.fillText(`✉️  ${profile.email}`, safeLeft, vCurY);
       }
@@ -1130,11 +1130,11 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.fillText('🌐', vIconX, vCurY - 2);
         ctx.textAlign = 'left';
         ctx.fillStyle = vUrlOffset.customColor || CONTACT_TEXT_COLOR;
-        ctx.font = `bold 19px ${FONT_BODY}`;
+        ctx.font = `bold ${vUrlOffset.customSize || 19}px ${vUrlOffset.customFont || FONT_BODY}`;
         ctx.fillText(vDisplayUrl, vTextX, vCurY);
       } else {
         ctx.fillStyle = vUrlOffset.customColor || CONTACT_TEXT_COLOR;
-        ctx.font = `bold 20px ${FONT_BODY}`;
+        ctx.font = `bold ${vUrlOffset.customSize || 20}px ${vUrlOffset.customFont || FONT_BODY}`;
         ctx.textAlign = 'left';
         ctx.fillText(`🌐  ${vDisplayUrl}`, safeLeft, vCurY);
       }
