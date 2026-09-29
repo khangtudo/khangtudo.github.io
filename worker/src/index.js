@@ -1,4 +1,4 @@
-import { sendOtpEmail } from './mail.js';
+import { sendOtpEmail, sendCardReadyEmail } from './mail.js';
 
 // List of common disposable / temporary email domains
 const DISPOSABLE_EMAIL_DOMAINS = new Set([
@@ -260,13 +260,24 @@ export default {
           }
           await env.INID_KV.put(cardKey, JSON.stringify(cardData));
 
+          // Also send email with card URL for record storage
+          ctx.waitUntil(
+            sendCardReadyEmail(env, {
+              email,
+              cardId: storedOtp.cardId,
+              cardUrl: `https://inid.me/?id=${storedOtp.cardId}`,
+              profile: cardData.profile || {}
+            }).catch(err => console.warn('Failed to send card info email:', err))
+          );
+
           return corsResponse({
             success: true,
             isNew: false,
             cardId: storedOtp.cardId,
             editToken,
             profile: cardData.profile,
-            universalUrl: `https://inid.me/p/${storedOtp.cardId}`
+            universalUrl: `https://inid.me/?id=${storedOtp.cardId}`,
+            shortUrl: `https://inid.me/p/${storedOtp.cardId}`
           });
         }
 
@@ -295,13 +306,24 @@ export default {
         userCards.push(newCardId);
         await env.INID_KV.put(userCardsKey, JSON.stringify(userCards));
 
+        // Asynchronously send notification email containing the unique URL
+        ctx.waitUntil(
+          sendCardReadyEmail(env, {
+            email,
+            cardId: newCardId,
+            cardUrl: `https://inid.me/?id=${newCardId}`,
+            profile: initialProfile
+          }).catch(err => console.warn('Failed to send card ready email:', err))
+        );
+
         return corsResponse({
           success: true,
           isNew: true,
           cardId: newCardId,
           editToken,
           profile: initialProfile,
-          universalUrl: `https://inid.me/p/${newCardId}`
+          universalUrl: `https://inid.me/?id=${newCardId}`,
+          shortUrl: `https://inid.me/p/${newCardId}`
         });
       }
 
