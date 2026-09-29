@@ -2260,7 +2260,8 @@ const BRAND_ICONS = {
     if (isDemoCard || !activeCardId) return 'no-card';
     const token = localStorage.getItem('inid_edit_token_' + activeCardId);
     const savedCardId = localStorage.getItem('inid_my_card_id');
-    if (token && (savedCardId === activeCardId || token.length > 10)) {
+    // Siết chặt: phải có token của đúng activeCardId và savedCardId cũng phải khớp
+    if (token && token.trim().length > 0 && savedCardId === activeCardId) {
       return 'authorized';
     }
     return 'unauthorized';
@@ -2569,11 +2570,12 @@ const BRAND_ICONS = {
   }
 
   function handleCreateOrEditClick() {
-    if (!isSavedCardOwner()) {
-      // Khách vãng lai xem demo hoặc xem thẻ người khác -> Mở luồng tạo thẻ mới bằng email + OTP
+    if (isDemoCard || !activeCardId) {
+      // Đang xem demo hoặc không có card cụ thể -> Luồng tạo thẻ mới
       openEmailAuthModal('create');
     } else {
-      // Chủ thẻ -> Mở menu tùy chọn chỉnh sửa
+      // Đang xem một card cụ thể (dù là chủ thẻ hay khách xem) -> Mở bảng tùy chọn 1-2-3
+      // Bảng sẽ tự động ẩn/hiện nút OTP và cấu hình mode tương ứng theo trạng thái chủ thẻ
       openCreateChoiceModal();
     }
   }
@@ -2707,12 +2709,7 @@ const BRAND_ICONS = {
   if (btnCopyStkMobile) btnCopyStkMobile.onclick = copyMbStk;
   if (btnCopyStkDesktop) btnCopyStkDesktop.onclick = copyMbStk;
 
-  if (btnChoiceOpenBuilder) {
-    btnChoiceOpenBuilder.onclick = () => {
-      closeCreateChoiceModal();
-      setBuilderMode(true);
-    };
-  }
+  // Duplicate builder handler removed
 
   // Nút tạo mới thẻ hoàn toàn từ dòng footer trong modal
   const btnCreateAnotherCard = document.getElementById('btnCreateAnotherCard');
@@ -3193,8 +3190,18 @@ const BRAND_ICONS = {
   }
 
   function openSheet(options = {}) {
-    const mode = (typeof options === 'string') ? options : (options.mode || (options.clearFields ? 'create' : 'edit'));
-    const isCreateNew = (mode === 'create');
+    let isCreateNew = false;
+    if (typeof options === 'boolean') {
+      isCreateNew = options;
+    } else if (typeof options === 'string') {
+      isCreateNew = (options === 'create');
+    } else if (options && typeof options === 'object') {
+      if (typeof options.mode === 'string') {
+        isCreateNew = (options.mode === 'create');
+      } else if (typeof options.clearFields === 'boolean') {
+        isCreateNew = options.clearFields;
+      }
+    }
     lastFocusedTrigger = btnOpenEdit;
 
     if (isCreateNew) {
