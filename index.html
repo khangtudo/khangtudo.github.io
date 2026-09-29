@@ -2481,7 +2481,49 @@ const BRAND_ICONS = {
       cardRoot.style.setProperty('--card-font-body', bodyFont);
     }
 
+    applyCustomLayoutToDom();
     updateByteGauge();
+  }
+
+  // Apply visual overrides from profile.customLayout (WYSIWYG UX Builder) to 2D Card DOM
+  function applyCustomLayoutToDom() {
+    if (!profile.customLayout || typeof profile.customLayout !== 'object') return;
+    const cardFace = document.querySelector('.card-face');
+    const cardW = (cardFace && cardFace.offsetWidth) ? cardFace.offsetWidth : 340;
+    const cardH = (cardFace && cardFace.offsetHeight) ? cardFace.offsetHeight : 540;
+
+    Object.keys(profile.customLayout).forEach(layerId => {
+      const item = profile.customLayout[layerId];
+      if (!item) return;
+      const el = document.querySelector(`[data-layer-id="${layerId}"]`);
+      if (!el) return;
+
+      if (item.color) {
+        el.style.color = item.color;
+      }
+      if (item.fontSize) {
+        el.style.fontSize = `${item.fontSize}px`;
+      }
+      if (item.fontFamily && item.fontFamily !== 'inherit') {
+        el.style.fontFamily = item.fontFamily;
+      }
+      if (item.fx === 'gold') {
+        el.classList.add('vip-fx-gold');
+        el.classList.remove('vip-fx-emboss');
+      } else if (item.fx === 'emboss') {
+        el.classList.add('vip-fx-emboss');
+        el.classList.remove('vip-fx-gold');
+      }
+
+      // Restore position if dragged
+      if (typeof item.offsetX === 'number' || typeof item.relX === 'number') {
+        const ox = (typeof item.relX === 'number') ? Math.round(item.relX * cardW) : (item.offsetX || 0);
+        const oy = (typeof item.relY === 'number') ? Math.round(item.relY * cardH) : (item.offsetY || 0);
+        if (ox !== 0 || oy !== 0) {
+          el.style.transform = `translate(${ox}px, ${oy}px)`;
+        }
+      }
+    });
   }
 
   // Card Flip with Keyboard & A11y
@@ -3722,7 +3764,8 @@ const BRAND_ICONS = {
   if (btnDoneBuilderMode) {
     btnDoneBuilderMode.onclick = () => {
       setBuilderMode(false);
-      showToast('Đã lưu thiết kế Builder!');
+      syncProfileToCloud();
+      showToast(currentLang === 'vi' ? 'Đã lưu thiết kế & đồng bộ đám mây!' : 'Saved design & Cloud Synced!');
     };
   }
 
@@ -3870,14 +3913,14 @@ const BRAND_ICONS = {
     saveBuilderLayoutToStorage();
   }
 
-  function saveBuilderLayoutToStorage() {
+  // Comprehensive Cloud & Local Sync for Profile and customLayout
+  function syncProfileToCloud() {
     try {
       const profileJson = JSON.stringify(profile);
       localStorage.setItem('inid_ar_profile', profileJson);
       
       const btnArHandsLink = document.getElementById('btnArHandsLink');
       if (btnArHandsLink) {
-        // Encode profile to base64 if not excessively large (< 800KB)
         if (profileJson.length < 800000) {
           try {
             const b64 = btoa(encodeURIComponent(profileJson));
@@ -3886,13 +3929,37 @@ const BRAND_ICONS = {
             btnArHandsLink.href = `/ar-hands/`;
           }
         } else {
-          // If photos are large, ar-hands will directly read from localStorage('inid_ar_profile')
           btnArHandsLink.href = `/ar-hands/`;
         }
       }
+
+      // Sync to Cloudflare Worker KV if activeCardId exists and we are authorized
+      if (activeCardId) {
+        const editToken = localStorage.getItem('inid_edit_token_' + activeCardId);
+        if (editToken) {
+          fetch(`${INID_API_URL}/api/card/${activeCardId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${editToken}`
+            },
+            body: JSON.stringify({ profile })
+          }).then(r => r.json()).then(res => {
+            if (res.success) {
+              console.log('Synced customLayout to inid.me Cloudflare KV successfully');
+            }
+          }).catch(err => {
+            console.warn('Cloud sync background error:', err);
+          });
+        }
+      }
     } catch(e) {
-      console.warn('Error saving builder layout:', e);
+      console.warn('Error in syncProfileToCloud:', e);
     }
+  }
+
+  function saveBuilderLayoutToStorage() {
+    syncProfileToCloud();
   }
 
   // -------------------------------------------------------------
@@ -4382,6 +4449,9 @@ const BRAND_ICONS = {
       .then(res => {
         if (res.success && res.card && res.card.profile && (res.card.profile.fn || res.card.profile.org)) {
           profile = Object.assign({}, res.card.profile);
+          if (!profile.customLayout || typeof profile.customLayout !== 'object') {
+            profile.customLayout = {};
+          }
           isDemoCard = false;
           renderCard();
           updateI18n();

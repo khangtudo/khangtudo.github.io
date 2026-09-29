@@ -318,17 +318,50 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
   // Pro / VIP Customizer Layout Tokens (Offsets & Styling from WYSIWYG Builder)
   const customLayout = profile.customLayout || {};
+  function parseColorToRgb(str) {
+    if (!str || typeof str !== 'string') return null;
+    str = str.trim();
+    if (str.startsWith('#')) {
+      const clean = str.slice(1);
+      if (clean.length === 3) {
+        return [
+          parseInt(clean[0] + clean[0], 16),
+          parseInt(clean[1] + clean[1], 16),
+          parseInt(clean[2] + clean[2], 16)
+        ];
+      }
+      if (clean.length === 6) {
+        return [
+          parseInt(clean.substring(0, 2), 16),
+          parseInt(clean.substring(2, 4), 16),
+          parseInt(clean.substring(4, 6), 16)
+        ];
+      }
+    }
+    const rgbMatch = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (rgbMatch) {
+      return [parseInt(rgbMatch[1], 10), parseInt(rgbMatch[2], 10), parseInt(rgbMatch[3], 10)];
+    }
+    return null;
+  }
+
+  function isColorLight(colorStr) {
+    const rgb = parseColorToRgb(colorStr);
+    if (!rgb) return false;
+    const lum = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255;
+    return lum > 0.65;
+  }
+
   const getLayerOffset = (id, cardWidth, cardHeight) => {
     const item = customLayout[id];
     if (!item) return { dx: 0, dy: 0, fx: null, customLines: null, customFont: null, customSize: null, customColor: null };
     const dx = (typeof item.relX === 'number') ? Math.round(item.relX * cardWidth) : (item.offsetX || 0);
     const dy = (typeof item.relY === 'number') ? Math.round(item.relY * cardHeight) : (item.offsetY || 0);
     
-    // Nếu là nền sáng, kiểm tra xem màu tùy chỉnh trong customColor có bị trắng hoặc quá sáng không
     let validCustomColor = item.color || null;
     if (isLightBg && validCustomColor) {
-      if (isHexColorLight(validCustomColor) || validCustomColor === '#fff' || validCustomColor === '#ffffff' || validCustomColor === '#F4F7FA') {
-        validCustomColor = null; // Huỷ màu trắng cũ đã lưu để fallback về TEXT_COLOR hoặc ACCENT_COLOR đậm
+      if (isColorLight(validCustomColor) || validCustomColor === '#fff' || validCustomColor === '#ffffff' || validCustomColor === '#F4F7FA') {
+        validCustomColor = null;
       }
     }
 
@@ -336,7 +369,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       dx, dy,
       fx: item.fx || null,
       customLines: Array.isArray(item.lines) ? item.lines : null,
-      customFont: item.fontFamily || null,
+      customFont: (item.fontFamily && item.fontFamily !== 'inherit') ? item.fontFamily : null,
       customSize: item.fontSize || null,
       customColor: validCustomColor
     };
@@ -685,7 +718,8 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.textAlign = 'left';
         ctx.fillText('📞', iconX, contactCurY);
       }
-      ctx.fillStyle = CONTACT_TEXT_COLOR;
+      const telOffset = getLayerOffset('tel', W, H);
+      ctx.fillStyle = telOffset.customColor || CONTACT_TEXT_COLOR;
       ctx.font = `bold 20px ${FONT_BODY}`;
       ctx.fillText(profile.tel, textX, contactCurY);
       contactCurY += 44;
@@ -708,7 +742,8 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.textAlign = 'left';
         ctx.fillText('✉️', iconX, contactCurY);
       }
-      ctx.fillStyle = CONTACT_TEXT_COLOR;
+      const emailOffset = getLayerOffset('email', W, H);
+      ctx.fillStyle = emailOffset.customColor || CONTACT_TEXT_COLOR;
       ctx.font = `500 20px ${FONT_BODY}`;
       ctx.fillText(profile.email, textX, contactCurY);
       contactCurY += 44;
@@ -732,7 +767,8 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.textAlign = 'left';
         ctx.fillText('🌐', iconX, contactCurY);
       }
-      ctx.fillStyle = CONTACT_TEXT_COLOR;
+      const urlOffset = getLayerOffset('url', W, H);
+      ctx.fillStyle = urlOffset.customColor || CONTACT_TEXT_COLOR;
       ctx.font = `500 20px ${FONT_BODY}`;
       ctx.fillText(displayUrl, textX, contactCurY);
       contactCurY += 44;
@@ -757,17 +793,20 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       }
 
       // Address auto-wraps up to 2 lines
+      const adrOffset = getLayerOffset('adr', W, H);
       fitAndDrawText(ctx, {
         text: profile.adr,
-        x: textX,
-        y: contactCurY,
+        customLines: adrOffset.customLines,
+        fx: adrOffset.fx,
+        x: textX + adrOffset.dx,
+        y: contactCurY + adrOffset.dy,
         maxWidth: maxContactW,
         maxHeight: 46,
-        baseFontSize: 18,
+        baseFontSize: adrOffset.customSize || 18,
         minFontSize: 13,
-        fontFamily: FONT_BODY,
+        fontFamily: adrOffset.customFont || FONT_BODY,
         fontWeight: '500',
-        color: CONTACT_TEXT_COLOR,
+        color: adrOffset.customColor || CONTACT_TEXT_COLOR,
         maxLines: 2,
         lineHeightRatio: 1.2
       });
@@ -826,34 +865,40 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
 
     // Company Title (Auto-wrap & Auto-scale)
+    const backOrgOffset = getLayerOffset('back_org', W, H);
     const bOrgRes = fitAndDrawText(ctx, {
       text: profile.org || 'inid.me Identity',
-      x: bcx,
-      y: lgY + lgH + 42,
+      customLines: backOrgOffset.customLines,
+      fx: backOrgOffset.fx,
+      x: bcx + backOrgOffset.dx,
+      y: lgY + lgH + 42 + backOrgOffset.dy,
       maxWidth: bMaxW,
       maxHeight: 74,
-      baseFontSize: 38,
+      baseFontSize: backOrgOffset.customSize || 38,
       minFontSize: 22,
-      fontFamily: FONT_DISPLAY,
+      fontFamily: backOrgOffset.customFont || FONT_DISPLAY,
       fontWeight: 'bold',
-      color: ORG_COLOR,
+      color: backOrgOffset.customColor || ORG_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
     });
 
     // Slogan / Tagline (Auto-wrap & Auto-scale)
+    const sloganOffset = getLayerOffset('slogan', W, H);
     const bSloganRes = fitAndDrawText(ctx, {
       text: profile.slogan || profile.tagline || 'Smart AR Profile & Business Card',
-      x: bcx,
-      y: bOrgRes.nextY + 8,
+      customLines: sloganOffset.customLines,
+      fx: sloganOffset.fx,
+      x: bcx + sloganOffset.dx,
+      y: bOrgRes.nextY + 8 + sloganOffset.dy,
       maxWidth: bMaxW,
       maxHeight: 52,
-      baseFontSize: 22,
+      baseFontSize: sloganOffset.customSize || 22,
       minFontSize: 14,
-      fontFamily: FONT_BODY,
+      fontFamily: sloganOffset.customFont || FONT_BODY,
       fontWeight: '600',
-      color: TITLE_COLOR,
+      color: sloganOffset.customColor || TITLE_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -861,17 +906,20 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     // Address (Auto-wrap & Auto-scale)
     if (profile.adr) {
+      const bAdrOffset = getLayerOffset('adr', W, H);
       fitAndDrawText(ctx, {
         text: profile.adr,
-        x: bcx,
-        y: bSloganRes.nextY + 12,
+        customLines: bAdrOffset.customLines,
+        fx: bAdrOffset.fx,
+        x: bcx + bAdrOffset.dx,
+        y: bSloganRes.nextY + 12 + bAdrOffset.dy,
         maxWidth: bMaxW,
         maxHeight: 48,
-        baseFontSize: 20,
+        baseFontSize: bAdrOffset.customSize || 20,
         minFontSize: 13,
-        fontFamily: FONT_BODY,
+        fontFamily: bAdrOffset.customFont || FONT_BODY,
         fontWeight: '500',
-        color: TEXT_MUTED,
+        color: bAdrOffset.customColor || TEXT_MUTED,
         textAlign: 'center',
         maxLines: 2,
         lineHeightRatio: 1.18
@@ -1002,11 +1050,11 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       y: vTitleRes.nextY + 4 + vOrgOffset.dy,
       maxWidth: maxVTextW,
       maxHeight: 40,
-      baseFontSize: 18,
+      baseFontSize: vOrgOffset.customSize || 18,
       minFontSize: 13,
-      fontFamily: FONT_BODY,
+      fontFamily: vOrgOffset.customFont || FONT_BODY,
       fontWeight: '500',
-      color: ORG_COLOR,
+      color: vOrgOffset.customColor || ORG_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -1029,6 +1077,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const vTextX = safeLeft + 38;
 
     if (profile.tel && vCurY < safeBottom - 70) {
+      const vTelOffset = getLayerOffset('tel', W, H);
       if (isArtPaper) {
         ctx.fillStyle = '#DC2626';
         ctx.beginPath(); ctx.arc(vIconX, vCurY - 6, 12, 0, Math.PI * 2); ctx.fill();
@@ -1037,11 +1086,11 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.textAlign = 'center';
         ctx.fillText('📞', vIconX, vCurY - 2);
         ctx.textAlign = 'left';
-        ctx.fillStyle = CONTACT_TEXT_COLOR;
+        ctx.fillStyle = vTelOffset.customColor || CONTACT_TEXT_COLOR;
         ctx.font = `bold 19px ${FONT_BODY}`;
         ctx.fillText(profile.tel, vTextX, vCurY);
       } else {
-        ctx.fillStyle = CONTACT_TEXT_COLOR;
+        ctx.fillStyle = vTelOffset.customColor || CONTACT_TEXT_COLOR;
         ctx.font = `bold 20px ${FONT_BODY}`;
         ctx.textAlign = 'left';
         ctx.fillText(`📞  ${profile.tel}`, safeLeft, vCurY);
@@ -1049,6 +1098,7 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       vCurY += 40;
     }
     if (profile.email && vCurY < safeBottom - 70) {
+      const vEmailOffset = getLayerOffset('email', W, H);
       if (isArtPaper) {
         ctx.fillStyle = '#DC2626';
         ctx.beginPath(); ctx.arc(vIconX, vCurY - 6, 12, 0, Math.PI * 2); ctx.fill();
@@ -1057,19 +1107,20 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.textAlign = 'center';
         ctx.fillText('✉️', vIconX, vCurY - 2);
         ctx.textAlign = 'left';
-        ctx.fillStyle = CONTACT_TEXT_COLOR;
-        ctx.font = `600 17px ${FONT_BODY}`;
+        ctx.fillStyle = vEmailOffset.customColor || CONTACT_TEXT_COLOR;
+        ctx.font = `bold 19px ${FONT_BODY}`;
         ctx.fillText(profile.email, vTextX, vCurY);
       } else {
-        ctx.fillStyle = CONTACT_TEXT_COLOR;
-        ctx.font = `600 18px ${FONT_BODY}`;
+        ctx.fillStyle = vEmailOffset.customColor || CONTACT_TEXT_COLOR;
+        ctx.font = `bold 20px ${FONT_BODY}`;
         ctx.textAlign = 'left';
         ctx.fillText(`✉️  ${profile.email}`, safeLeft, vCurY);
       }
       vCurY += 40;
     }
-    const displayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
-    if (displayUrl && vCurY < safeBottom - 70) {
+    const vDisplayUrl = (profile.url || 'inid.me').replace(/^https?:\/\//i, '');
+    if (vDisplayUrl && vCurY < safeBottom - 70) {
+      const vUrlOffset = getLayerOffset('url', W, H);
       if (isArtPaper) {
         ctx.fillStyle = '#DC2626';
         ctx.beginPath(); ctx.arc(vIconX, vCurY - 6, 12, 0, Math.PI * 2); ctx.fill();
@@ -1078,18 +1129,19 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.textAlign = 'center';
         ctx.fillText('🌐', vIconX, vCurY - 2);
         ctx.textAlign = 'left';
-        ctx.fillStyle = CONTACT_TEXT_COLOR;
-        ctx.font = `600 17px ${FONT_BODY}`;
-        ctx.fillText(displayUrl, vTextX, vCurY);
+        ctx.fillStyle = vUrlOffset.customColor || CONTACT_TEXT_COLOR;
+        ctx.font = `bold 19px ${FONT_BODY}`;
+        ctx.fillText(vDisplayUrl, vTextX, vCurY);
       } else {
-        ctx.fillStyle = CONTACT_TEXT_COLOR;
-        ctx.font = `600 18px ${FONT_BODY}`;
+        ctx.fillStyle = vUrlOffset.customColor || CONTACT_TEXT_COLOR;
+        ctx.font = `bold 20px ${FONT_BODY}`;
         ctx.textAlign = 'left';
-        ctx.fillText(`🌐  ${displayUrl}`, safeLeft, vCurY);
+        ctx.fillText(`🌐  ${vDisplayUrl}`, safeLeft, vCurY);
       }
       vCurY += 40;
     }
     if (profile.adr && vCurY < safeBottom - 50) {
+      const vAdrOffset = getLayerOffset('adr', W, H);
       if (isArtPaper) {
         ctx.fillStyle = '#DC2626';
         ctx.beginPath(); ctx.arc(vIconX, vCurY - 6, 12, 0, Math.PI * 2); ctx.fill();
@@ -1101,35 +1153,39 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
         fitAndDrawText(ctx, {
           text: profile.adr,
-          x: vTextX,
-          y: vCurY,
+          customLines: vAdrOffset.customLines,
+          fx: vAdrOffset.fx,
+          x: vTextX + vAdrOffset.dx,
+          y: vCurY + vAdrOffset.dy,
           maxWidth: vContactMaxW - 24,
           maxHeight: 46,
-          baseFontSize: 16,
+          baseFontSize: vAdrOffset.customSize || 16,
           minFontSize: 13,
-          fontFamily: FONT_BODY,
+          fontFamily: vAdrOffset.customFont || FONT_BODY,
           fontWeight: '600',
-          color: CONTACT_TEXT_COLOR,
+          color: vAdrOffset.customColor || CONTACT_TEXT_COLOR,
           maxLines: 2,
           lineHeightRatio: 1.15
         });
       } else {
-        ctx.fillStyle = CONTACT_TEXT_COLOR;
-        ctx.font = `16px ${FONT_BODY}`;
+        ctx.fillStyle = vAdrOffset.customColor || CONTACT_TEXT_COLOR;
+        ctx.font = `bold 20px ${FONT_BODY}`;
         ctx.textAlign = 'left';
         ctx.fillText(`📍`, safeLeft, vCurY);
 
         fitAndDrawText(ctx, {
           text: profile.adr,
-          x: safeLeft + 28,
-          y: vCurY,
+          customLines: vAdrOffset.customLines,
+          fx: vAdrOffset.fx,
+          x: safeLeft + 28 + vAdrOffset.dx,
+          y: vCurY + vAdrOffset.dy,
           maxWidth: vContactMaxW - 28,
           maxHeight: 46,
-          baseFontSize: 16,
+          baseFontSize: vAdrOffset.customSize || 16,
           minFontSize: 13,
-          fontFamily: FONT_BODY,
+          fontFamily: vAdrOffset.customFont || FONT_BODY,
           fontWeight: '600',
-          color: CONTACT_TEXT_COLOR,
+          color: vAdrOffset.customColor || CONTACT_TEXT_COLOR,
           maxLines: 2,
           lineHeightRatio: 1.15
         });
@@ -1138,17 +1194,20 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     // Slogan
     if (profile.slogan || profile.tagline) {
+      const vSloganOffset = getLayerOffset('slogan', W, H);
       fitAndDrawText(ctx, {
         text: profile.slogan || profile.tagline,
-        x: cx,
-        y: safeBottom - 45,
+        customLines: vSloganOffset.customLines,
+        fx: vSloganOffset.fx,
+        x: cx + vSloganOffset.dx,
+        y: safeBottom - 45 + vSloganOffset.dy,
         maxWidth: maxVTextW,
         maxHeight: 36,
-        baseFontSize: 15,
+        baseFontSize: vSloganOffset.customSize || 15,
         minFontSize: 12,
-        fontFamily: FONT_BODY,
+        fontFamily: vSloganOffset.customFont || FONT_BODY,
         fontWeight: 'italic 500',
-        color: SLOGAN_COLOR,
+        color: vSloganOffset.customColor || SLOGAN_COLOR,
         textAlign: 'center',
         maxLines: 2,
         lineHeightRatio: 1.15
@@ -1209,34 +1268,40 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
 
     // Company Title (Auto-wrap & Auto-scale)
+    const bVBackOrgOffset = getLayerOffset('back_org', W, H);
     const bVOrgRes = fitAndDrawText(ctx, {
       text: profile.org || 'inid.me Identity',
-      x: bcx,
-      y: bLgY + bLgH + 46,
+      customLines: bVBackOrgOffset.customLines,
+      fx: bVBackOrgOffset.fx,
+      x: bcx + bVBackOrgOffset.dx,
+      y: bLgY + bLgH + 46 + bVBackOrgOffset.dy,
       maxWidth: bMaxVTextW,
       maxHeight: 74,
-      baseFontSize: 34,
+      baseFontSize: bVBackOrgOffset.customSize || 34,
       minFontSize: 19,
-      fontFamily: FONT_DISPLAY,
+      fontFamily: bVBackOrgOffset.customFont || FONT_DISPLAY,
       fontWeight: 'bold',
-      color: ORG_COLOR,
+      color: bVBackOrgOffset.customColor || ORG_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
     });
 
     // Slogan (Auto-wrap & Auto-scale)
+    const bVSloganOffset = getLayerOffset('slogan', W, H);
     const bVSloganRes = fitAndDrawText(ctx, {
       text: profile.slogan || profile.tagline || 'Smart AR Profile & Business Card',
-      x: bcx,
-      y: bVOrgRes.nextY + 8,
+      customLines: bVSloganOffset.customLines,
+      fx: bVSloganOffset.fx,
+      x: bcx + bVSloganOffset.dx,
+      y: bVOrgRes.nextY + 8 + bVSloganOffset.dy,
       maxWidth: bMaxVTextW,
       maxHeight: 46,
-      baseFontSize: 18,
+      baseFontSize: bVSloganOffset.customSize || 18,
       minFontSize: 13,
-      fontFamily: FONT_BODY,
+      fontFamily: bVSloganOffset.customFont || FONT_BODY,
       fontWeight: 'bold italic',
-      color: TITLE_COLOR,
+      color: bVSloganOffset.customColor || TITLE_COLOR,
       textAlign: 'center',
       maxLines: 2,
       lineHeightRatio: 1.15
@@ -1244,17 +1309,20 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
 
     // Address (Auto-wrap & Auto-scale)
     if (profile.adr) {
+      const bVAdrOffset = getLayerOffset('adr', W, H);
       fitAndDrawText(ctx, {
         text: profile.adr,
-        x: bcx,
-        y: bVSloganRes.nextY + 12,
+        customLines: bVAdrOffset.customLines,
+        fx: bVAdrOffset.fx,
+        x: bcx + bVAdrOffset.dx,
+        y: bVSloganRes.nextY + 12 + bVAdrOffset.dy,
         maxWidth: bMaxVTextW,
         maxHeight: 46,
-        baseFontSize: 17,
+        baseFontSize: bVAdrOffset.customSize || 17,
         minFontSize: 12,
-        fontFamily: FONT_BODY,
+        fontFamily: bVAdrOffset.customFont || FONT_BODY,
         fontWeight: '500',
-        color: TEXT_MUTED,
+        color: bVAdrOffset.customColor || TEXT_MUTED,
         textAlign: 'center',
         maxLines: 2,
         lineHeightRatio: 1.15
