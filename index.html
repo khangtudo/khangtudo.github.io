@@ -2614,7 +2614,7 @@ const BRAND_ICONS = {
       closeCreateChoiceModal();
       const ownerState = resolveOwnerState();
       if (ownerState === 'authorized') {
-        openVipProBuilder();
+        setBuilderMode(true);
       } else {
         openEmailAuthModal('create');
       }
