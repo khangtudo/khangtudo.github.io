@@ -847,17 +847,10 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.clip();
       ctx.drawImage(logoImg, lgX + 5, lgY + 5, lgW - 10, lgH - 10);
       ctx.restore();
-      roundRect(lgX, lgY, lgW, lgH, 20);
-      ctx.strokeStyle = LOGO_BORDER;
-      ctx.lineWidth = 3;
-      ctx.stroke();
     } else {
       ctx.fillStyle = LOGO_BG;
       roundRect(lgX, lgY, lgW, lgH, 24);
       ctx.fill();
-      ctx.strokeStyle = LOGO_BORDER;
-      ctx.lineWidth = 3.5;
-      ctx.stroke();
       ctx.fillStyle = LOGO_TEXT;
       ctx.font = `bold 42px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
@@ -1250,17 +1243,10 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.clip();
       ctx.drawImage(logoImg, bLgX + 6, bLgY + 6, bLgW - 12, bLgH - 12);
       ctx.restore();
-      roundRect(bLgX, bLgY, bLgW, bLgH, 24);
-      ctx.strokeStyle = LOGO_BORDER;
-      ctx.lineWidth = 3.5;
-      ctx.stroke();
     } else {
       ctx.fillStyle = LOGO_BG;
       roundRect(bLgX, bLgY, bLgW, bLgH, 26);
       ctx.fill();
-      ctx.strokeStyle = LOGO_BORDER;
-      ctx.lineWidth = 3.5;
-      ctx.stroke();
       ctx.fillStyle = LOGO_TEXT;
       ctx.font = `bold 44px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
