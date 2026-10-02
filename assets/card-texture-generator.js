@@ -371,7 +371,8 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       customLines: Array.isArray(item.lines) ? item.lines : null,
       customFont: (item.fontFamily && item.fontFamily !== 'inherit') ? item.fontFamily : null,
       customSize: item.fontSize || null,
-      customColor: validCustomColor
+      customColor: validCustomColor,
+      borderColor: item.borderColor || (validCustomColor === 'transparent' ? 'transparent' : null)
     };
   };
 
@@ -545,9 +546,11 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     }
 
     // 4. Accent Border (drawn inset by 2px from bleeding edge)
-    ctx.strokeStyle = BORDER_COLOR;
-    ctx.lineWidth = (matKey === 'gold' || matKey === 'frost') ? 4 : 5;
-    ctx.stroke();
+    if (BORDER_COLOR && BORDER_COLOR !== 'transparent') {
+      ctx.strokeStyle = BORDER_COLOR;
+      ctx.lineWidth = (matKey === 'gold' || matKey === 'frost') ? 4 : 5;
+      ctx.stroke();
+    }
 
     ctx.restore();
   }
@@ -598,18 +601,22 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.clip();
       ctx.drawImage(avatarImg, avX, avY, avW, avH);
       ctx.restore();
-      ctx.beginPath();
-      ctx.arc(avX + avW / 2, avY + avH / 2, avW / 2, 0, Math.PI * 2);
-      ctx.strokeStyle = AVATAR_BORDER;
-      ctx.lineWidth = 3;
-      ctx.stroke();
+      if (AVATAR_BORDER && AVATAR_BORDER !== 'transparent') {
+        ctx.beginPath();
+        ctx.arc(avX + avW / 2, avY + avH / 2, avW / 2, 0, Math.PI * 2);
+        ctx.strokeStyle = AVATAR_BORDER;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
     } else {
       ctx.fillStyle = AVATAR_BG;
       roundRect(avX, avY, avW, avH, 18);
       ctx.fill();
-      ctx.strokeStyle = AVATAR_BORDER;
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      if (AVATAR_BORDER && AVATAR_BORDER !== 'transparent') {
+        ctx.strokeStyle = AVATAR_BORDER;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
       ctx.fillStyle = AVATAR_TEXT;
       ctx.font = `bold 30px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
@@ -836,8 +843,16 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const bMaxW = W - (SAFE_INSET_X * 2) - 60; // Safe width
 
     // Logo / Emblem
+    const logoOffset = getLayerOffset('logo', W, H);
+    let effectiveLogoBorder = logoOffset.borderColor || logoOffset.customColor;
+    if (!effectiveLogoBorder) {
+      effectiveLogoBorder = (vip.accentColor === 'transparent') ? 'transparent' : null;
+    }
+    const shouldStrokeLogo = effectiveLogoBorder && effectiveLogoBorder !== 'transparent';
+    const logoStrokeColor = shouldStrokeLogo ? effectiveLogoBorder : LOGO_BORDER;
+
     const lgW = 104, lgH = 104;
-    const lgX = bcx - lgW / 2, lgY = bSafeTop + 6;
+    const lgX = bcx - lgW / 2 + logoOffset.dx, lgY = bSafeTop + 6 + logoOffset.dy;
 
     if (logoImg) {
       ctx.save();
@@ -847,14 +862,26 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.clip();
       ctx.drawImage(logoImg, lgX + 5, lgY + 5, lgW - 10, lgH - 10);
       ctx.restore();
+      if (shouldStrokeLogo) {
+        roundRect(lgX, lgY, lgW, lgH, 20);
+        ctx.strokeStyle = logoStrokeColor;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
     } else {
       ctx.fillStyle = LOGO_BG;
       roundRect(lgX, lgY, lgW, lgH, 24);
       ctx.fill();
+      if (shouldStrokeLogo) {
+        roundRect(lgX, lgY, lgW, lgH, 24);
+        ctx.strokeStyle = logoStrokeColor;
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+      }
       ctx.fillStyle = LOGO_TEXT;
       ctx.font = `bold 42px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
-      ctx.fillText(getInitials(profile.org || profile.fn), bcx, lgY + 68);
+      ctx.fillText(getInitials(profile.org || profile.fn), bcx + logoOffset.dx, lgY + 68);
     }
 
     // Company Title (Auto-wrap & Auto-scale)
@@ -977,19 +1004,23 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.clip();
       ctx.drawImage(avatarImg, avCenterX - avR, avY - avR, avR * 2, avR * 2);
       ctx.restore();
-      ctx.beginPath();
-      ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
-      ctx.strokeStyle = AVATAR_BORDER;
-      ctx.lineWidth = 3.5;
-      ctx.stroke();
+      if (AVATAR_BORDER && AVATAR_BORDER !== 'transparent') {
+        ctx.beginPath();
+        ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
+        ctx.strokeStyle = AVATAR_BORDER;
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+      }
     } else {
       ctx.fillStyle = AVATAR_BG;
       ctx.beginPath();
       ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = AVATAR_BORDER;
-      ctx.lineWidth = 3;
-      ctx.stroke();
+      if (AVATAR_BORDER && AVATAR_BORDER !== 'transparent') {
+        ctx.strokeStyle = AVATAR_BORDER;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
       ctx.fillStyle = AVATAR_TEXT;
       ctx.font = `bold 36px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
@@ -1232,8 +1263,16 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const bMaxVTextW = bSafeRight - bSafeLeft;
 
     // Logo
+    const bVLogoOffset = getLayerOffset('logo', W, H);
+    let bVEffectiveLogoBorder = bVLogoOffset.borderColor || bVLogoOffset.customColor;
+    if (!bVEffectiveLogoBorder) {
+      bVEffectiveLogoBorder = (vip.accentColor === 'transparent') ? 'transparent' : null;
+    }
+    const bVShouldStrokeLogo = bVEffectiveLogoBorder && bVEffectiveLogoBorder !== 'transparent';
+    const bVLogoStrokeColor = bVShouldStrokeLogo ? bVEffectiveLogoBorder : LOGO_BORDER;
+
     const bLgW = 110, bLgH = 110;
-    const bLgX = bcx - bLgW / 2, bLgY = bSafeTop + 65;
+    const bLgX = bcx - bLgW / 2 + bVLogoOffset.dx, bLgY = bSafeTop + 65 + bVLogoOffset.dy;
 
     if (logoImg) {
       ctx.save();
@@ -1243,14 +1282,26 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.clip();
       ctx.drawImage(logoImg, bLgX + 6, bLgY + 6, bLgW - 12, bLgH - 12);
       ctx.restore();
+      if (bVShouldStrokeLogo) {
+        roundRect(bLgX, bLgY, bLgW, bLgH, 24);
+        ctx.strokeStyle = bVLogoStrokeColor;
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+      }
     } else {
       ctx.fillStyle = LOGO_BG;
       roundRect(bLgX, bLgY, bLgW, bLgH, 26);
       ctx.fill();
+      if (bVShouldStrokeLogo) {
+        roundRect(bLgX, bLgY, bLgW, bLgH, 26);
+        ctx.strokeStyle = bVLogoStrokeColor;
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+      }
       ctx.fillStyle = LOGO_TEXT;
       ctx.font = `bold 44px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
-      ctx.fillText(getInitials(profile.org || profile.fn), bcx, bLgY + 70);
+      ctx.fillText(getInitials(profile.org || profile.fn), bcx + bVLogoOffset.dx, bLgY + 70);
     }
 
     // Company Title (Auto-wrap & Auto-scale)

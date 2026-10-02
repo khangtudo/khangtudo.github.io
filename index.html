@@ -508,9 +508,9 @@
       height: clamp(56px, 14vw, 76px);
       border-radius: 18px;
       object-fit: contain;
-      border: none;
-      background: transparent;
-      padding: 0;
+      border: 3px solid var(--card-logo-border, transparent);
+      background: var(--card-logo-bg, transparent);
+      padding: var(--card-logo-padding, 0);
       box-sizing: border-box;
     }
     .company-stack h3 {
@@ -1428,7 +1428,12 @@
         </div>
         <div style="display:flex; align-items:center; gap:4px;">
           <label style="font-size:0.68rem; color:#94a3b8;">Màu:</label>
-          <input type="color" id="ctxColorPicker" style="width:24px; height:24px; border:none; border-radius:4px; background:transparent; cursor:pointer; padding:0;">
+          <div style="display:inline-flex; align-items:center; gap:3px;">
+            <input type="color" id="ctxColorPicker" style="width:24px; height:24px; border:none; border-radius:4px; background:transparent; cursor:pointer; padding:0;" title="Chọn mã màu">
+            <button type="button" id="btnCtxColorTransparent" class="btn-swatch-transparent" style="width:24px; height:24px; border:1px solid #475569; border-radius:4px; background:repeating-conic-gradient(#334155 0% 25%, #0f172a 0% 50%) 50% / 8px 8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; position:relative;" title="Đặt màu Trong suốt (Transparent)">
+              <span style="font-size:12px; font-weight:900; color:#ef4444; text-shadow:0 0 2px #000; line-height:1;">⊘</span>
+            </button>
+          </div>
         </div>
         <div style="display:flex; align-items:center; gap:4px; border-left:1px solid #334155; padding-left:6px;">
           <label style="font-size:0.68rem; color:#d8af62;">VIP:</label>
@@ -1684,8 +1689,16 @@
             <input type="color" id="vipTextColor" value="#F4F7FA" style="width:100%; height:30px; padding:0; border:1px solid #475569; border-radius:6px; cursor:pointer; background:transparent;">
           </div>
           <div>
-            <label for="vipAccentColor" style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:3px;">Màu viền/Accent</label>
-            <input type="color" id="vipAccentColor" value="#B9F2FF" style="width:100%; height:30px; padding:0; border:1px solid #475569; border-radius:6px; cursor:pointer; background:transparent;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+              <label for="vipAccentColor" style="font-size:0.7rem; color:#94a3b8;">Màu viền/Accent</label>
+              <button type="button" id="btnVipAccentTransparent" class="btn-swatch-transparent" style="background:repeating-conic-gradient(#334155 0% 25%, #0f172a 0% 50%) 50% / 6px 6px; border:1px solid #475569; border-radius:4px; padding:1px 5px; font-size:0.65rem; color:#f87171; cursor:pointer; display:inline-flex; align-items:center; gap:2px;" title="Đặt viền trong suốt (Không viền)">
+                <span style="font-size:10px; font-weight:bold;">⊘</span> Trong suốt
+              </button>
+            </div>
+            <div style="position:relative; width:100%; height:30px;">
+              <input type="color" id="vipAccentColor" value="#B9F2FF" style="width:100%; height:30px; padding:0; border:1px solid #475569; border-radius:6px; cursor:pointer; background:transparent;">
+              <div id="previewVipAccentTrans" style="display:none; position:absolute; inset:0; border-radius:6px; border:1px dashed #ef4444; background:repeating-conic-gradient(#334155 0% 25%, #0f172a 0% 50%) 50% / 8px 8px; align-items:center; justify-content:center; color:#ef4444; font-size:11px; font-weight:bold; cursor:pointer;" title="Nhấn để đổi lại màu viền">⊘ Trong suốt</div>
+            </div>
           </div>
         </div>
 
@@ -2440,14 +2453,14 @@ const BRAND_ICONS = {
 
       // Material-specific & Custom Color mapping
       cardRoot.style.setProperty('--card-text', vip.textColor || matPreset.textColor);
-      cardRoot.style.setProperty('--card-accent', vip.accentColor || matPreset.accentColor);
+      cardRoot.style.setProperty('--card-accent', (vip.accentColor !== undefined && vip.accentColor !== null) ? vip.accentColor : matPreset.accentColor);
       cardRoot.style.setProperty('--card-name-color', matPreset.nameColor);
       cardRoot.style.setProperty('--card-title-color', matPreset.titleColor);
       cardRoot.style.setProperty('--card-org-color', matPreset.orgColor);
       cardRoot.style.setProperty('--card-back-org-color', matPreset.backOrgColor);
-      cardRoot.style.setProperty('--card-avatar-border', matPreset.avatarBorder);
+      cardRoot.style.setProperty('--card-avatar-border', (vip.accentColor === 'transparent') ? 'transparent' : matPreset.avatarBorder);
       cardRoot.style.setProperty('--card-avatar-bg', matPreset.avatarBg);
-      cardRoot.style.setProperty('--card-logo-border', matPreset.logoBorder);
+      cardRoot.style.setProperty('--card-logo-border', (vip.accentColor === 'transparent') ? 'transparent' : matPreset.logoBorder);
       cardRoot.style.setProperty('--card-logo-bg', matPreset.logoBg);
       cardRoot.style.setProperty('--card-divider', matPreset.divider);
       cardRoot.style.setProperty('--card-badge-bg', matPreset.badgeBg);
@@ -2500,6 +2513,26 @@ const BRAND_ICONS = {
 
       if (item.color) {
         el.style.color = item.color;
+        if (layerId === 'logo') {
+          el.style.borderColor = item.color;
+          if (item.color === 'transparent') {
+            el.style.border = 'none';
+          } else {
+            el.style.border = `3px solid ${item.color}`;
+            el.style.padding = '4px';
+          }
+        }
+      }
+      if (item.borderColor) {
+        el.style.borderColor = item.borderColor;
+        if (layerId === 'logo') {
+          if (item.borderColor === 'transparent') {
+            el.style.border = 'none';
+          } else {
+            el.style.border = `3px solid ${item.borderColor}`;
+            el.style.padding = '4px';
+          }
+        }
       }
       if (item.fontSize) {
         el.style.fontSize = `${item.fontSize}px`;
@@ -3140,7 +3173,12 @@ const BRAND_ICONS = {
       const inAccent = document.getElementById('vipAccentColor');
       if (inBg) inBg.value = preset.bgColor;
       if (inText) inText.value = preset.textColor;
-      if (inAccent) inAccent.value = preset.accentColor;
+      if (inAccent) {
+        inAccent.value = preset.accentColor;
+        inAccent.dataset.isTransparent = 'false';
+        const previewTrans = document.getElementById('previewVipAccentTrans');
+        if (previewTrans) previewTrans.style.display = 'none';
+      }
     }
 
     // Cập nhật nhãn nút quick badge
@@ -3231,6 +3269,29 @@ const BRAND_ICONS = {
     };
   }
 
+  const btnVipAccentTransparent = document.getElementById('btnVipAccentTransparent');
+  const previewVipAccentTrans = document.getElementById('previewVipAccentTrans');
+  const vipAccentColorInput = document.getElementById('vipAccentColor');
+  if (btnVipAccentTransparent && vipAccentColorInput) {
+    btnVipAccentTransparent.onclick = () => {
+      vipAccentColorInput.dataset.isTransparent = 'true';
+      if (previewVipAccentTrans) previewVipAccentTrans.style.display = 'flex';
+    };
+  }
+  if (previewVipAccentTrans && vipAccentColorInput) {
+    previewVipAccentTrans.onclick = () => {
+      vipAccentColorInput.dataset.isTransparent = 'false';
+      previewVipAccentTrans.style.display = 'none';
+      vipAccentColorInput.click();
+    };
+  }
+  if (vipAccentColorInput) {
+    vipAccentColorInput.oninput = () => {
+      vipAccentColorInput.dataset.isTransparent = 'false';
+      if (previewVipAccentTrans) previewVipAccentTrans.style.display = 'none';
+    };
+  }
+
   function openSheet(options = {}) {
     let isCreateNew = false;
     if (typeof options === 'boolean') {
@@ -3313,7 +3374,14 @@ const BRAND_ICONS = {
       setVipMaterial(vip.material || 'pvc');
       if (document.getElementById('vipBgColor')) document.getElementById('vipBgColor').value = vip.bgColor || '#20252B';
       if (document.getElementById('vipTextColor')) document.getElementById('vipTextColor').value = vip.textColor || '#F4F7FA';
-      if (document.getElementById('vipAccentColor')) document.getElementById('vipAccentColor').value = vip.accentColor || '#B9F2FF';
+      const inAccentPrefill = document.getElementById('vipAccentColor');
+      const isAccentTransPrefill = (vip.accentColor === 'transparent');
+      if (inAccentPrefill) {
+        inAccentPrefill.dataset.isTransparent = isAccentTransPrefill ? 'true' : 'false';
+        if (!isAccentTransPrefill && vip.accentColor) inAccentPrefill.value = vip.accentColor;
+      }
+      const previewVipTransPrefill = document.getElementById('previewVipAccentTrans');
+      if (previewVipTransPrefill) previewVipTransPrefill.style.display = isAccentTransPrefill ? 'flex' : 'none';
       if (document.getElementById('vipFontPair')) document.getElementById('vipFontPair').value = vip.fontPair || 'precision';
       if (document.getElementById('vipNameSize')) {
         document.getElementById('vipNameSize').value = vip.nameSize || 48;
@@ -3468,12 +3536,16 @@ const BRAND_ICONS = {
 
     profile.socials = newSocials;
 
+    const inAccentEl = document.getElementById('vipAccentColor');
+    const isAccentTrans = inAccentEl?.dataset.isTransparent === 'true';
+    const chosenAccent = isAccentTrans ? 'transparent' : (inAccentEl?.value || '#B9F2FF');
+
     // Read Pro / VIP Customizer State
     profile.vipTheme = {
       material: currentVipMaterial || 'pvc',
       bgColor: document.getElementById('vipBgColor')?.value || '#0F172A',
       textColor: document.getElementById('vipTextColor')?.value || '#F4F7FA',
-      accentColor: document.getElementById('vipAccentColor')?.value || '#B9F2FF',
+      accentColor: chosenAccent,
       fontPair: document.getElementById('vipFontPair')?.value || 'precision',
       nameSize: parseInt(document.getElementById('vipNameSize')?.value || '48', 10),
       titleSize: parseInt(document.getElementById('vipTitleSize')?.value || '24', 10)
@@ -3862,10 +3934,32 @@ const BRAND_ICONS = {
     };
   }
 
+  const btnCtxColorTransparent = document.getElementById('btnCtxColorTransparent');
+  if (btnCtxColorTransparent) {
+    btnCtxColorTransparent.onclick = (e) => {
+      e.stopPropagation();
+      if (!activeSelectedElement) return;
+      activeSelectedElement.style.color = 'transparent';
+      const id = activeSelectedElement.getAttribute('data-layer-id');
+      if (id === 'logo' || activeSelectedElement.classList.contains('company-logo')) {
+        activeSelectedElement.style.borderColor = 'transparent';
+        activeSelectedElement.style.border = 'none';
+      }
+      recordElementStyle(activeSelectedElement);
+    };
+  }
+
   if (ctxColorPicker) {
     ctxColorPicker.oninput = (e) => {
       if (!activeSelectedElement) return;
-      activeSelectedElement.style.color = e.target.value;
+      const val = e.target.value;
+      activeSelectedElement.style.color = val;
+      const id = activeSelectedElement.getAttribute('data-layer-id');
+      if (id === 'logo' || activeSelectedElement.classList.contains('company-logo')) {
+        activeSelectedElement.style.borderColor = val;
+        activeSelectedElement.style.border = `3px solid ${val}`;
+        activeSelectedElement.style.padding = '4px';
+      }
       recordElementStyle(activeSelectedElement);
     };
   }
@@ -3898,6 +3992,7 @@ const BRAND_ICONS = {
     if (el.style.fontSize) item.fontSize = parseInt(el.style.fontSize, 10);
     if (el.style.fontFamily) item.fontFamily = el.style.fontFamily;
     if (el.style.color) item.color = el.style.color;
+    if (el.style.borderColor) item.borderColor = el.style.borderColor;
     if (el.classList.contains('vip-fx-gold')) item.fx = 'gold';
     else if (el.classList.contains('vip-fx-emboss')) item.fx = 'emboss';
     else if (item.fx) delete item.fx;
