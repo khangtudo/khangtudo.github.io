@@ -2616,21 +2616,32 @@ const BRAND_ICONS = {
     const formDesc = document.getElementById('txtChoiceFormDesc');
     const modalTitle = document.getElementById('choiceModalTitle');
     const modalDesc = document.getElementById('choiceModalDesc');
+    const modalFooter = document.getElementById('choiceModalFooter');
 
     if (ownerState === 'authorized') {
-      // Đã nhận diện phiên làm việc cũ -> ẨN HOÀN TOÀN nút OTP (tránh lãng phí tài nguyên)
+      // Đã nhận diện chủ thẻ -> Chỉnh sửa thẻ của chính mình, ẨN nút OTP
       if (btnVerify) btnVerify.style.display = 'none';
       if (modalTitle) modalTitle.textContent = currentLang === 'vi' ? 'Chỉnh Sửa Thẻ Của Bạn' : 'Edit Your Card';
       if (modalDesc) modalDesc.textContent = currentLang === 'vi' ? 'Chọn phương thức cập nhật danh thiếp của bạn' : 'Select update method';
       if (formTitle) formTitle.textContent = currentLang === 'vi' ? 'Chỉnh Sửa Bằng Biểu Mẫu' : 'Edit Form';
       if (formDesc) formDesc.textContent = currentLang === 'vi' ? 'Cập nhật thông tin chi tiết hiện có trên thẻ' : 'Update existing information';
-    } else {
-      // Chưa nhận diện chủ thẻ -> Hiển thị nút Xác thực OTP ở vị trí thứ 3
+      if (modalFooter) modalFooter.style.display = 'block';
+    } else if (ownerState === 'unauthorized') {
+      // Đang xem thẻ của người khác (có ID riêng) -> Hiển thị nút Xác thực OTP để nhận quyền chủ thẻ
       if (btnVerify) btnVerify.style.display = 'flex';
       if (modalTitle) modalTitle.textContent = currentLang === 'vi' ? 'Tùy Chọn Danh Thiếp' : 'Card Options';
       if (modalDesc) modalDesc.textContent = currentLang === 'vi' ? 'Tạo thẻ mới hoặc nhận quyền chỉnh sửa thẻ này' : 'Create new card or claim ownership';
       if (formTitle) formTitle.textContent = currentLang === 'vi' ? 'Tạo Thẻ Mới' : 'Create New Card';
       if (formDesc) formDesc.textContent = currentLang === 'vi' ? 'Nhập thông tin mới để tạo danh thiếp riêng' : 'Enter info for a new card';
+      if (modalFooter) modalFooter.style.display = 'none';
+    } else {
+      // Trang chủ / Demo (no-card) -> Chỉ có luồng Tạo Thẻ Mới, TUYỆT ĐỐI KHÔNG hiện nút Xác thực chủ thẻ!
+      if (btnVerify) btnVerify.style.display = 'none';
+      if (modalTitle) modalTitle.textContent = currentLang === 'vi' ? 'Tạo Danh Thiếp Mới' : 'Create New Card';
+      if (modalDesc) modalDesc.textContent = currentLang === 'vi' ? 'Chọn phương thức thiết kế danh thiếp thông minh' : 'Choose your card creation method';
+      if (formTitle) formTitle.textContent = currentLang === 'vi' ? 'Nhập Liệu Vào Đơn' : 'Create by Form';
+      if (formDesc) formDesc.textContent = currentLang === 'vi' ? 'Biểu mẫu chi tiết: Họ tên, hotline, avatar, logo, 5 preset Pro/VIP' : 'Detailed form: name, phone, avatar, logo, presets';
+      if (modalFooter) modalFooter.style.display = 'none';
     }
 
     createChoiceModal.classList.add('active');
