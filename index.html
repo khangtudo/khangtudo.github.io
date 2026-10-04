@@ -2645,14 +2645,7 @@ const BRAND_ICONS = {
   }
 
   function handleCreateOrEditClick() {
-    if (isDemoCard || !activeCardId) {
-      // Đang xem demo hoặc không có card cụ thể -> Luồng tạo thẻ mới
-      openEmailAuthModal('create');
-    } else {
-      // Đang xem một card cụ thể (dù là chủ thẻ hay khách xem) -> Mở bảng tùy chọn 1-2-3
-      // Bảng sẽ tự động ẩn/hiện nút OTP và cấu hình mode tương ứng theo trạng thái chủ thẻ
-      openCreateChoiceModal();
-    }
+    openCreateChoiceModal();
   }
 
   if (btnCreateNewDock) btnCreateNewDock.onclick = handleCreateOrEditClick;
@@ -2687,12 +2680,7 @@ const BRAND_ICONS = {
   if (btnChoiceOpenBuilder) {
     btnChoiceOpenBuilder.onclick = () => {
       closeCreateChoiceModal();
-      const ownerState = resolveOwnerState();
-      if (ownerState === 'authorized') {
-        setBuilderMode(true);
-      } else {
-        openEmailAuthModal('create');
-      }
+      setBuilderMode(true);
     };
   }
 
@@ -3414,13 +3402,7 @@ const BRAND_ICONS = {
     if (lastFocusedTrigger) { lastFocusedTrigger.focus(); }
   }
 
-  btnOpenEdit.onclick = () => {
-    if (!isSavedCardOwner()) {
-      openEmailAuthModal('create');
-    } else {
-      openSheet(false);
-    }
-  };
+  btnOpenEdit.onclick = handleCreateOrEditClick;
   btnCloseEdit.onclick = closeSheet;
   overlayBackdrop.onclick = () => { closeSheet(); closeQr(); };
 
