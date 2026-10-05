@@ -1752,6 +1752,61 @@
     </div>
   </div>
 
+  <!-- Email & OTP Authentication Modal (Universal Unique Link & Ownership) -->
+  <div class="qr-modal" id="emailAuthModal" role="dialog" aria-modal="true" aria-label="Xác thực Email & OTP">
+    <div class="qr-card" style="max-width: 380px; width: 92%; max-height: min(90vh, 520px); overflow-y: auto; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 25px 60px rgba(0,0,0,0.95); padding: 22px 18px; border-radius: 20px; box-sizing: border-box;">
+      <button class="qr-close" id="btnCloseEmailAuthModal" aria-label="Đóng bảng xác thực" style="color: #94a3b8; top: 14px; right: 14px;">✕</button>
+      
+      <!-- STEP 1: Enter Email -->
+      <div id="authStepEmail" class="auth-step-wrap">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+          <span style="font-size:1.5rem; line-height:1;" id="authModalIcon">✨</span>
+          <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff; margin:0;" id="authModalTitle">Tạo Danh Thiếp Mới</h3>
+        </div>
+        <p style="font-size:0.75rem; color:#94a3b8; margin: 0 0 16px 0; line-height:1.4;" id="authModalDesc">
+          Nhập email của bạn để nhận <b>Liên kết định danh độc nhất</b> và mã OTP xác thực bảo mật quyền cập nhật khi đổi thiết bị.
+        </p>
+
+        <div style="margin-bottom:14px;">
+          <label for="authInputEmail" style="display:block; font-size:0.75rem; color:#cbd5e1; font-weight:600; margin-bottom:6px;">Email của bạn:</label>
+          <input type="email" id="authInputEmail" placeholder="vidu@congty.com" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid #334155; background:#070a12; color:#fff; font-size:0.88rem; outline:none; transition:border 0.2s;" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='#334155'">
+          <div id="authEmailError" style="color:#ef4444; font-size:0.72rem; margin-top:5px; display:none;"></div>
+        </div>
+
+        <button type="button" id="btnAuthSendOtp" class="auth-btn-primary">
+          <span id="txtBtnSendOtp">Tiếp tục & Nhận mã OTP</span> <span>→</span>
+        </button>
+      </div>
+
+      <!-- STEP 2: Enter OTP -->
+      <div id="authStepOtp" class="auth-step-wrap" style="display:none;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+          <span style="font-size:1.5rem; line-height:1;">📬</span>
+          <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff; margin:0;">Nhập Mã OTP Xác Thực</h3>
+        </div>
+        <p style="font-size:0.75rem; color:#94a3b8; margin: 0 0 16px 0; line-height:1.4;">
+          Mã xác thực gồm 6 số đã được gửi đến: <b id="authTargetEmailText" style="color:#38bdf8;"></b>
+        </p>
+
+        <div style="margin-bottom:14px;">
+          <label for="authInputOtp" style="display:block; font-size:0.75rem; color:#cbd5e1; font-weight:600; margin-bottom:6px;">Mã OTP (6 chữ số):</label>
+          <input type="text" id="authInputOtp" class="otp-digit-input" maxlength="6" placeholder="123456" inputmode="numeric">
+          <div id="authOtpError" style="color:#ef4444; font-size:0.72rem; margin-top:5px; display:none;"></div>
+        </div>
+
+        <button type="button" id="btnAuthVerifyOtp" class="auth-btn-primary" style="background:linear-gradient(135deg, #059669 0%, #10b981 100%); margin-bottom:12px;">
+          <span id="txtBtnVerifyOtp">Xác Thực & Kích Hoạt</span> <span>✓</span>
+        </button>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:#64748b;">
+          <button type="button" id="btnAuthBackToEmail" style="background:none; border:none; color:#94a3b8; cursor:pointer; padding:0; text-decoration:underline;">← Đổi email</button>
+          <button type="button" id="btnAuthResendOtp" style="background:none; border:none; color:#38bdf8; cursor:pointer; padding:0; text-decoration:underline;">Gửi lại mã</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Create Card / Edit Mode Choice Modal -->
   <div class="qr-modal" id="createChoiceModal" role="dialog" aria-modal="true" aria-label="Tùy chọn danh thiếp">
     <div class="qr-card" style="max-width: 350px; width: 92%; max-height: min(85vh, 460px); overflow-y: auto; text-align: left; background: #0f172a; color: #fff; border: 1px solid rgba(216, 175, 98, 0.45); box-shadow: 0 20px 50px rgba(0,0,0,0.95); padding: 18px 16px; border-radius: 18px; box-sizing: border-box;">
