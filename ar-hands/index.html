@@ -315,7 +315,7 @@
       <button class="btn-ar-ctrl active" id="btnToggleMesh">🦴 Khớp: BẬT</button>
       <button class="btn-ar-ctrl" id="btnRotateCard">📐 Xoay Ngang</button>
       <button class="btn-ar-ctrl" id="btnFlipCard">🔄 Lật Thẻ</button>
-      <a href="/" class="btn-ar-ctrl" style="text-decoration:none; max-width: 75px;">✕ Thoát</a>
+      <a href="/" class="btn-ar-ctrl" id="btnExitAr" style="text-decoration:none; max-width: 75px;">✕ Thoát</a>
     </div>
   </div>
 
@@ -1199,6 +1199,26 @@
       targetRotationY += Math.PI; // Tiếp tục xoay tiếp 180° cùng chiều
       btnFlipCard.textContent = cardFlipped ? '🔄 Mặt Sau' : '🔄 Mặt Trước';
     };
+
+    // Điều hướng nút Thoát quay lại đúng danh thiếp ban đầu (nếu có id) thay vì mặc định về trang chủ
+    const btnExitAr = document.getElementById('btnExitAr');
+    if (btnExitAr) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnCardId = urlParams.get('id') || (activeProfile && activeProfile.id) || null;
+      const targetFallbackUrl = returnCardId ? `/?id=${encodeURIComponent(returnCardId)}` : '/';
+      btnExitAr.href = targetFallbackUrl;
+
+      btnExitAr.onclick = (e) => {
+        e.preventDefault();
+        try {
+          if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+            window.history.back();
+            return;
+          }
+        } catch (err) {}
+        window.location.href = targetFallbackUrl;
+      };
+    }
 
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;

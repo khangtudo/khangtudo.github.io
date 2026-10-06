@@ -2322,6 +2322,20 @@ const BRAND_ICONS = {
   };
   document.addEventListener('click', closeFlagMenu);
 
+  // Generate Launch URL for AR Hands with current activeCardId context
+  function getArHandsLaunchUrl() {
+    try {
+      const profileJson = JSON.stringify(profile);
+      localStorage.setItem('inid_ar_profile', profileJson);
+      const b64 = btoa(encodeURIComponent(profileJson));
+      const cardParam = activeCardId ? `?id=${encodeURIComponent(activeCardId)}` : '';
+      return `/ar-hands/${cardParam}#data=${b64}`;
+    } catch (err) {
+      const cardParam = activeCardId ? `?id=${encodeURIComponent(activeCardId)}` : '';
+      return `/ar-hands/${cardParam}`;
+    }
+  }
+
   // Canonical Owner State Resolver
   // Returns: 'authorized' | 'unauthorized' | 'no-card'
   function resolveOwnerState() {
@@ -3612,7 +3626,7 @@ const BRAND_ICONS = {
       }
       const btnArHandsLink = document.getElementById('btnArHandsLink');
       if (btnArHandsLink) {
-        btnArHandsLink.href = `/ar-hands/#data=${b64}`;
+        btnArHandsLink.href = getArHandsLaunchUrl();
       }
 
       // Sync to Cloudflare Worker KV if activeCardId exists and we are the owner
@@ -3769,15 +3783,8 @@ const BRAND_ICONS = {
 
   function openArModal() {
     lastFocusedTrigger = document.getElementById('btnLaunchAr') || document.activeElement;
-    // Direct navigation to dynamic real-time AR Hands to ensure 100% texture parity
-    try {
-      const profileJson = JSON.stringify(profile);
-      localStorage.setItem('inid_ar_profile', profileJson);
-      const b64 = btoa(encodeURIComponent(profileJson));
-      window.location.href = `/ar-hands/#data=${b64}`;
-    } catch (err) {
-      window.location.href = '/ar-hands/';
-    }
+    // Direct navigation to dynamic real-time AR Hands with cardId context
+    window.location.href = getArHandsLaunchUrl();
   }
 
   function closeArModal() {
@@ -4064,16 +4071,7 @@ const BRAND_ICONS = {
       
       const btnArHandsLink = document.getElementById('btnArHandsLink');
       if (btnArHandsLink) {
-        if (profileJson.length < 800000) {
-          try {
-            const b64 = btoa(encodeURIComponent(profileJson));
-            btnArHandsLink.href = `/ar-hands/#data=${b64}`;
-          } catch(err) {
-            btnArHandsLink.href = `/ar-hands/`;
-          }
-        } else {
-          btnArHandsLink.href = `/ar-hands/`;
-        }
+        btnArHandsLink.href = getArHandsLaunchUrl();
       }
 
       // Sync to Cloudflare Worker KV if activeCardId exists and we are authorized
