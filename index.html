@@ -4428,7 +4428,7 @@ const BRAND_ICONS = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok || data.error) {
         throw new Error(data.error || 'Không thể gửi mã OTP.');
@@ -4444,6 +4444,7 @@ const BRAND_ICONS = {
       }
       showToast(currentLang === 'vi' ? 'Đã gửi mã OTP về email của bạn!' : 'OTP code sent to your email!');
     } catch (err) {
+      console.error('Lỗi request-otp:', err);
       if (authEmailError) {
         authEmailError.textContent = err.message || 'Lỗi gửi mã OTP.';
         authEmailError.style.display = 'block';
