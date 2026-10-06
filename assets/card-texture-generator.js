@@ -196,6 +196,8 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
   cvs.width = 1024;
   cvs.height = 1024;
   const ctx = cvs.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, 1024, 1024);

@@ -320,7 +320,7 @@
   </div>
 
   <script type="module">
-    import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js?v=20261002-trans-color-sync';
+    import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js?v=20261007-sharp-contrast';
 
     // Parse active profile from Hash or LocalStorage
     function getActiveProfile() {
@@ -410,9 +410,9 @@
 
     // Angle offset: Xoay thẻ thẳng hàng với cổ tay (mặc định xoay -90° / -Math.PI/2 quanh trục Z để chiều đọc thuận mắt theo trục cổ tay)
     let cardOrientationOffsetZ = -Math.PI / 2;
-    // Góc nghiêng công thái học 28° (~0.48 rad) quanh trục X cục bộ: khi lòng bàn tay mở trước camera, thẻ tự động ngửa nhẹ về phía mắt nhìn,
-    // vừa giúp xem rõ nét trực diện vừa triệt tiêu hoàn toàn góc phản xạ lóa sáng (specular glare) từ đèn phòng / ánh sáng mặt trời!
-    let cardPitchOffsetX = -0.48;
+    // Góc nghiêng công thái học vừa vặn (~16° / -0.28 rad): khi đưa tay vào camera, thẻ hơi ngửa nhẹ thuận mắt người xem
+    // mà vẫn giữ nguyên hướng sáng tự nhiên, không làm sai lệch bề mặt hay gây bệt ảnh
+    let cardPitchOffsetX = -0.28;
 
     // Advanced 3D Palm Pose & Orientation Matrix
     const targetQuaternion = new THREE.Quaternion();
@@ -471,27 +471,26 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     document.getElementById('threeCanvas').appendChild(renderer.domElement);
 
-    // Lighting: Tối ưu chống lóa sáng (anti-glare / diffuse priority) để hình ảnh đại diện và logo luôn rõ nét
-    // Tăng ánh sáng môi trường khuếch tán đều (Ambient Light)
-    const ambLight = new THREE.AmbientLight(0xffffff, 1.25);
+    // Lighting: Chuẩn tương phản cao và chiều sâu 3D bóng bẩy, tránh tăng ambient quá mức làm bệt màu
+    const ambLight = new THREE.AmbientLight(0xffffff, 0.95);
     scene.add(ambLight);
 
-    // Key Light: Giảm cường độ từ 1.4 -> 0.85 và đặt góc chiếu xiên hơn để tránh phản xạ gương vuông góc vào camera
-    const keyLight = new THREE.DirectionalLight(0xffffff, 0.85);
-    keyLight.position.set(2.5, 4.0, 2.2);
+    // Key Light: Ánh sáng chính tạo khối và độ nét tương phản
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
+    keyLight.position.set(2.0, 3.8, 3.0);
     scene.add(keyLight);
 
-    // Fill Light: Ánh sáng bổ trợ dịu nhẹ, trung tính
-    const fillLightColor = (matKey === 'art_paper' || matKey === 'paper') ? 0xfffbf5 : 0xf0f9ff;
-    const fillLightIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.45 : 0.6;
+    // Fill Light: Bổ trợ trung tính, không ám màu
+    const fillLightColor = (matKey === 'art_paper' || matKey === 'paper') ? 0xfffbf5 : 0x7dd3fc;
+    const fillLightIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.4 : 0.75;
     const fillLight = new THREE.DirectionalLight(fillLightColor, fillLightIntensity);
-    fillLight.position.set(-2.8, -0.8, 1.8);
+    fillLight.position.set(-2.5, -1.0, 2.0);
     scene.add(fillLight);
 
-    // Rim / Glint Light: Giảm mạnh cường độ từ 1.2 -> 0.4, chỉ viền cạnh nhẹ nhàng, không cháy sáng bề mặt mặt thẻ
-    const glintIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.3 : 0.45;
+    // Rim / Glint Light: Ánh sáng quét viền tinh tế
+    const glintIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.5 : 1.0;
     const glintLight = new THREE.DirectionalLight(0xffecd2, glintIntensity);
-    glintLight.position.set(0.2, 3.5, 1.2);
+    glintLight.position.set(0.2, 4.0, 1.8);
     scene.add(glintLight);
 
     // -------------------------------------------------------------
@@ -587,8 +586,14 @@
 
       createDynamicCardTexture(activeProfile, isVertical).then((dynamicCanvas) => {
         cardTexture.image = dynamicCanvas;
+        cardTexture.generateMipmaps = true;
+        cardTexture.minFilter = THREE.LinearMipmapLinearFilter;
+        cardTexture.magFilter = THREE.LinearFilter;
+        if (renderer.capabilities && typeof renderer.capabilities.getMaxAnisotropy === 'function') {
+          cardTexture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+        }
         cardTexture.needsUpdate = true;
-        console.log('✅ Dynamic AR card texture with images updated!');
+        console.log('✅ Dynamic AR card texture with images updated (High-Anisotropy & Mipmaps enabled)!');
       }).catch(err => {
         console.warn('Error generating dynamic texture:', err);
       });
@@ -599,12 +604,9 @@
     }
 
     // Material PBR Properties (Inherited from top-level VIP preset)
-    // Tối ưu chống chói lóa: tăng roughness lên tối thiểu 0.55 và giới hạn metalness tối đa 0.08
-    // Giúp bề mặt tán xạ ánh sáng mềm mại (soft diffuse), triệt tiêu đốm sáng trắng lóa đè lên avatar/logo
-    const rawRoughness = (typeof pbr.roughness === 'number') ? pbr.roughness : 0.3;
-    const rawMetalness = (typeof pbr.metalness === 'number') ? pbr.metalness : 0.1;
-    const roughnessVal = Math.max(0.55, rawRoughness);
-    const metalnessVal = Math.min(0.08, rawMetalness);
+    // Khôi phục PBR chuẩn của từng preset VIP: giữ trọn độ sâu, độ trong trẻo và tương phản cao
+    const roughnessVal = (typeof pbr.roughness === 'number') ? pbr.roughness : 0.3;
+    const metalnessVal = (typeof pbr.metalness === 'number') ? pbr.metalness : 0.1;
     const accentHex = pbr.accent ? parseInt(pbr.accent.replace('#', '0x'), 16) : 0x38bdf8;
     const isTransparentMat = Boolean(pbr.transparent);
     const opacityVal = pbr.opacity || 1.0;
