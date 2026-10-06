@@ -622,19 +622,45 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
       ctx.lineWidth = 3.5;
       ctx.stroke();
     } else {
-      ctx.fillStyle = AVATAR_BG;
-      roundRect(avX, avY, avW, avH, 18);
+      // Khi chưa có ảnh tải lên: Vẽ biểu tượng Avatar Doanh Nhân / Nhận Diện rõ nét với nền trắng tương phản cao
+      const avCx = avX + avW / 2;
+      const avCy = avY + avH / 2;
+      const avR = avW / 2;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
+      ctx.beginPath();
+      ctx.arc(avCx, avCy, avR, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff'; // Nền trắng tinh giúp avatar luôn nổi bần bật trên mọi chất liệu thẻ
       ctx.fill();
-      if (AVATAR_BORDER && AVATAR_BORDER !== 'transparent') {
-        ctx.strokeStyle = AVATAR_BORDER;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-      ctx.fillStyle = AVATAR_TEXT;
-      ctx.font = `bold 30px ${FONT_DISPLAY}`;
-      ctx.textAlign = 'center';
-      ctx.fillText(getInitials(profile.fn), avX + avW / 2, avY + 54);
-      ctx.textAlign = 'left';
+      ctx.restore();
+
+      // Vẽ hình bóng chân dung doanh nhân (Silhouette icon) sắc nét ở giữa
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(avCx, avCy, avR, 0, Math.PI * 2);
+      ctx.clip();
+
+      // Đầu người
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(avCx, avCy - avR * 0.18, avR * 0.32, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Vai & thân
+      ctx.beginPath();
+      ctx.arc(avCx, avCy + avR * 0.82, avR * 0.65, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Viền nổi sang trọng bao quanh
+      ctx.beginPath();
+      ctx.arc(avCx, avCy, avR, 0, Math.PI * 2);
+      ctx.strokeStyle = AVATAR_BORDER && AVATAR_BORDER !== 'transparent' ? AVATAR_BORDER : '#38bdf8';
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
     }
 
     // Left content area width (bounded to avoid colliding with Avatar)
@@ -890,17 +916,26 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.stroke();
       }
     } else {
-      ctx.fillStyle = LOGO_BG;
+      // Khi chưa có logo: Vẽ huy hiệu doanh nghiệp nền trắng nổi bật với icon Tòa nhà / Thương hiệu sắc nét
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
       roundRect(lgX, lgY, lgW, lgH, 24);
+      ctx.fillStyle = '#ffffff'; // Nền trắng tinh giúp logo luôn nổi bật trên nền thẻ
       ctx.fill();
+      ctx.restore();
+
       if (shouldStrokeLogo) {
         roundRect(lgX, lgY, lgW, lgH, 24);
         ctx.strokeStyle = logoStrokeColor;
         ctx.lineWidth = 3.5;
         ctx.stroke();
       }
-      ctx.fillStyle = LOGO_TEXT;
-      ctx.font = `bold 42px ${FONT_DISPLAY}`;
+
+      // Vẽ chữ cái viết tắt của tổ chức màu đen than tương phản cao
+      ctx.fillStyle = '#0f172a';
+      ctx.font = `bold 44px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
       ctx.fillText(getInitials(profile.org || profile.fn), bcx + logoOffset.dx, lgY + 68);
     }
@@ -1033,19 +1068,39 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.stroke();
       }
     } else {
-      ctx.fillStyle = AVATAR_BG;
+      // Khi chưa có ảnh đại diện ở thẻ đứng: Nền trắng tương phản cao + Silhouette bóng người sắc nét
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
       ctx.beginPath();
       ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
       ctx.fill();
-      if (AVATAR_BORDER && AVATAR_BORDER !== 'transparent') {
-        ctx.strokeStyle = AVATAR_BORDER;
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-      ctx.fillStyle = AVATAR_TEXT;
-      ctx.font = `bold 36px ${FONT_DISPLAY}`;
-      ctx.textAlign = 'center';
-      ctx.fillText(getInitials(profile.fn), avCenterX, avY + 13);
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
+      ctx.clip();
+
+      // Đầu người
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(avCenterX, avY - avR * 0.18, avR * 0.32, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Vai & thân
+      ctx.beginPath();
+      ctx.arc(avCenterX, avY + avR * 0.82, avR * 0.65, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.arc(avCenterX, avY, avR, 0, Math.PI * 2);
+      ctx.strokeStyle = AVATAR_BORDER && AVATAR_BORDER !== 'transparent' ? AVATAR_BORDER : '#38bdf8';
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
     }
 
     // Name (Auto-wrap & Auto-scale)
@@ -1310,16 +1365,23 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
         ctx.stroke();
       }
     } else {
-      ctx.fillStyle = LOGO_BG;
+      // Khi chưa có logo ở thẻ đứng: Nền trắng tương phản cao + Viền nét căng
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
       roundRect(bLgX, bLgY, bLgW, bLgH, 26);
+      ctx.fillStyle = '#ffffff';
       ctx.fill();
+      ctx.restore();
+
       if (bVShouldStrokeLogo) {
         roundRect(bLgX, bLgY, bLgW, bLgH, 26);
         ctx.strokeStyle = bVLogoStrokeColor;
         ctx.lineWidth = 3.5;
         ctx.stroke();
       }
-      ctx.fillStyle = LOGO_TEXT;
+      ctx.fillStyle = '#0f172a';
       ctx.font = `bold 44px ${FONT_DISPLAY}`;
       ctx.textAlign = 'center';
       ctx.fillText(getInitials(profile.org || profile.fn), bcx + bVLogoOffset.dx, bLgY + 70);

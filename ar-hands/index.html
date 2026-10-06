@@ -322,10 +322,33 @@
   <script type="module">
     import { createDynamicCardTexture, VIP_MATERIALS } from '/assets/card-texture-generator.js?v=20261007-sharp-contrast';
 
-    // Parse active profile from Hash or LocalStorage
-    function getActiveProfile() {
+    const INID_API_URL = 'https://inid-auth-worker.phanmanhkhang89.workers.dev';
+
+    // Parse active profile from Hash, Query ID or LocalStorage
+    async function loadActiveProfile() {
       let p = null;
-      if (window.location.hash.includes('data=')) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const cardId = urlParams.get('id');
+
+      // 1. Nếu có card ID trên URL, thử fetch bản mới nhất từ Cloudflare Worker KV
+      if (cardId) {
+        try {
+          const res = await fetch(`${INID_API_URL}/api/card/${encodeURIComponent(cardId)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.card && data.card.profile) {
+              p = data.card.profile;
+              p.id = cardId;
+              console.log('✅ Loaded fresh profile from Cloud API for card:', cardId);
+            }
+          }
+        } catch (errApi) {
+          console.warn('Could not fetch card from API in AR Hands:', errApi);
+        }
+      }
+
+      // 2. Nếu chưa có, giải mã từ URL hash #data=...
+      if (!p && window.location.hash.includes('data=')) {
         try {
           const raw = window.location.hash.split('data=')[1].split('&')[0];
           const binStr = atob(raw);
@@ -341,6 +364,8 @@
           }
         }
       }
+
+      // 3. Dự phòng từ LocalStorage
       if (!p) {
         try {
           const stored = localStorage.getItem('inid_ar_profile');
@@ -349,9 +374,25 @@
           console.warn('Failed to read from localStorage:', e);
         }
       }
+
+      // 4. Nếu vẫn rỗng, fallback sang mẫu Demo Minh Tâm Prolab chuẩn
+      if (!p) {
+        p = {
+          fn: "Phan Mạnh Khang",
+          org: "Minh Tam Prolab",
+          title: "CGO - Giám Đốc Tăng Trưởng",
+          tel: "+84937550989",
+          email: "manhkhang@minhtamprolab.com.vn",
+          url: "https://minhtamprolab.com.vn",
+          adr: "40A-40B Lý Tự Trọng, Phường Sài Gòn, TPHCM",
+          slogan: "Professional Digital Laboratory Since 1993",
+          orientation: "vertical"
+        };
+      }
       return p;
     }
-    const activeProfile = getActiveProfile();
+
+    const activeProfile = await loadActiveProfile();
 
     // PBR Properties & Material Key from Pro / VIP Preset
     const vip = activeProfile ? (activeProfile.vipTheme || {}) : {};
