@@ -410,6 +410,9 @@
 
     // Angle offset: Xoay thẻ thẳng hàng với cổ tay (mặc định xoay -90° / -Math.PI/2 quanh trục Z để chiều đọc thuận mắt theo trục cổ tay)
     let cardOrientationOffsetZ = -Math.PI / 2;
+    // Góc nghiêng công thái học 28° (~0.48 rad) quanh trục X cục bộ: khi lòng bàn tay mở trước camera, thẻ tự động ngửa nhẹ về phía mắt nhìn,
+    // vừa giúp xem rõ nét trực diện vừa triệt tiêu hoàn toàn góc phản xạ lóa sáng (specular glare) từ đèn phòng / ánh sáng mặt trời!
+    let cardPitchOffsetX = -0.48;
 
     // Advanced 3D Palm Pose & Orientation Matrix
     const targetQuaternion = new THREE.Quaternion();
@@ -468,26 +471,27 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     document.getElementById('threeCanvas').appendChild(renderer.domElement);
 
-    // Lighting
-    const ambLight = new THREE.AmbientLight(0xffffff, 0.9);
+    // Lighting: Tối ưu chống lóa sáng (anti-glare / diffuse priority) để hình ảnh đại diện và logo luôn rõ nét
+    // Tăng ánh sáng môi trường khuếch tán đều (Ambient Light)
+    const ambLight = new THREE.AmbientLight(0xffffff, 1.25);
     scene.add(ambLight);
 
-    // Key Light (Ánh sáng chính tạo specular bóng bẩy khi nghiêng thẻ)
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
-    keyLight.position.set(1.8, 3.5, 3.0);
+    // Key Light: Giảm cường độ từ 1.4 -> 0.85 và đặt góc chiếu xiên hơn để tránh phản xạ gương vuông góc vào camera
+    const keyLight = new THREE.DirectionalLight(0xffffff, 0.85);
+    keyLight.position.set(2.5, 4.0, 2.2);
     scene.add(keyLight);
 
-    // Fill Light (Ánh sáng bổ trợ: trung tính cho chất liệu giấy ngà / nền sáng để không bị ám xanh phản quang)
-    const fillLightColor = (matKey === 'art_paper' || matKey === 'paper') ? 0xfffbf5 : 0x7dd3fc;
-    const fillLightIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.4 : 0.8;
+    // Fill Light: Ánh sáng bổ trợ dịu nhẹ, trung tính
+    const fillLightColor = (matKey === 'art_paper' || matKey === 'paper') ? 0xfffbf5 : 0xf0f9ff;
+    const fillLightIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.45 : 0.6;
     const fillLight = new THREE.DirectionalLight(fillLightColor, fillLightIntensity);
-    fillLight.position.set(-2.5, -1.0, 2.0);
+    fillLight.position.set(-2.8, -0.8, 1.8);
     scene.add(fillLight);
 
-    // Rim / Glint Light (Ánh sáng quét xiên góc từ trên cao)
-    const glintIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.6 : 1.2;
+    // Rim / Glint Light: Giảm mạnh cường độ từ 1.2 -> 0.4, chỉ viền cạnh nhẹ nhàng, không cháy sáng bề mặt mặt thẻ
+    const glintIntensity = (matKey === 'art_paper' || matKey === 'paper') ? 0.3 : 0.45;
     const glintLight = new THREE.DirectionalLight(0xffecd2, glintIntensity);
-    glintLight.position.set(0.2, 4.0, 1.8);
+    glintLight.position.set(0.2, 3.5, 1.2);
     scene.add(glintLight);
 
     // -------------------------------------------------------------
@@ -595,8 +599,12 @@
     }
 
     // Material PBR Properties (Inherited from top-level VIP preset)
-    const roughnessVal = (typeof pbr.roughness === 'number') ? pbr.roughness : 0.3;
-    const metalnessVal = (typeof pbr.metalness === 'number') ? pbr.metalness : 0.1;
+    // Tối ưu chống chói lóa: tăng roughness lên tối thiểu 0.55 và giới hạn metalness tối đa 0.08
+    // Giúp bề mặt tán xạ ánh sáng mềm mại (soft diffuse), triệt tiêu đốm sáng trắng lóa đè lên avatar/logo
+    const rawRoughness = (typeof pbr.roughness === 'number') ? pbr.roughness : 0.3;
+    const rawMetalness = (typeof pbr.metalness === 'number') ? pbr.metalness : 0.1;
+    const roughnessVal = Math.max(0.55, rawRoughness);
+    const metalnessVal = Math.min(0.08, rawMetalness);
     const accentHex = pbr.accent ? parseInt(pbr.accent.replace('#', '0x'), 16) : 0x38bdf8;
     const isTransparentMat = Boolean(pbr.transparent);
     const opacityVal = pbr.opacity || 1.0;
@@ -801,10 +809,13 @@
             // 1. Áp dụng góc xoay để thẻ thẳng hàng theo trục cổ tay (Z-axis offset)
             const alignQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), cardOrientationOffsetZ);
             
-            // 2. Áp dụng góc lật 180 độ (Card Flip) lên trục Y cục bộ của thẻ
+            // 2. Áp dụng góc nghiêng Pitch công thái học (X-axis offset ~ 28 độ) để mặt thẻ ngửa về mắt người nhìn, chống lóa sáng trực diện
+            const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), cardPitchOffsetX);
+
+            // 3. Áp dụng góc lật 180 độ (Card Flip) lên trục Y cục bộ của thẻ
             const flipQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
             
-            targetQuaternion.copy(palmQuat).multiply(alignQuat).multiply(flipQuat);
+            targetQuaternion.copy(palmQuat).multiply(alignQuat).multiply(pitchQuat).multiply(flipQuat);
             isHandTrackingActive = true;
           }
 
