@@ -590,26 +590,37 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const safeTop = fy + SAFE_INSET_Y + 18; // fy + 40
     const safeBottom = fy + H - SAFE_INSET_Y - 10; // fy + 488
 
-    // Front Avatar (Right top) with Drag Offset
+    // Front Avatar (Right top) with Drag Offset - Tăng kích thước & tương phản để nhìn rõ trong AR
     const avOffset = getLayerOffset('avatar', W, H);
-    const avW = 86, avH = 86;
+    const avW = 98, avH = 98;
     const avX = safeRight - avW + avOffset.dx;
-    const avY = safeTop + 6 + avOffset.dy;
+    const avY = safeTop + 4 + avOffset.dy;
 
     if (avatarImg) {
+      ctx.save();
+      // Đổ bóng nhẹ và nền trắng tinh/sáng phía sau avatar để tách lớp nổi bật khỏi nền thẻ
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
+      ctx.beginPath();
+      ctx.arc(avX + avW / 2, avY + avH / 2, avW / 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.restore();
+
       ctx.save();
       ctx.beginPath();
       ctx.arc(avX + avW / 2, avY + avH / 2, avW / 2, 0, Math.PI * 2);
       ctx.clip();
       ctx.drawImage(avatarImg, avX, avY, avW, avH);
       ctx.restore();
-      if (AVATAR_BORDER && AVATAR_BORDER !== 'transparent') {
-        ctx.beginPath();
-        ctx.arc(avX + avW / 2, avY + avH / 2, avW / 2, 0, Math.PI * 2);
-        ctx.strokeStyle = AVATAR_BORDER;
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
+      
+      // Viền kép tương phản: viền sáng trong + viền nhấn ngoài giúp avatar luôn nét căng ở mọi góc nghiêng
+      ctx.beginPath();
+      ctx.arc(avX + avW / 2, avY + avH / 2, avW / 2, 0, Math.PI * 2);
+      ctx.strokeStyle = AVATAR_BORDER && AVATAR_BORDER !== 'transparent' ? AVATAR_BORDER : 'rgba(255, 255, 255, 0.85)';
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
     } else {
       ctx.fillStyle = AVATAR_BG;
       roundRect(avX, avY, avW, avH, 18);
@@ -853,21 +864,29 @@ export async function createDynamicCardTexture(profile, isVertical = false) {
     const shouldStrokeLogo = effectiveLogoBorder && effectiveLogoBorder !== 'transparent';
     const logoStrokeColor = shouldStrokeLogo ? effectiveLogoBorder : LOGO_BORDER;
 
-    const lgW = 104, lgH = 104;
-    const lgX = bcx - lgW / 2 + logoOffset.dx, lgY = bSafeTop + 6 + logoOffset.dy;
+    const lgW = 118, lgH = 118;
+    const lgX = bcx - lgW / 2 + logoOffset.dx, lgY = bSafeTop + 4 + logoOffset.dy;
 
     if (logoImg) {
       ctx.save();
-      roundRect(lgX, lgY, lgW, lgH, 20);
-      ctx.fillStyle = LOGO_BG;
+      // Đổ bóng nhẹ và nền trắng sáng phía sau logo để tách biệt hoàn toàn khỏi hoa văn nền thẻ
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
+      roundRect(lgX, lgY, lgW, lgH, 22);
+      ctx.fillStyle = '#ffffff';
       ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      roundRect(lgX, lgY, lgW, lgH, 22);
       ctx.clip();
-      ctx.drawImage(logoImg, lgX + 5, lgY + 5, lgW - 10, lgH - 10);
+      ctx.drawImage(logoImg, lgX + 6, lgY + 6, lgW - 12, lgH - 12);
       ctx.restore();
       if (shouldStrokeLogo) {
-        roundRect(lgX, lgY, lgW, lgH, 20);
+        roundRect(lgX, lgY, lgW, lgH, 22);
         ctx.strokeStyle = logoStrokeColor;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3.5;
         ctx.stroke();
       }
     } else {

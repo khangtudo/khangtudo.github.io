@@ -808,16 +808,24 @@
             const palmRotMatrix = new THREE.Matrix4().makeBasis(vRight, vUp, vNormal);
             const palmQuat = new THREE.Quaternion().setFromRotationMatrix(palmRotMatrix);
             
-            // 1. Áp dụng góc xoay để thẻ thẳng hàng theo trục cổ tay (Z-axis offset)
+            // 1. Áp dụng góc xoay để thẻ thẳng hàng theo trục ngón tay (Z-axis offset)
             const alignQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), cardOrientationOffsetZ);
             
-            // 2. Áp dụng góc nghiêng Pitch công thái học (X-axis offset ~ 28 độ) để mặt thẻ ngửa về mắt người nhìn, chống lóa sáng trực diện
-            const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), cardPitchOffsetX);
+            // 2. Bù góc nghiêng công thái học (Ergonomic Camera-Facing Tilt):
+            // Khi người dùng xòe tay trước ngực, bàn tay tự nhiên thường ngửa dốc 30°-45° so với trục thẳng đứng của điện thoại.
+            // Để mặt trước thẻ hướng TRỰC DIỆN CAMERA (Face-to-Camera) mà không bắt người dùng phải bẻ gập cổ tay hay úp mu bàn tay xuống,
+            // ta áp dụng góc bù quanh trục dài cục bộ của thẻ (Local X-axis sau khi align) khoảng 32° (~0.56 rad):
+            const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), cardOrientationOffsetZ === 0 ? 0.52 : 0.0);
+            const rollQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), cardOrientationOffsetZ === 0 ? 0.0 : -0.52);
 
             // 3. Áp dụng góc lật 180 độ (Card Flip) lên trục Y cục bộ của thẻ
             const flipQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetRotationY);
             
-            targetQuaternion.copy(palmQuat).multiply(alignQuat).multiply(pitchQuat).multiply(flipQuat);
+            targetQuaternion.copy(palmQuat)
+              .multiply(alignQuat)
+              .multiply(pitchQuat)
+              .multiply(rollQuat)
+              .multiply(flipQuat);
             isHandTrackingActive = true;
           }
 
@@ -877,12 +885,12 @@
           txtCardState.textContent = 'CHỜ BÀN TAY';
           txtCardState.style.color = '#94a3b8';
 
-          // Gentle idle floating animation
+          // Idle floating animation hướng trực diện Camera, avatar & logo sắc nét rõ ràng
           const time = performance.now() * 0.0015;
-          targetPos.set(0, Math.sin(time) * 0.04, 0);
-          targetRotationX = Math.sin(time * 0.8) * 0.06;
-          targetRotationZ = Math.cos(time * 0.7) * 0.04;
-          targetScale = 1.0;
+          targetPos.set(0, Math.sin(time) * 0.025, 0.2); // Đẩy gần camera hơn một chút để chi tiết rõ nét
+          targetRotationX = Math.sin(time * 0.8) * 0.02; // Biên độ nghiêng tối thiểu, giữ mặt phẳng trực diện
+          targetRotationZ = Math.cos(time * 0.7) * 0.015;
+          targetScale = 1.15; // Tăng nhẹ kích thước khi chờ để dễ quan sát
         }
       } catch (err) {
         console.error("onResults tracking exception:", err);
